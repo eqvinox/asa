@@ -34,7 +34,7 @@ struct assp_frame {
 
 struct assp_param {
 	struct assp_frame *f;
-	unsigned cx0, cx1, cy0, cy1;
+	int cx0, cx1, cy0, cy1;
 	int xo, yo;
 	int elem;
 };

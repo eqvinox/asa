@@ -63,16 +63,16 @@ void assp_spanfunc(int y, int count, FT_Span *spans, void *user)
 	while (spans < end) {
 		FT_Span *now = spans++;
 		int rx = now->x + p->xo;
-		unsigned x0, x1;
+		int x0, x1;
 		cell *cnow, *cend;
 
-		x0 = rx < (int)p->cx0 ? p->cx0 : (unsigned)rx;
+		x0 = rx < p->cx0 ? p->cx0 : rx;
 		cnow = &row->data[x0];
 		if (x0 < row->first)
 			row->first = x0;
 
-		x1 = rx + now->len > (int)p->cx1 ? p->cx1 :
-			(unsigned)rx + now->len;
+		x1 = rx + now->len > p->cx1 ? p->cx1 :
+			rx + now->len;
 		cend = &row->data[x1];
 		if (x1 > row->last)
 			row->last = x1;
