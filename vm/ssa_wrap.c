@@ -27,7 +27,7 @@ void ssaw_finish(struct ssa_wrap_env *we)
 void ssaw_put(struct ssa_wrap_env *we, struct ssa_node *n,
 	struct ssav_node *vn, struct asa_font *fnt)
 {
-	unsigned *o, f;
+	unsigned *o;
 	ssaout_t *c;
 
 	o = vn->indici;
@@ -37,12 +37,7 @@ void ssaw_put(struct ssa_wrap_env *we, struct ssa_node *n,
 			ssaw_commit(we);
 		}
 
-		f = FT_Get_Char_Index(fnt->face, *c);
-		if (f) {
-			*o++ = f;
-		} else
-			vn->nchars--;
-		c++;
+		*o++ = FT_Get_Char_Index(fnt->face, *c++);
 	}
 }
 

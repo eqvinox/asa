@@ -186,6 +186,11 @@ static void asa_one(struct ssa_line *l, unsigned char *dst,
 			FT_Raster_Params params;
 			FT_Vector kerning;
 
+			if (!*now) {
+				now++;
+				continue;
+			}
+
 			if (previdx) {
 				FT_Get_Kerning(fnt, previdx, *now,
 					ft_kerning_default, &kerning);
