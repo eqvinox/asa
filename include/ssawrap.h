@@ -5,7 +5,10 @@
 #include "asafont.h"
 
 struct ssa_wrap_env {
-	struct ssav_unit **cur_unit;
+	struct ssav_unit *cur_unit;
+	struct ssav_line *vl;
+	unsigned pos;
+	unsigned hit_space;
 };
 
 extern void ssaw_put(struct ssa_wrap_env *we, struct ssa_node *n,

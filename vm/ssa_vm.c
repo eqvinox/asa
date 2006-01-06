@@ -422,6 +422,7 @@ static void ssav_prep_dialogue(struct ssa *ssa, struct ssa_vm *vm,
 	override(marginv);
 	vl->wrap = ssa->wrapstyle;
 	vl->pos = NULL;
+	vl->unit_first = NULL;
 
 	ctx.ssa = ssa;
 	ctx.vm = vm;

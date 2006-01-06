@@ -85,7 +85,6 @@ struct ssav_node {
 
 struct ssav_unit {
 	struct ssav_unit *next;
-	struct ssav_node *n;
 	unsigned idxstart;
 
 	FT_Pos width, trailspace;
@@ -98,6 +97,7 @@ struct ssav_line {
 
 	double start, end;
 	long int ass_layer;
+	unsigned nchars;
 #ifdef SSA_DEBUG
 	struct ssa_line *input;
 #endif
