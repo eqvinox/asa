@@ -42,16 +42,21 @@ static void ssav_text(ifp);
 static void ssav_fontsize(ifp);
 static void ssav_reset(ifp);
 
+static void ssav_double(ifp);
+static void ssav_colour(ifp);
+
+static void ssav_fixal(ifp);
+static void ssav_lineint(ifp);
+static void ssav_linenode(ifp);
+
 struct ssa_ipnode {
 	ssav_ipfunc *func;
 	ptrdiff_t param;
 };
 
-static void ssav_double(ifp);
-static void ssav_colour(ifp);
-
 #define apply_offset(x,y) (((char *)x) + y)		/**< apply e(x) */
 #define e(x) ((ptrdiff_t) &((struct ssav_params *)0)->x)
+#define l(x) ((ptrdiff_t) &((struct ssav_line *)0)->x)
 static struct ssa_ipnode iplist[SSAN_MAX] = {
 					/* S - static / nonanimatable,
 					 * a - animatable
@@ -92,17 +97,17 @@ static struct ssa_ipnode iplist[SSAN_MAX] = {
 	{ssav_colour,	0x11},		/* al SSAN_ALPHA2 */
 	{ssav_colour,	0x12},		/* al SSAN_ALPHA3 */
 	{ssav_colour,	0x13},		/* al SSAN_ALPHA4 */
-	{NULL,		0},		/* SG SSAN_ALIGN */
-	{NULL,		0},		/* SG SSAN_ALIGNNUM */
+	{ssav_fixal,	0},		/* SG SSAN_ALIGN */
+	{ssav_lineint,	l(align)},	/* SG SSAN_ALIGNNUM */
 	{NULL,		0},		/* Sl SSAN_KARA */
 	{NULL,		0},		/* Sl SSAN_KARAF */
 	{NULL,		0},		/* Sl SSAN_KARAO */
-	{NULL,		0},		/* SG SSAN_WRAP */
+	{ssav_lineint,	l(wrap)},	/* SG SSAN_WRAP */
 	{ssav_reset,	0},		/* *l SSAN_RESET */
 
 	{NULL,		0},		/* S* SSAN_T */
 	{NULL,		0},		/* SG SSAN_MOVE */
-	{NULL,		0},		/* aG SSAN_POS */
+	{ssav_linenode,	l(pos)},	/* aG SSAN_POS */
 	{NULL,		0},		/* SG SSAN_ORG */
 	{NULL,		0},		/* S? SSAN_FADE */
 	{NULL,		0},		/* S? SSAN_FAD */
@@ -286,6 +291,33 @@ static void ssav_colour(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
 
 /****************************************************************************/
 
+static inline long int ssa_a2an(long int v)
+{
+	return v < 4 ? v
+		: v < 8 ? v - 2
+		: v - 5;
+}
+
+static void ssav_fixal(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
+	ptrdiff_t param)
+{
+	ctx->vl->wrap = ssa_a2an(n->v.lval);
+}
+
+static void ssav_lineint(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
+	ptrdiff_t param)
+{
+	*(long int *)apply_offset(ctx->vl, param) = n->v.lval;
+}
+
+static void ssav_linenode(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
+	ptrdiff_t param)
+{
+	*(struct ssa_node **)apply_offset(ctx->vl, param) = n;
+}
+
+/****************************************************************************/
+
 static void ssav_nl(struct ssav_prepare_ctx *ctx,
 				struct ssa_node *n, ptrdiff_t param)
 {
@@ -334,13 +366,6 @@ static void ssav_text(struct ssav_prepare_ctx *ctx, struct ssa_node *n, ptrdiff_
 \* XXX#XXX#XXX#XXX#XXX#XXX#XXX#XXX#XXX#XXX#XXX#XXX */
 
 #if 0
-static long int ssa_a2an(long int v)
-{
-	return v < 4 ? v
-		: v < 8 ? v - 2
-		: v - 5;
-}
-
 static void ssap_fixa(struct ssav_prepare_ctx *ctx, struct ssa_node *n)
 {
 	n->type = SSAN_ALIGNNUM;
@@ -382,6 +407,8 @@ static void ssap_font(struct ssav_prepare_ctx *ctx, struct ssa_node *n, ptrdiff_
 
 #endif
 
+#define override(attr) vl->attr = l->attr ? l->attr : l->style->attr
+
 static void ssav_prep_dialogue(struct ssa *ssa, struct ssa_vm *vm,
 	struct ssa_line *l, struct ssa_frag **hint)
 {
@@ -395,6 +422,13 @@ static void ssav_prep_dialogue(struct ssa *ssa, struct ssa_vm *vm,
 #if SSA_DEBUG
 	vl->input = l;
 #endif
+	vl->align = ssa->version == SSAV_4P ?
+		l->style->align : ssa_a2an(l->style->align);
+	override(marginl);
+	override(marginr);
+	override(marginv);
+	vl->wrap = ssa->wrapstyle;
+	vl->pos = NULL;
 
 	ctx.ssa = ssa;
 	ctx.vm = vm;

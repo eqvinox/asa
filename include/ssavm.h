@@ -91,6 +91,15 @@ struct ssav_line {
 #ifdef SSA_DEBUG
 	struct ssa_line *input;
 #endif
+
+	long int
+		align,
+		marginl,
+		marginr,
+		marginv,
+		wrap;
+
+	struct ssa_node *pos; /**< XXX TEMP HACK XXX */
 };
 
 /** a (time) fragment, with a list of lines */
