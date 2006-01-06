@@ -83,8 +83,18 @@ struct ssav_node {
 	FT_OutlineGlyph *glyphs;
 };
 
+struct ssav_unit {
+	struct ssav_unit *next;
+	struct ssav_node *n;
+	unsigned idxstart;
+
+	FT_Pos width, trailspace;
+	FT_Vector final;
+};
+
 struct ssav_line {
 	struct ssav_node *node_first;
+	struct ssav_unit *unit_first;
 
 	double start, end;
 	long int ass_layer;
@@ -116,10 +126,15 @@ struct ssa_frag {
 
 /** instance data for the VM */
 struct ssa_vm {
+/* vm core */
 	struct ssa_frag *fragments;
 
 	struct ssa_frag *cache;
 	struct assa_env ae;
+
+/* positioner */
+	double playresx, playresy;
+	FT_Vector resx, resy;
 };
 
 extern struct ssa_frag *ssap_frag_init(struct ssa_vm *vm);

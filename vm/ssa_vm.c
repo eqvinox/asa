@@ -1,6 +1,7 @@
 /* #include(LICENSE) */
 #include "common.h"
 #include "ssa.h"
+#include "ssawrap.h"
 #include "ssavm.h"
 #include "ssarun.h"
 #include "asa.h"
@@ -31,6 +32,8 @@ struct ssav_prepare_ctx {
 	struct ssav_params *pset;
 	struct ssar_nodegroup *ng;
 	int ng_ref;
+
+	struct ssa_wrap_env wrap;
 };
 
 #define ifp struct ssav_prepare_ctx *ctx, struct ssa_node *n, ptrdiff_t param
@@ -332,8 +335,6 @@ static void ssav_nl(struct ssav_prepare_ctx *ctx,
 static void ssav_text(struct ssav_prepare_ctx *ctx, struct ssa_node *n, ptrdiff_t param)
 {
 	struct ssav_node *vn;
-	unsigned rm, *o;
-	ssaout_t *c;
 
 	if (!ctx->pset->font || (n->v.text.s == n->v.text.e))
 		return;
@@ -344,21 +345,13 @@ static void ssav_text(struct ssav_prepare_ctx *ctx, struct ssa_node *n, ptrdiff_
 	vn->params = ssav_addref(ctx->pset);
 	vn->group = ctx->ng;
 	ctx->ng_ref++;
-	vn->nchars = rm = n->v.text.e - n->v.text.s;
-	vn->indici = o  = xmalloc(sizeof(unsigned) * rm);
+	vn->nchars = n->v.text.e - n->v.text.s;
+	vn->indici = xmalloc(sizeof(unsigned) * (n->v.text.e - n->v.text.s));
 	vn->glyphs = NULL;
 	*ctx->nodenextp = vn;
 	ctx->nodenextp = &vn->next;
 
-	c = n->v.text.s;
-	while (c < n->v.text.e) {
-		unsigned f = FT_Get_Char_Index(ctx->pset->font->face, *c);
-		if (f)
-			*o++ = f;
-		else
-			vn->nchars--;
-		c++;
-	}
+	ssaw_put(&ctx->wrap, n, vn, ctx->pset->font);
 }
 
 /* XXX#XXX#XXX#XXX#XXX#XXX#XXX#XXX#XXX#XXX#XXX#XXX *\
@@ -438,6 +431,8 @@ static void ssav_prep_dialogue(struct ssa *ssa, struct ssa_vm *vm,
 	ctx.ng_ref = 1;
 	ssav_ng_invalidate(&ctx);
 
+	ssaw_prepare(&ctx.wrap, vl);
+
 	ctx.pset = ssav_get_style(l->style);
 	while (cn) {
 		if (SSAN(cn->type) < SSAN_MAX) {
@@ -450,6 +445,8 @@ static void ssav_prep_dialogue(struct ssa *ssa, struct ssa_vm *vm,
 	ssav_release(ctx.pset);
 	if (!ctx.ng_ref)
 		xfree(ctx.ng);
+
+	ssaw_finish(&ctx.wrap);
 
 	if (vl->node_first) {
 		struct ssa_frag *rv = ssap_frag_add(vm, *hint, vl);
