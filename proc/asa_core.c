@@ -117,9 +117,8 @@ static void _asar_commit(struct assp_frame *f, int lay)
 	u = 0.713 * (col.c.r - y) + 128;
 	v = 0.564 * (col.c.b - y) + 128;
 
-	d = dst->bmp.yuv_planar.y.d + f->group->h * dst->bmp.yuv_planar.y.stride;
+	d = dst->bmp.yuv_planar.y.d;
 	while (line < f->group->h) {
-		d -= dst->bmp.yuv_planar.y.stride;
 		now = f->lines[line]->data;
 		lend = now + f->group->w;
 		while (now < lend) {
@@ -129,6 +128,7 @@ static void _asar_commit(struct assp_frame *f, int lay)
 			now++;
 		}
 		d -= f->group->w;
+		d += dst->bmp.yuv_planar.y.stride;
 		line++;
 	}
 
@@ -136,7 +136,7 @@ static void _asar_commit(struct assp_frame *f, int lay)
 	unsigned numy = 1 << dst->bmp.yuv_planar.chroma_y_red;
 
 	line = 0;
-	origin = dst->bmp.yuv_planar.u.d + f->group->h * dst->bmp.yuv_planar.u.stride / numy;
+	origin = dst->bmp.yuv_planar.u.d;
 	while (line < f->group->h) {
 		cell *now[4];
 		unsigned nlines = 0, c, b, a;
@@ -145,7 +145,6 @@ static void _asar_commit(struct assp_frame *f, int lay)
 			if (f->lines[line+c] != f->group->unused)
 				now[nlines++] = f->lines[line+c]->data;
 		
-		origin -= dst->bmp.yuv_planar.u.stride;
 		d = origin;
 		for (c = 0; c < (f->group->w >> dst->bmp.yuv_planar.chroma_x_red); c++) {
 			unsigned v0 = 0;
@@ -157,11 +156,12 @@ static void _asar_commit(struct assp_frame *f, int lay)
 			vb = u * (v0 + 1);
 			*d++ = (va + vb) >> 8;
 		}
+		origin += dst->bmp.yuv_planar.u.stride;
 		line += numy;
 	}
 
 	line = 0;
-	origin = dst->bmp.yuv_planar.v.d + f->group->h * dst->bmp.yuv_planar.v.stride / numy;
+	origin = dst->bmp.yuv_planar.v.d;
 	while (line < f->group->h) {
 		cell *now[4];
 		unsigned nlines = 0, c, b, a;
@@ -170,7 +170,6 @@ static void _asar_commit(struct assp_frame *f, int lay)
 			if (f->lines[line+c] != f->group->unused)
 				now[nlines++] = f->lines[line+c]->data;
 		
-		origin -= dst->bmp.yuv_planar.v.stride;
 		d = origin;
 		for (c = 0; c < (f->group->w >> dst->bmp.yuv_planar.chroma_x_red); c++) {
 			unsigned v0 = 0;
@@ -182,6 +181,7 @@ static void _asar_commit(struct assp_frame *f, int lay)
 			vb = v * (v0 + 1);
 			*d++ = (va + vb) >> 8;
 		}
+		origin += dst->bmp.yuv_planar.v.stride;
 		line += numy;
 	}
 
