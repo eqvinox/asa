@@ -68,13 +68,13 @@ void assp_spanfunc(int y, int count, FT_Span *spans, void *user)
 
 		x0 = rx < p->cx0 ? p->cx0 : rx;
 		cnow = &row->data[x0];
-		if (x0 < row->first)
+		if (x0 < (int)row->first)
 			row->first = x0;
 
 		x1 = rx + now->len > p->cx1 ? p->cx1 :
 			rx + now->len;
 		cend = &row->data[x1];
-		if (x1 > row->last)
+		if (x1 > (int)row->last)
 			row->last = x1;
 
 		while (cnow < cend) {
