@@ -76,7 +76,7 @@ static struct ssa_ipnode iplist[SSAN_MAX] = {
 	{NULL,		0},		/* ?l SSAN_ITALICS */
 	{NULL,		0},		/* ?l SSAN_UNDERLINE */
 	{NULL,		0},		/* ?l SSAN_STRIKEOUT */	
-	{NULL,		0},		/* al SSAN_BORDER */
+	{ssav_double,	e(border)},	/* al SSAN_BORDER */
 	{NULL,		0},		/* al SSAN_SHADOW */
 	{NULL,		0},		/* ?? SSAN_BLUREDGES */
 	{NULL,		0},		/* ?l SSAN_FONT */

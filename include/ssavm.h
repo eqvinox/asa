@@ -54,6 +54,8 @@ struct ssav_params {
 	} m;
 //	ssav_mat *mat;
 
+	double border;
+
 	struct {
 		colour_t colours[4];
 	} r;

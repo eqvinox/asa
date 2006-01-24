@@ -4,6 +4,8 @@
 #include "ssavm.h"
 #include "ssarun.h"
 
+#include "freetype/ftstroke.h"
+
 #define HACKING 1
 #if 0 && HACKING
 void ssar_one(struct ssav_line *l, struct assp_fgroup *fg)
@@ -94,6 +96,7 @@ while (n) {
 	struct ssar_nodegroup *ng = n->group;
 	struct assp_param p;
 	FT_OutlineGlyph *g, *gend;
+	FT_Stroker stroker;
 
 	if (!ng->frame)
 		ng->frame = assp_framenew(fg);
@@ -104,9 +107,9 @@ while (n) {
 	p.cx1 = ng->frame->group->w;
 	p.cy1 = ng->frame->group->h;
 	p.xo = p.yo = 0;
-	p.elem = 0;
-	
+
 	ng->frame->colours[0] = n->params->r.colours[0];
+	ng->frame->colours[2] = n->params->r.colours[2];
 
 	g = n->glyphs;
 	gend = g + n->nchars;
@@ -115,9 +118,18 @@ while (n) {
 		fprintf(stderr, "NO GLYPH\n");
 		return;
 	}
-		
+
+	FT_Stroker_New(n->params->font->face->memory, &stroker);
+
+	/* XXX XXX XXX formula is incorrect!
+	 * someone go figure a correct one! */
+	FT_Stroker_Set(stroker, (int)(n->params->border
+		* n->params->font->face->units_per_EM / n->params->f.size),
+		FT_STROKER_LINECAP_ROUND, FT_STROKER_LINEJOIN_ROUND, 0);
+
 	while (g < gend) {
 		FT_Glyph transformed;
+		FT_Glyph stroked;
 		FT_Outline *o;
 		FT_Raster_Params params;
 
@@ -133,6 +145,8 @@ while (n) {
 		FT_Glyph_Transform(transformed, NULL, &pos);
 		o = &((FT_OutlineGlyph)transformed)->outline;
 
+		p.elem = 0;
+
 		params.flags      = ft_raster_flag_aa
 				| ft_raster_flag_direct;
 		params.black_spans	= assp_spanfunc;
@@ -141,11 +155,19 @@ while (n) {
 		params.target	= NULL;
 			   
 		FT_Outline_Render(asaf_ftlib, o, &params);
+		
+		stroked = transformed; // XXX?
+		FT_Glyph_Stroke(&stroked, stroker, 0);
+
+		p.elem = 2;
+		FT_Outline_Render(asaf_ftlib, &((FT_OutlineGlyph)stroked)->outline, &params);
 		//FT_Done_Glyph(transformed); - XXX?
+		//FT_Done_Glyph(stroked); - XXX?
 
 		g++, idx++;
 	}
 
+	FT_Stroker_Done(stroker);
 	n = n->next;
 }
 }
