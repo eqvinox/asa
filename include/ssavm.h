@@ -80,15 +80,15 @@ struct ssav_node {
 
 	unsigned nchars;
 	unsigned *indici;
-	FT_OutlineGlyph *glyphs;
+	FT_Glyph *glyphs;
 };
 
 struct ssav_unit {
 	struct ssav_unit *next;
 	unsigned idxstart;
 
-	FT_Pos width, trailspace;
-	FT_Vector final;
+	FT_Pos height;
+	FT_Vector size, final;
 };
 
 struct ssav_line {

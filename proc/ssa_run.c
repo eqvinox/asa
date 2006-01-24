@@ -81,8 +81,16 @@ void ssar_one(struct ssav_line *l, struct assp_fgroup *fg)
 }
 #endif
 
-void ssar_one(struct ssav_node *n, struct assp_fgroup *fg, int *xoff)
+void ssar_line(struct ssav_line *l, struct assp_fgroup *fg)
 {
+	struct ssav_node *n = l->node_first;
+	struct ssav_unit *u = l->unit_first;
+	int ustop = u->next ? u->next->idxstart : l->nchars, idx = 0;
+	FT_Vector pos;
+
+	pos.x = pos.y = 0;
+	
+while (n) {
 	struct ssar_nodegroup *ng = n->group;
 	struct assp_param p;
 	FT_OutlineGlyph *g, *gend;
@@ -109,11 +117,21 @@ void ssar_one(struct ssav_node *n, struct assp_fgroup *fg, int *xoff)
 	}
 		
 	while (g < gend) {
+		FT_Glyph transformed;
 		FT_Outline *o;
 		FT_Raster_Params params;
-		o = &g[0]->outline;
 
-		p.xo = *xoff;
+		if (idx == ustop) {
+			pos.x += u->size.x;
+			pos.y += u->size.y;
+			u = u->next;
+			ustop = u->next ? u->next->idxstart : l->nchars;
+		}
+
+		// FT_Glyph_Copy(*g, &copy); - XXX?
+		transformed = *g;
+		FT_Glyph_Transform(transformed, NULL, &pos);
+		o = &((FT_OutlineGlyph)transformed)->outline;
 
 		params.flags      = ft_raster_flag_aa
 				| ft_raster_flag_direct;
@@ -123,21 +141,13 @@ void ssar_one(struct ssav_node *n, struct assp_fgroup *fg, int *xoff)
 		params.target	= NULL;
 			   
 		FT_Outline_Render(asaf_ftlib, o, &params);
-			
-		*xoff += (*g)->root.advance.x >> 16;
-		g++;
-	}
-}
+		//FT_Done_Glyph(transformed); - XXX?
 
-void ssar_line(struct ssav_line *l, struct assp_fgroup *fg)
-{
-	struct ssav_node *n = l->node_first;
-	int xoff = 0;
-	
-	while (n) {
-		ssar_one(n, fg, &xoff);
-		n = n->next;
+		g++, idx++;
 	}
+
+	n = n->next;
+}
 }
 
 static void ssar_commit(struct ssav_line *l)
