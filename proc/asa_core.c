@@ -97,8 +97,24 @@ void asa_render(asa_inst *i, double ftime, struct asa_frame *frame)
 
 static void _asar_commit(struct assp_frame *f, int lay);
 
+extern void asar_commit_y420_x86_64(struct assp_fgroup *g, cellline **lines, cell colours[3]);
+
+#define OPT (__x86_64__ && __SSE2__)
+
 void asar_commit(struct assp_frame *f)
 {
+#if OPT
+	static char offset = 0;
+	cell yuvc[2];
+	for (int i = 0; i < 4; i++) {
+		colour_t col = f->colours[i];
+		yuvc[0].e[i] = col.c.a + offset;
+		yuvc[1].e[i] = 0.299 * col.c.r + 0.587 * col.c.g + 0.114 * col.c.b;
+	}
+	offset++;
+	asar_commit_y420_x86_64(f->group, f->lines, yuvc);
+#endif
+
 	_asar_commit(f, 2);
 	_asar_commit(f, 0);
 }
@@ -118,6 +134,7 @@ static void _asar_commit(struct assp_frame *f, int lay)
 	v = 0.564 * (col.c.b - y) + 128;
 
 	d = dst->bmp.yuv_planar.y.d;
+#if !OPT
 	while (line < f->group->h) {
 		now = f->lines[line]->data;
 		lend = now + f->group->w;
@@ -131,6 +148,7 @@ static void _asar_commit(struct assp_frame *f, int lay)
 		d += dst->bmp.yuv_planar.y.stride;
 		line++;
 	}
+#endif
 
 	unsigned numx = 1 << dst->bmp.yuv_planar.chroma_x_red;
 	unsigned numy = 1 << dst->bmp.yuv_planar.chroma_y_red;
