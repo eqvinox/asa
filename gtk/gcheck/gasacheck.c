@@ -1,3 +1,23 @@
+/*****************************************************************************
+ * asa: portable digital subtitle renderer
+ *****************************************************************************
+ * Copyright (C) 2004, 2005  David Lamparter
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ ****************************************************************************/
+
 #include "common.h"
 #include "ssa.h"
 
@@ -132,9 +152,12 @@ static void gac_info(GtkWidget *widget, gpointer data)
 		GTK_DIALOG_DESTROY_WITH_PARENT,
 		GTK_MESSAGE_INFO,
 		GTK_BUTTONS_CLOSE,
-		"ASA checker / parser testing program\n\n"
-		"both the ASA parser and this checking program are\n"
-		"Copyright (C) 2004 by David Lamparter\n\n%s",
+		"ASA viewer / checker / parser testing program\n\n%s\n\n"
+		"asa, Copyright (C) 2004, 2005, 2006 David Lamparter\n"
+		"asa comes with ABSOLUTELY NO WARRANTY;\n"
+		"This is free software, and you are welcome to\n"
+		"redistribute it under certain conditions; for details\n"
+		"see the LICENSE file included with the program source.\n"
 		ssa_lexer_version);
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
