@@ -124,14 +124,12 @@ extern void asar_commit_y420_x86_64(struct assp_fgroup *g, cellline **lines, cel
 void asar_commit(struct assp_frame *f)
 {
 #if OPT
-	static char offset = 0;
 	cell yuvc[2];
 	for (int i = 0; i < 4; i++) {
 		colour_t col = f->colours[i];
-		yuvc[0].e[i] = col.c.a + offset;
+		yuvc[0].e[i] = col.c.a;
 		yuvc[1].e[i] = 0.299 * col.c.r + 0.587 * col.c.g + 0.114 * col.c.b;
 	}
-	offset++;
 	asar_commit_y420_x86_64(f->group, f->lines, yuvc);
 #endif
 
