@@ -8,8 +8,10 @@ AC_PREFIX_DEFAULT(~)
 # stuff that gets undefined...
 asa_rend_ok=yes
 asa_gtk_ok=yes
+asa_optimize=NONE
 
 asa_rend_disp=no
+asa_opt_disp="none - renderer slower than a snail on slow-motion"
 asa_gtk_disp=no
 
 
@@ -45,6 +47,28 @@ then	AC_MSG_NOTICE([note that the package versions are almost arbitary, it may w
 		AC_MSG_WARN([asa needs FreeType2 and fontconfig to be able to render something - ALL RENDERING DISABLED])
 		unset asa_rend_ok
 	])
+
+	try_optimize=1
+	AC_ARG_ENABLE([optimize],
+		AC_HELP_STRING([--disable-optimize], [do not try to optimize asa]),
+		[	if test "$enableval" == "no"
+			then	try_optimize=""
+			fi
+		])
+
+	if test -n "try_optimize"
+	then	case $host in
+		x86_64-*-*)
+			AC_CHECK_TOOL(YASM, yasm, "")
+			if test -z "$YASM"
+			then	AC_MSG_WARN([yasm not found - not using AMD64 optimizations])
+			else	asa_optimize="AMD64"
+				asa_opt_disp="AMD64 + SSE2"
+				AC_DEFINE([ASA_OPT_AMD64], 1, [optimize asa for AMD64])
+			fi
+		;;
+	esac
+	fi
 fi
 if test -n "$asa_gtk_ok"
 then	PKG_CHECK_MODULES([GTK], gtk+-2.0 >= 2.4.0 glib-2.0 >= 2.4.0,, [
@@ -165,12 +189,17 @@ then	AC_DEFINE([ASA_BUILD_GTKGUI], 1, [build Gtk GUIs (have Gtk+2.0)])
 	asa_gtk_disp=yes
 fi
 AM_CONDITIONAL([BUILD_GTKGUI], [test -n "$asa_gtk_ok"])
+if test "$asa_optimize" == "NONE"
+then	AC_DEFINE([ASA_OPT_NONE], 1, [no optimization for asa])
+fi
+AM_CONDITIONAL([BUILD_AMD64], [test "$asa_optimize" == "AMD64"])
 
 echo " "
 echo " configuration summary: "
 echo " "
 echo "   build ssa libs:       always built"
 echo "   build renderer:       $asa_rend_disp"
+echo "     using optimization: $asa_opt_disp"
 echo "   build Gtk+-2.0 GUIs:  $asa_gtk_disp"
 echo " "
 
