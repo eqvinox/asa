@@ -220,7 +220,7 @@ static void gvw_info(GtkWidget *widget, gpointer data)
 		"asa comes with ABSOLUTELY NO WARRANTY;\n"
 		"This is free software, and you are welcome to\n"
 		"redistribute it under certain conditions; for details\n"
-		"see the LICENSE file included with the program source.\n"
+		"see the LICENSE file included with the program source.\n",
 		ssa_lexer_version);
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
