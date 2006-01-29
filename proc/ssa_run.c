@@ -68,8 +68,7 @@ while (n) {
 
 	/* XXX XXX XXX formula is incorrect!
 	 * someone go figure a correct one! */
-	FT_Stroker_Set(stroker, (int)(n->params->border
-		* n->params->font->face->units_per_EM / n->params->f.size),
+	FT_Stroker_Set(stroker, (int)(n->params->border * 64),
 		FT_STROKER_LINECAP_ROUND, FT_STROKER_LINEJOIN_ROUND, 0);
 
 	while (g < gend) {
