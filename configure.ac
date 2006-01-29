@@ -42,8 +42,8 @@ AC_ARG_ENABLE([gtk],
 			asa_gtk_disp="disabled by parameter"
 		fi])
 if test -n "$asa_rend_ok"
-then	AC_MSG_NOTICE([note that the package versions are almost arbitary, it may work with older ones, it may not work with newer ones...])
-	PKG_CHECK_MODULES([FREETYPE], freetype2 >= 9.0.0 fontconfig >= 2.2.0,, [
+then	AC_MSG_NOTICE([note: freetype2 versions earlier than 2.1.10 contain various bugs])
+	PKG_CHECK_MODULES([FREETYPE], freetype2 >= 9.8.3 fontconfig >= 2.2.0,, [
 		AC_MSG_WARN([asa needs FreeType2 and fontconfig to be able to render something - ALL RENDERING DISABLED])
 		unset asa_rend_ok
 	])
