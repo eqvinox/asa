@@ -62,6 +62,7 @@
 
 #define ssatod		strtod		/**< @see ssasrc_t */
 #define ssatol		strtol		/**< @see ssasrc_t */ 
+#define ssatoul		strtoul		/**< @see ssasrc_t */ 
 
 /** a file's base encoding.
  * used everywhere without specified encoding
@@ -1669,12 +1670,12 @@ static unsigned ssa_do_colour(struct ssa_state *state, colour_t *ret,
 				(digits == 6) && (bptr - buf == 8)
 				? SSAEC_COLOUR_ALPHALOST
 				: SSAEC_COLOUR_STRANGE);
-		result.l = ssatol(buf, &endptr, 16);
+		result.l = ssatoul(buf, &endptr, 16);
 		
 	} else {
 		if (!ssa_scannum(state, buf, &bptr, 0, 1, 12))
 			return 0;
-		result.l = ssatol(buf, &endptr, 10);
+		result.l = ssatoul(buf, &endptr, 10);
 	}
 		
 	if (bptr != endptr || (digits == 2 && result.l >= 0x100)) {
