@@ -398,6 +398,7 @@ static struct ssa_parsetext_tag ptoverr[] = {
 	{"frx",			e_fp,			SSAN_FRX},
 	{"fry",			e_fp,			SSAN_FRY},
 	{"frz",			e_fp,			SSAN_FRZ},
+	{"fr",			e_fp,			SSAN_FRZ},
 	{"fscx",		e_fp,		SSANR |	SSAN_FSCX},
 	{"fscy",		e_fp,		SSANR |	SSAN_FSCY},
 	{"fsp",			e_fp,		SSANR |	SSAN_FSP},
