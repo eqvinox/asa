@@ -29,6 +29,7 @@
 #include "asa.h"
 #include "asaproc.h"
 #include "ssavm.h"
+#include "acconf.h"
 
 struct asa_inst {
 	struct assp_fgroup *framegroup;
