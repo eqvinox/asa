@@ -113,7 +113,8 @@ void ssgl_prepare(struct ssav_line *l)
 				FT_Get_Glyph(fnt->glyph, &tmp); 
 				FT_Glyph_Transform(tmp, &mat, &pos);
 				*g = tmp;
-				pos.x += tmp->advance.x >> 10;
+				pos.x += (tmp->advance.x >> 10) +
+					(int)(n->params->m.fsp * 64);
 				pos.y += tmp->advance.y >> 10;
 			}
 			g++, idx++;
