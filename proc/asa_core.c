@@ -145,9 +145,10 @@ static void _asar_commit(struct assp_frame *f, int lay)
 	unsigned char *d, *origin,
 		y, u, v;
 	cell *now, *lend;
-	unsigned short va, vb;
+	unsigned short va, vb, a;
 	colour_t col = f->colours[lay];
-	
+
+	a = col.c.a;
 	y = 0.299 * col.c.r + 0.587 * col.c.g + 0.114 * col.c.b;
 	u = 0.713 * (col.c.r - y) + 128;
 	v = 0.564 * (col.c.b - y) + 128;
@@ -158,8 +159,9 @@ static void _asar_commit(struct assp_frame *f, int lay)
 		now = f->lines[line]->data;
 		lend = now + f->group->w;
 		while (now < lend) {
-			va = *d * (256 - now->e[lay]);
-			vb = y * (now->e[lay] + 1);
+			unsigned char tmp = (now->e[lay] * (256 - a)) >> 8;
+			va = *d * (256 - tmp);
+			vb = y * (tmp + 1);
 			*d++ = (va + vb) >> 8;
 			now++;
 		}
@@ -189,6 +191,7 @@ static void _asar_commit(struct assp_frame *f, int lay)
 				for (a = 0; a < nlines; a++)
 					v0 += (now[a]++)->e[lay];
 			v0 >>= dst->bmp.yuv_planar.chroma_x_red + dst->bmp.yuv_planar.chroma_y_red;
+			v0 = (v0 * (256 - a)) >> 8;
 			va = *d * (256 - v0);
 			vb = u * (v0 + 1);
 			*d++ = (va + vb) >> 8;
@@ -214,6 +217,7 @@ static void _asar_commit(struct assp_frame *f, int lay)
 				for (a = 0; a < nlines; a++)
 					v0 += (now[a]++)->e[lay];
 			v0 >>= dst->bmp.yuv_planar.chroma_x_red + dst->bmp.yuv_planar.chroma_y_red;
+			v0 = (v0 * (256 - a)) >> 8;
 			va = *d * (256 - v0);
 			vb = v * (v0 + 1);
 			*d++ = (va + vb) >> 8;
