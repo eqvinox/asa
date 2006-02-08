@@ -124,8 +124,9 @@ struct ssav_line {
 	struct ssa_line *input;
 #endif
 
+	double xalign, yalign;
+
 	long int
-		align,
 		marginl,
 		marginr,
 		marginv,

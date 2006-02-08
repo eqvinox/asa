@@ -67,7 +67,7 @@ static void ssav_reset(ifp);
 static void ssav_double(ifp);
 static void ssav_colour(ifp);
 
-static void ssav_fixal(ifp);
+static void ssav_align(ifp);
 static void ssav_lineint(ifp);
 static void ssav_linenode(ifp);
 
@@ -119,8 +119,8 @@ static struct ssa_ipnode iplist[SSAN_MAX] = {
 	{ssav_colour,	0x11},		/* al SSAN_ALPHA2 */
 	{ssav_colour,	0x12},		/* al SSAN_ALPHA3 */
 	{ssav_colour,	0x13},		/* al SSAN_ALPHA4 */
-	{ssav_fixal,	0},		/* SG SSAN_ALIGN */
-	{ssav_lineint,	l(align)},	/* SG SSAN_ALIGNNUM */
+	{ssav_align,	1},		/* SG SSAN_ALIGN */
+	{ssav_align,	0},		/* SG SSAN_ALIGNNUM */
 	{NULL,		0},		/* Sl SSAN_KARA */
 	{NULL,		0},		/* Sl SSAN_KARAF */
 	{NULL,		0},		/* Sl SSAN_KARAO */
@@ -320,10 +320,29 @@ static inline long int ssa_a2an(long int v)
 		: v - 5;
 }
 
-static void ssav_fixal(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
+static inline void ssav_setalign(struct ssav_line *vl, long int v,
+	int oldstyle)
+{
+	if (oldstyle)
+		v = ssa_a2an(v);
+	v--;
+
+	switch (v % 3) {
+	case 0:	vl->xalign = 0.0; break;
+	case 1:	vl->xalign = 0.5; break;
+	case 2:	vl->xalign = 1.0; break;
+	}
+	switch (v / 3) {
+	case 0:	vl->yalign = 1.0; break;
+	case 1:	vl->yalign = 0.5; break;
+	case 2:	vl->yalign = 0.0; break;
+	}
+}
+
+static void ssav_align(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
 	ptrdiff_t param)
 {
-	ctx->vl->wrap = ssa_a2an(n->v.lval);
+	ssav_setalign(ctx->vl, n->v.lval, param);
 }
 
 static void ssav_lineint(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
@@ -434,8 +453,7 @@ static void ssav_prep_dialogue(struct ssa *ssa, struct ssa_vm *vm,
 #if SSA_DEBUG
 	vl->input = l;
 #endif
-	vl->align = ssa->version == SSAV_4P ?
-		l->style->align : ssa_a2an(l->style->align);
+	ssav_setalign(vl, l->style->align, ssa->version < SSAV_4P);
 	override(marginl);
 	override(marginr);
 	override(marginv);
