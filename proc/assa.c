@@ -116,8 +116,8 @@ void assa_setup(struct ssa_vm *vm, unsigned width, unsigned height)
 {
 	/* initialize vm->ae here too */
 	if (vm->playresx != 0.0 && vm->playresy != 0.0) {
-		vm->res.x = (int)(vm->playresx * 1./65536.);
-		vm->res.y = (int)(vm->playresy * 1./65536.);
+		vm->res.x = (int)(vm->playresx * 65536.);
+		vm->res.y = (int)(vm->playresy * 65536.);
 		/* should probably create scaling matrix here */
 	} else {
 		vm->res.x = width << 16;
