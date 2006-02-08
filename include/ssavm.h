@@ -156,7 +156,7 @@ struct ssa_vm {
 
 /* positioner */
 	double playresx, playresy;
-	FT_Vector resx, resy;
+	FT_Vector res;
 };
 
 extern struct ssa_frag *ssap_frag_init(struct ssa_vm *vm);

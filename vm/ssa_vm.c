@@ -481,6 +481,17 @@ void ssav_create(struct ssa_vm *vm, struct ssa *ssa)
 	struct ssa_style *s = ssa->style_first;
 	struct ssa_line *l = ssa->line_first;
 
+	vm->playresx = ssa->playresx;
+	vm->playresy = ssa->playresy;
+	if ((vm->playresx == 0.0) ^ (vm->playresy == 0.0)) {
+		if (vm->playresx == 0.0)
+			vm->playresx = vm->playresy * (4./3.);
+		else if (fabs(vm->playresx - 1280.0) < 0.1)
+			vm->playresy = vm->playresx * (4./5.);
+		else
+			vm->playresy = vm->playresx * (3./4.);
+	}
+
 	while (s) {
 		s->vmptr = ssav_alloc_style(ssa, s);
 		s = s->next;

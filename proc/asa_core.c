@@ -106,6 +106,7 @@ void asa_setsize(asa_inst *i, unsigned width, unsigned height)
 		return;
 	}
 	i->framegroup = assp_fgroupnew(width, height);
+	assa_setup(&i->vm, width, height);
 }
 
 void asa_render(asa_inst *i, double ftime, struct asa_frame *frame)

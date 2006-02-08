@@ -24,6 +24,7 @@
 #include "asaproc.h"
 
 struct ssav_line;
+struct ssa_vm;
 
 enum ssar_redoflags {
 	SSAR_COLO = (1 << 0),
@@ -53,6 +54,7 @@ struct ssar_nodegroup {
 	struct assp_frame *frame;
 };
 
+extern void assa_setup(struct ssa_vm *v, unsigned width, unsigned height);
 extern void assa_start(struct assa_env *ae);
 extern enum ssar_redoflags assa_realloc(struct assa_env *ae,
 	struct ssav_line *l, enum ssar_redoflags prev);
