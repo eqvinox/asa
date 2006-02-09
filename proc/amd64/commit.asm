@@ -98,10 +98,10 @@ asar_commit_y420_x86_64:
 	movd		xmm5, [rdx]
 	punpcklbw	xmm5, xmmzero
 	punpcklbw	xmm5, xmmzero
-	movdqa		xmm8, [b0mask wrt rip]
-	psubusb		xmm8, xmm5
-	packuswb	xmm8, xmm8
-	psllq		xmm8, 8
+	movdqa		xmm4, [b0mask wrt rip]
+	psubusb		xmm4, xmm5
+	packuswb	xmm4, xmm4
+	psllq		xmm4, 8
 
 	movd		xmm6, [rdx+4]
 	movq		xmm5, xmm6
@@ -109,11 +109,11 @@ asar_commit_y420_x86_64:
 	por		xmm6, xmm5
 	punpcklbw	xmm6, xmmzero
 	paddw		xmm6, [one0 wrt rip]
-	pmulhuw		xmm6, xmm8
+	pmulhuw		xmm6, xmm4
 	paddw		xmm6, [one0 wrt rip]
 
-	psrldq		xmm8, 1
-	paddw		xmm8, [one0 wrt rip]
+	psrldq		xmm4, 1
+	paddw		xmm4, [one0 wrt rip]
 
 
 .mainloop:
@@ -191,8 +191,8 @@ asar_commit_y420_x86_64:
 	packuswb	xmm0, xmm1
 	packuswb	xmm0, xmmzero
 
-	pmulhuw		xmm2, xmm8
-	 pmulhuw	 xmm3, xmm8
+	pmulhuw		xmm2, xmm4
+	 pmulhuw	 xmm3, xmm4
 	psadbw		xmm2, xmmzero
 	 psadbw		 xmm3, xmmzero
 	packuswb	xmm2, xmm3
