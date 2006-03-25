@@ -1,7 +1,7 @@
 /*****************************************************************************
  * asa: portable digital subtitle renderer
  *****************************************************************************
- * Copyright (C) 2005  David Lamparter
+ * Copyright (C) 2005,2006  David Lamparter
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -68,10 +68,103 @@ static void assa_trash(struct assa_layer *lay)
 	}
 }
 
+struct assa_rect {
+	FT_Vector pos, size;
+
+	int wrapdir;
+	double xalign, yalign;
+};
+
+struct fitline {
+	struct fitline *next;
+	FT_Vector size;
+	struct ssav_unit *startat;
+};
+
+/* first pass: split into lines and sum up their size */
+static struct fitline *assa_fit_split(struct ssav_unit *u, FT_Pos width,
+	FT_Pos *h_total)
+{
+	FT_Pos w_remain = -1;
+	struct fitline *fl = malloc(sizeof(struct fitline)),
+		*ret = fl, **upd = &ret;
+
+	/* sentinel */
+	fl->next = NULL;
+	fl->startat = NULL;
+	fl->size.y = 0;
+
+	while (u) {
+		if (u->size.x > w_remain) {
+			*h_total += fl->size.y;
+			fl = malloc(sizeof(struct fitline));
+			fl->next = *upd;
+			*upd = fl;
+
+			fl->size.x = fl->size.y = 0;
+			fl->startat = u;
+			w_remain = width;
+		}
+
+		w_remain -= u->size.x << 10;
+		fl->size.x += u->size.x << 10;
+		if ((u->height << 10) > fl->size.y)
+			fl->size.y = u->height << 10;
+
+		u = u->next;
+	}
+	*h_total += fl->size.y;
+
+	return ret;
+}
+
+static void assa_fit_arrange(struct ssav_unit *u, struct fitline *fl,
+	struct assa_rect *r, FT_Pos h_total)
+{
+	FT_Pos y, x;
+
+	y = r->pos.y + (FT_Pos)((double)(r->size.y - h_total) * r->yalign);
+	if (r->wrapdir < 0)
+		y += h_total;
+
+	x = r->pos.x + (FT_Pos)((double)(r->size.x - fl->size.x) * r->xalign);
+	while (u) {
+		if (u == fl->startat && r->wrapdir > 0)
+			y += fl->size.y;
+
+		u->final.y = y >> 10;
+		u->final.x = x >> 10;
+		x += u->size.x << 10;
+
+		if (u == fl->next->startat && r->wrapdir < 0)
+			y -= fl->size.y;
+		u = u->next;
+		if (u == fl->next->startat) {
+			fl = fl->next;
+			x = r->pos.x + (FT_Pos)((double)(r->size.x
+					- fl->size.x) * r->xalign);
+		}
+	}
+}
+
+static void assa_fit(struct ssav_line *l, struct assa_rect *r)
+{
+	FT_Pos h_total = 0;
+	struct fitline *fl, *del;
+
+	fl = assa_fit_split(l->unit_first, r->size.x, &h_total);
+	assa_fit_arrange(l->unit_first, fl, r, h_total);
+
+	for (del = fl; del; del = fl)
+		fl = del->next, free(del);
+}
+
 static void assa_wrap(struct ssa_vm *vm, struct assa_layer *lay,
 	struct ssav_line *l)
 {
 	struct assa_alloc *newa;
+	struct assa_rect r;
+
 	newa = xmalloc(sizeof(*newa));
 
 #if SSA_DEBUG
@@ -83,6 +176,28 @@ static void assa_wrap(struct ssa_vm *vm, struct assa_layer *lay,
 	newa->line = l;
 	*lay->curpos = newa;
 	lay->curpos = &newa->next;
+
+	r.wrapdir = l->yalign  < 0.25 ? 1 : -1;
+	r.xalign = l->xalign;
+	r.yalign = l->yalign;
+	if (l->pos) {
+		r.pos.x = l->pos->v.pos.x * (long)(l->xalign * 65536.);
+		r.size.x = (FT_Pos)(
+			(double)(l->pos->v.pos.x << 16) * (1. - l->xalign)
+			+ (double)(vm->res.x - (l->pos->v.pos.x << 16))
+				* l->xalign);
+		r.pos.y = l->pos->v.pos.y * (long)(l->yalign * 65536.);
+		r.size.y = (FT_Pos)(
+			(double)(l->pos->v.pos.y << 16) * (1. - l->yalign)
+			+ (double)(vm->res.y - (l->pos->v.pos.y << 16))
+				* l->yalign);
+	} else {
+		r.pos.x = l->marginl << 16;
+		r.size.x = vm->res.x - ((l->marginl + l->marginr) << 16);
+		r.pos.y = l->marginv << 16;
+		r.size.y = vm->res.y - (l->marginv << 17);
+	}
+	assa_fit(l, &r);
 }
 
 enum ssar_redoflags assa_realloc(struct ssa_vm *vm,
