@@ -22,9 +22,9 @@
 #include "ssavm.h"
 #include "ssarun.h"
 
-void assa_start(struct assa_env *ae)
+void assa_start(struct ssa_vm *vm)
 {
-	struct assa_layer *lay = ae->firstlayer;
+	struct assa_layer *lay = vm->firstlayer;
 
 	while (lay) {
 		lay->curpos = &lay->allocs;
@@ -32,9 +32,9 @@ void assa_start(struct assa_env *ae)
 	}
 }
 
-static struct assa_layer *assa_getlayer(struct assa_env *ae, long int layer)
+static struct assa_layer *assa_getlayer(struct ssa_vm *vm, long int layer)
 {
-	struct assa_layer **prev = &ae->firstlayer, *newl;
+	struct assa_layer **prev = &vm->firstlayer, *newl;
 
 	while (*prev && (*prev)->layer < layer)
 		prev = &(*prev)->next;
@@ -68,7 +68,8 @@ static void assa_trash(struct assa_layer *lay)
 	}
 }
 
-static void assa_wrap(struct assa_layer *lay, struct ssav_line *l)
+static void assa_wrap(struct ssa_vm *vm, struct assa_layer *lay,
+	struct ssav_line *l)
 {
 	struct assa_alloc *newa;
 	newa = xmalloc(sizeof(*newa));
@@ -84,10 +85,10 @@ static void assa_wrap(struct assa_layer *lay, struct ssav_line *l)
 	lay->curpos = &newa->next;
 }
 
-enum ssar_redoflags assa_realloc(struct assa_env *ae,
+enum ssar_redoflags assa_realloc(struct ssa_vm *vm,
 	struct ssav_line *l, enum ssar_redoflags prev)
 {
-	struct assa_layer *lay = assa_getlayer(ae, l->ass_layer);
+	struct assa_layer *lay = assa_getlayer(vm, l->ass_layer);
 
 	if (*lay->curpos
 		&& (*lay->curpos)->line == l
@@ -96,15 +97,15 @@ enum ssar_redoflags assa_realloc(struct assa_env *ae,
 	else {
 		assa_trash(lay);
 		prev |= SSAR_WRAP | SSAR_REND;
-		assa_wrap(lay, l);
+		assa_wrap(vm, lay, l);
 	}
 		
 	return prev;
 }
 
-void assa_end(struct assa_env *ae)
+void assa_end(struct ssa_vm *vm)
 {
-	struct assa_layer *lay = ae->firstlayer;
+	struct assa_layer *lay = vm->firstlayer;
 
 	while (lay) {
 		assa_trash(lay);
@@ -114,7 +115,6 @@ void assa_end(struct assa_env *ae)
 
 void assa_setup(struct ssa_vm *vm, unsigned width, unsigned height)
 {
-	/* initialize vm->ae here too */
 	if (vm->playresx != 0.0 && vm->playresy != 0.0) {
 		vm->res.x = (int)(vm->playresx * 65536.);
 		vm->res.y = (int)(vm->playresy * 65536.);

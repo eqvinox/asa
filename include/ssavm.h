@@ -153,7 +153,7 @@ struct ssa_vm {
 	struct ssa_frag *fragments;
 
 	struct ssa_frag *cache;
-	struct assa_env ae;
+	struct assa_layer *firstlayer;
 
 /* positioner */
 	double playresx, playresy;

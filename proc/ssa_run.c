@@ -138,7 +138,7 @@ void ssar_run(struct ssa_vm *vm, double ftime, struct assp_fgroup *fg)
 	while (vm->cache->next && vm->cache->next->start <= ftime)
 		vm->cache = vm->cache->next;
 
-	assa_start(&vm->ae);
+	assa_start(vm);
 	for (ln = 0; ln < vm->cache->nrend; ln++) {
 		struct ssav_line *l = vm->cache->lines[ln];
 
@@ -147,11 +147,11 @@ void ssar_run(struct ssa_vm *vm, double ftime, struct assp_fgroup *fg)
 #else
 		fl = ssar_eval(l, ftime);
 #endif
-		fl = assa_realloc(&vm->ae, l, fl);
+		fl = assa_realloc(vm, l, fl);
 		if (fl & SSAR_REND)
 			ssar_line(l, fg);
 		ssar_commit(l);
 	}
-	assa_end(&vm->ae);
+	assa_end(vm);
 }
 

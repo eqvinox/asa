@@ -46,19 +46,15 @@ struct assa_layer {
 	struct assa_alloc *allocs, **curpos;
 };
 
-struct assa_env {
-	struct assa_layer *firstlayer;
-};
-
 struct ssar_nodegroup {
 	struct assp_frame *frame;
 };
 
-extern void assa_setup(struct ssa_vm *v, unsigned width, unsigned height);
-extern void assa_start(struct assa_env *ae);
-extern enum ssar_redoflags assa_realloc(struct assa_env *ae,
+extern void assa_setup(struct ssa_vm *vm, unsigned width, unsigned height);
+extern void assa_start(struct ssa_vm *vm);
+extern enum ssar_redoflags assa_realloc(struct ssa_vm *vm,
 	struct ssav_line *l, enum ssar_redoflags prev);
-extern void assa_end(struct assa_env *ae);
+extern void assa_end(struct ssa_vm *vm);
 
 void ssgl_prepare(struct ssav_line *l);
 void ssgl_dispose(struct ssav_line *l);
