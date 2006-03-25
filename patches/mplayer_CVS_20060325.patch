@@ -1,0 +1,317 @@
+Index: Makefile
+===================================================================
+RCS file: /cvsroot/mplayer/main/Makefile,v
+retrieving revision 1.351
+diff -u -3 -p -r1.351 Makefile
+--- Makefile	22 Mar 2006 00:19:00 -0000	1.351
++++ Makefile	25 Mar 2006 03:18:35 -0000
+@@ -107,6 +107,7 @@ CODEC_LIBS = $(AV_LIB) \
+              $(X264_LIB) \
+              $(MUSEPACK_LIB) \
+              $(SPEEX_LIB) \
++             $(ASA_LIB) \
+ 
+ COMMON_LIBS = libmpcodecs/libmpcodecs.a \
+               $(W32_LIB) \
+Index: configure
+===================================================================
+RCS file: /cvsroot/mplayer/main/configure,v
+retrieving revision 1.1149
+diff -u -3 -p -r1.1149 configure
+--- configure	21 Mar 2006 05:36:09 -0000	1.1149
++++ configure	25 Mar 2006 03:18:36 -0000
+@@ -261,6 +261,7 @@ Codecs:
+   --disable-toolame      disable Toolame (MPEG layer 2 audio) support in mencoder [autodetect]
+   --disable-twolame      disable Twolame (MPEG layer 2 audio) support in mencoder [autodetect]
+   --enable-xmms          build with XMMS inputplugin support [disabled]
++  --enable-asa           enable asa subtitling filter [auto]
+   --disable-mp3lib       disable builtin mp3lib [enabled]
+   --disable-liba52       disable builtin liba52 [enabled]
+   --enable-libdts        enable libdts support [autodetect]
+@@ -1531,6 +1532,7 @@ _faad_external=auto
+ _faac=auto
+ _ladspa=auto
+ _xmms=no
++_asa=auto
+ _have_dvd=no
+ # dvdnav disabled, it does not work
+ #_dvdnav=no
+@@ -1749,6 +1751,8 @@ for ac_option do
+   --disable-ladspa)	_ladspa=no		;;
+   --enable-xmms)	_xmms=yes	;;
+   --disable-xmms)	_xmms=no	;;
++  --enable-asa)		_asa=yes	;;
++  --disable-asa)	_asa=no		;;
+   --enable-dvdread)	_dvdread=yes	;;
+   --disable-dvdread)	_dvdread=no	;;
+   --enable-mpdvdkit)	_dvdkit=yes	;;
+@@ -2046,6 +2050,12 @@ for ac_option do
+   --with-x264incdir=*)
+     _inc_x264=-I`echo $ac_option | cut -d '=' -f 2 |sed 's,:, -I,g'`
+     ;;
++  --with-asalibdir=*)
++    _ld_asa=-L`echo $ac_option | cut -d '=' -f 2 | sed 's,:, -L,g'`
++    ;;
++  --with-asaincdir=*)
++    _inc_asa=-I`echo $ac_option | cut -d '=' -f 2 | sed 's,:, -I,g'`
++    ;;
+   --with-sdl-config=*)
+     _sdlconfig=`echo $ac_option | cut -d '=' -f 2`
+     ;;
+@@ -6809,6 +6819,29 @@ else
+ fi
+ echores "$_xmms"
+ 
++echocheck "asa support"
++if test "$_asa" = auto ; then
++  _asa=no
++  cat > $TMPC << EOF
++#include <inttypes.h>
++#include <asa.h>
++#ifndef ASA_APIv0
++#error incompatible asa version
++#endif
++int main(void) { asa_open ("", 0); return 0; }
++EOF
++  cc_check $_inc_asa $_ld_asa -lasa -lasa_proc && _asa=yes
++fi
++if test "$_asa" = yes ; then
++  _def_asa='#define CONFIG_ASA 1'
++  _ld_asa="$_ld_asa -lasa -lasa_proc"
++  _vfmodules="asa $_vfmodules"
++else
++  _def_asa='#undef CONFIG_ASA'
++  _novfmodules="asa $_novfmodules"
++fi
++echores "$_asa"
++
+ echocheck "inet6"
+ if test "$_inet6" = auto ; then
+   cat > $TMPC << EOF
+@@ -7384,6 +7417,9 @@ INTERNAL_FAAD = $_faad_internal
+ SMBSUPPORT_LIB = $_ld_smb
+ XMMS_PLUGINS = $_xmms
+ XMMS_LIB = $_xmms_lib
++ASA_INC = $_inc_asa
++ASA_LIB = $_ld_asa
++ASA = $_asa
+ MACOSX = $_macosx
+ MACOSX_FINDER_SUPPORT = $_macosx_finder_support
+ MACOSX_BUNDLE = $_macosx_bundle
+@@ -8040,6 +8076,9 @@ $_def_sortsub
+ $_def_xmms
+ #define XMMS_INPUT_PLUGIN_DIR "$_xmmsplugindir"
+ 
++/* asa subtitling */
++$_def_asa
++
+ /* enables inet6 support */
+ $_def_inet6
+ 
+@@ -8178,12 +8217,14 @@ cat << EOF
+     Audio output: $_aomodules
+     Video output: $_vomodules
+     Audio filters: $_afmodules
++    Video filters: $_vfmodules
+   Disabled optional drivers:
+     Input: $_noinputmodules
+     Codecs: $_nocodecmodules
+     Audio output: $_noaomodules
+     Video output: $_novomodules
+     Audio filters: $_noafmodules
++    Video filters: $_novfmodules
+ 
+ 'config.h' and 'config.mak' contain your configuration options.
+ Note: If you alter theses files (for instance CFLAGS) MPlayer may no longer
+Index: libmpcodecs/Makefile
+===================================================================
+RCS file: /cvsroot/mplayer/main/libmpcodecs/Makefile,v
+retrieving revision 1.161
+diff -u -3 -p -r1.161 Makefile
+--- libmpcodecs/Makefile	16 Mar 2006 21:56:23 -0000	1.161
++++ libmpcodecs/Makefile	25 Mar 2006 03:18:36 -0000
+@@ -173,6 +173,11 @@ ifeq ($(CONFIG_LIBAVCODEC_SO),yes)
+ VFILTER_SRCS += $(VFILTER_LAVC_SRCS)
+ endif
+ 
++ifeq ($(ASA),yes)
++VFILTER_SRCS += vf_asa.c
++EXTRA_INC += $(ASA_INC)
++endif
++
+ ENCODER_SRCS=ae.c \
+              ae_pcm.c \
+              ve.c \
+Index: libmpcodecs/vf.c
+===================================================================
+RCS file: /cvsroot/mplayer/main/libmpcodecs/vf.c,v
+retrieving revision 1.125
+diff -u -3 -p -r1.125 vf.c
+--- libmpcodecs/vf.c	21 Mar 2006 21:26:40 -0000	1.125
++++ libmpcodecs/vf.c	25 Mar 2006 03:18:36 -0000
+@@ -99,6 +99,9 @@ extern vf_info_t vf_info_phase;
+ extern vf_info_t vf_info_divtc;
+ extern vf_info_t vf_info_harddup;
+ extern vf_info_t vf_info_softskip;
++#ifdef CONFIG_ASA
++extern vf_info_t vf_info_asa;
++#endif
+ extern vf_info_t vf_info_screenshot;
+ 
+ // list of available filters:
+@@ -188,6 +191,9 @@ static vf_info_t* filter_list[]={
+     &vf_info_divtc,
+     &vf_info_harddup,
+     &vf_info_softskip,
++#ifdef CONFIG_ASA
++    &vf_info_asa,
++#endif
+ #ifdef HAVE_PNG
+     &vf_info_screenshot,
+ #endif
+Index: libmpcodecs/vf_asa.c
+===================================================================
+RCS file: /cvsroot/mplayer/main/libmpcodecs/vf_asa.c,v
+retrieving revision 0.0
+diff -u -3 -p -r0.0 vf_asa.c
+--- libmpcodecs/vf_asa.c	01 Jan 1970 00:00:00 -0000	0.0
++++ libmpcodecs/vf_asa.c	25 Mar 2006 03:18:36 -0000
+@@ -0,0 +1,138 @@
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <inttypes.h>
++
++#include "../config.h"
++#include "../mp_msg.h"
++
++#include "img_format.h"
++#include "mp_image.h"
++#include "vf.h"
++
++#include "libvo/fastmemcpy.h"
++
++#include <asa.h>
++
++struct vf_priv_s {
++	mp_image_t *dmpi;
++	struct asa_inst *asa;
++};
++
++
++static int query_format(struct vf_instance_s* vf, unsigned int fmt)
++{
++	switch (fmt) {
++	case IMGFMT_YV12:
++	case IMGFMT_I420:
++	case IMGFMT_IYUV:
++	case IMGFMT_422P:
++		return vf_next_query_format(vf, fmt);
++	}
++	return 0;
++}
++
++static void get_image(struct vf_instance_s* vf, mp_image_t *mpi)
++{
++	if (mpi->flags & MP_IMGFLAG_PRESERVE)
++		return;
++	vf->dmpi = vf_get_image(vf->next, mpi->imgfmt, mpi->type, mpi->flags,
++		mpi->w, mpi->h);
++		
++	mpi->planes[0] = vf->dmpi->planes[0];
++	mpi->stride[0] = vf->dmpi->stride[0];
++	mpi->width = vf->dmpi->width;
++	if (mpi->flags & MP_IMGFLAG_PLANAR) {
++	        mpi->planes[1] = vf->dmpi->planes[1];
++	        mpi->planes[2] = vf->dmpi->planes[2];
++		mpi->stride[1] = vf->dmpi->stride[1];
++		mpi->stride[2] = vf->dmpi->stride[2];
++	}
++	mpi->flags |= MP_IMGFLAG_DIRECT;
++}
++
++static int put_image(struct vf_instance_s* vf, mp_image_t *mpi, double pts)
++{
++	struct asa_frame frame;
++	mp_image_t *dmpi;
++
++	if (!(mpi->flags & MP_IMGFLAG_DIRECT))
++		// no DR, so get a new image! hope we'll get DR buffer:
++		vf->dmpi = vf_get_image(vf->next, mpi->imgfmt,
++			MP_IMGTYPE_TEMP, MP_IMGFLAG_ACCEPT_STRIDE,
++			mpi->w, mpi->h);
++	dmpi = vf->dmpi;
++
++	memcpy_pic(dmpi->planes[0], mpi->planes[0], mpi->w, mpi->h, dmpi->stride[0], mpi->stride[0]);
++	if (mpi->flags & MP_IMGFLAG_PLANAR) {
++		memcpy_pic(dmpi->planes[1], mpi->planes[1], mpi->chroma_width, mpi->chroma_height, dmpi->stride[1], mpi->stride[1]);
++		memcpy_pic(dmpi->planes[2], mpi->planes[2], mpi->chroma_width, mpi->chroma_height, dmpi->stride[2], mpi->stride[2]);
++	} else {
++		dmpi->planes[1] = mpi->planes[1]; // passthrough rgb8 palette
++	}
++	vf_clone_mpi_attributes(dmpi, mpi);
++
++	frame.csp = ASACSP_YUV_PLANAR;
++	frame.bmp.yuv_planar.y.d = dmpi->planes[0];
++	frame.bmp.yuv_planar.y.stride = dmpi->stride[0];
++	frame.bmp.yuv_planar.u.d = dmpi->planes[1];
++	frame.bmp.yuv_planar.u.stride = dmpi->stride[1];
++	frame.bmp.yuv_planar.v.d = dmpi->planes[2];
++	frame.bmp.yuv_planar.v.stride = dmpi->stride[2];
++	frame.bmp.yuv_planar.chroma_x_red = dmpi->chroma_x_shift;
++	frame.bmp.yuv_planar.chroma_y_red = dmpi->chroma_y_shift;
++	
++	asa_render(vf->priv->asa, pts, &frame);
++
++	return vf_next_put_image(vf, dmpi, pts);
++}
++
++static int config(struct vf_instance_s* vf,
++        int width, int height, int d_width, int d_height,
++	unsigned int flags, unsigned int outfmt)
++{
++	asa_setsize(vf->priv->asa, width, height);
++	return vf_next_config(vf, width, height, d_width, d_height, flags, outfmt);
++}
++
++static void uninit(struct vf_instance_s* vf)
++{
++	if (vf->priv) {
++		asa_close(vf->priv->asa);
++		free(vf->priv);
++	}
++}
++
++static int open(vf_instance_t *vf, char* args)
++{
++	const char *version = asa_init(ASA_VERSION);
++	int fd;
++
++	mp_msg(MSGT_VFILTER, MSGL_INFO, "[asa] renderer version %s\n", version);
++	if (!(vf->priv = malloc(sizeof(struct vf_priv_s))))
++		return 0;
++	memset(vf->priv, 0, sizeof(struct vf_priv_s));
++
++	vf->priv->asa = asa_open(args, 0);
++	if (!vf->priv->asa) {
++		free(vf->priv);
++		vf->priv = NULL;
++		return 0;
++	}
++
++	vf->config = config;
++	vf->get_image = get_image;
++	vf->put_image = put_image;
++	vf->uninit = uninit;
++	return 1;
++}
++
++vf_info_t vf_info_asa = {
++	"asa",
++	"asa",
++	"David Lamparter",
++	"just some testing",
++	open,
++	NULL
++};
++
