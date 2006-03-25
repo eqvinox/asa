@@ -32,7 +32,7 @@ void ssgl_matrix(struct ssav_node *n, FT_Matrix *rv)
 	out.xx = 0x10000L;
 	out.xy = 0x00000L;
 	out.yx = 0x00000L;
-	out.yy = 0x10000L;
+	out.yy = -0x10000L;
 
 	if (n->params->m.fscx != 100.)
 		out.xx = FT_MulFix(out.xx, (int)(n->params->m.fscx * 655.36));
