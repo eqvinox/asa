@@ -1778,17 +1778,17 @@ int ssa_lex(struct ssa *output, const void *data, size_t datasize)
 		ptrdiff_t outnowd = 0;
 
 		iconv_t preconv = iconv_open("UTF-8", srccs);
+		char *curconv = (char *)data, *endpos;
 
 		do {
 			csrcsize += 1024;
 			outleft += 1024;
 
 			freeme = xrealloc(freeme, csrcsize);
-			cend = freeme + outnowd;
+			endpos = freeme + outnowd;
 
 			errno = 0;
-			iconv(preconv, (char **)&dc, &inleft,
-				(char **)&cend, &outleft);
+			iconv(preconv, &curconv, &inleft, &endpos, &outleft);
 
 			outnowd = cend - freeme;
 		} while (errno == E2BIG);
@@ -1800,6 +1800,7 @@ int ssa_lex(struct ssa *output, const void *data, size_t datasize)
 			return 2;
 		}
 		csrc = freeme;
+		cend = endpos;
 	}
 
 	if ((unsigned char)csrc[0] == 0xef
