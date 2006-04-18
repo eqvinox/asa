@@ -146,7 +146,9 @@ static void _asar_commit(struct assp_frame *f, int lay)
 		numx, numy;
 	unsigned char *d, *origin,
 		y, u, v;
+#ifdef ASA_OPT_NONE
 	cell *now, *lend;
+#endif
 	unsigned short va, vb, a;
 	colour_t col = f->colours[lay];
 
