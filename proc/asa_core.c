@@ -182,7 +182,7 @@ static void _asar_commit(struct assp_frame *f, int lay)
 	origin = dst->bmp.yuv_planar.u.d;
 	while (line < f->group->h) {
 		cell *now[4];
-		unsigned nlines = 0, c, b, a;
+		unsigned nlines = 0, c, c1, c2;
 
 		for (c = 0; c < numy; c++)
 			if (f->lines[line+c] != f->group->unused)
@@ -191,9 +191,9 @@ static void _asar_commit(struct assp_frame *f, int lay)
 		d = origin;
 		for (c = 0; c < (f->group->w >> dst->bmp.yuv_planar.chroma_x_red); c++) {
 			unsigned v0 = 0;
-			for (b = 0; b < numx; b++)
-				for (a = 0; a < nlines; a++)
-					v0 += (now[a]++)->e[lay];
+			for (c1 = 0; c1 < numx; c1++)
+				for (c2 = 0; c2 < nlines; c2++)
+					v0 += (now[c2]++)->e[lay];
 			v0 >>= dst->bmp.yuv_planar.chroma_x_red + dst->bmp.yuv_planar.chroma_y_red;
 			v0 = (v0 * (256 - a)) >> 8;
 			va = *d * (256 - v0);
@@ -208,7 +208,7 @@ static void _asar_commit(struct assp_frame *f, int lay)
 	origin = dst->bmp.yuv_planar.v.d;
 	while (line < f->group->h) {
 		cell *now[4];
-		unsigned nlines = 0, c, b, a;
+		unsigned nlines = 0, c, c1, c2;
 
 		for (c = 0; c < numy; c++)
 			if (f->lines[line+c] != f->group->unused)
@@ -217,9 +217,9 @@ static void _asar_commit(struct assp_frame *f, int lay)
 		d = origin;
 		for (c = 0; c < (f->group->w >> dst->bmp.yuv_planar.chroma_x_red); c++) {
 			unsigned v0 = 0;
-			for (b = 0; b < numx; b++)
-				for (a = 0; a < nlines; a++)
-					v0 += (now[a]++)->e[lay];
+			for (c1 = 0; c1 < numx; c1++)
+				for (c2 = 0; c2 < nlines; c2++)
+					v0 += (now[c2]++)->e[lay];
 			v0 >>= dst->bmp.yuv_planar.chroma_x_red + dst->bmp.yuv_planar.chroma_y_red;
 			v0 = (v0 * (256 - a)) >> 8;
 			va = *d * (256 - v0);
