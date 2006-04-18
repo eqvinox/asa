@@ -192,12 +192,11 @@ static void ssav_set_font(struct ssav_params *pset,
 		asaf_frelease(pset->font);
 	
 	if (name) {
-#warning haha, disregard that, this stuff won't run on anything else anyway
-		size_t namesz = wcstombs(NULL, name->s, 0) + 1;
+		size_t namesz = ssa_utf8_len(name);
 		if (pset->f.name)
 			xfree(pset->f.name);
 		pset->f.name = xmalloc(namesz);
-		wcstombs(pset->f.name, name->s, namesz);
+		ssa_utf8_conv(pset->f.name, name);
 	}
 	pset->f.weight = weight;
 	pset->f.italic = !!italic;

@@ -1,7 +1,7 @@
 /*****************************************************************************
  * asa: portable digital subtitle renderer
  *****************************************************************************
- * Copyright (C) 2004, 2005  David Lamparter
+ * Copyright (C) 2004, 2005, 2006  David Lamparter
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -85,6 +85,9 @@ typedef unsigned ssaout_t;		/**< output type */
 typedef struct ssa_string {
 	ssaout_t *s, *e;
 } ssa_string;
+
+extern size_t ssa_utf8_len(ssa_string *s);
+extern void ssa_utf8_conv(char *out, ssa_string *s);
 
 /** error codes */
 enum ssa_errc {
