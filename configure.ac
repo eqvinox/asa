@@ -110,21 +110,6 @@ AC_DEFUN([AC_C_FLAG], [{
 		])
 	AC_LANG_POP(C)
 	}])
-AC_DEFUN([AC_CXX_FLAG], [{
-	AC_LANG_PUSH(C++)
-	ac_cxx_flag_save="$CXXFLAGS"
-	CXXFLAGS="$CXXFLAGS $1"
-	AC_MSG_CHECKING([[whether $CXX supports $1]])
-	AC_COMPILE_IFELSE(
-		[AC_LANG_PROGRAM([[]])],
-		[AC_MSG_RESULT([yes])],
-		[
-			CXXFLAGS="$ac_cxx_flag_save"
-			AC_MSG_RESULT([no])
-			$2
-		])
-	AC_LANG_POP(C++)
-	}])
 
 AC_C_FLAG([-Wall])
 AC_C_FLAG([-Wextra],[AC_C_FLAG([-W])])
@@ -132,13 +117,6 @@ AC_C_FLAG([-Wno-unused-parameter])
 AC_C_FLAG([-Winvalid-pch])
 AC_C_FLAG([-pedantic])
 AC_C_FLAG([-std=c99],[AC_C_FLAG([-c99])])
-AC_CXX_FLAG([-Wall])
-AC_CXX_FLAG([-Wextra],[AC_CXX_FLAG([-W])])
-AC_CXX_FLAG([-Wno-unused-parameter])
-AC_CXX_FLAG([-Winvalid-pch])
-AC_CXX_FLAG([-Wno-long-long])
-AC_CXX_FLAG([-pedantic])
-AC_CXX_FLAG([-std=c++98])
 
 
 AC_PATH_XTRA
