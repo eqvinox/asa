@@ -65,12 +65,12 @@ static void gac_destroy(GtkWidget *widget, gpointer data)
 	gtk_main_quit ();
 }
 
-#define gac_error(x...) \
+#define gac_error(...) \
 	dialog = gtk_message_dialog_new(GTK_WINDOW(wnd->form), \
 		GTK_DIALOG_DESTROY_WITH_PARENT, \
 		GTK_MESSAGE_ERROR, \
 		GTK_BUTTONS_CLOSE, \
-		x ); \
+		__VA_ARGS__ ); \
 	gtk_dialog_run(GTK_DIALOG(dialog)); \
 	gtk_widget_destroy(dialog);
 
