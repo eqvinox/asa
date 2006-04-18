@@ -117,6 +117,11 @@ AC_C_FLAG([-Wno-unused-parameter])
 AC_C_FLAG([-Winvalid-pch])
 AC_C_FLAG([-pedantic])
 AC_C_FLAG([-std=c99],[AC_C_FLAG([-c99])])
+AC_ARG_ENABLE([werror],
+	AC_HELP_STRING([--enable-werror], [compile with -Werror (for developers)]),
+	[	if test "$enableval" == "yes"
+		then	AC_C_FLAG([-Werror])
+		fi])
 
 
 AC_PATH_XTRA
