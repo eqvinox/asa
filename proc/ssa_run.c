@@ -86,7 +86,7 @@ while (n) {
 		}
 
 		// FT_Glyph_Copy(*g, &copy); - XXX?
-		transformed = *g;
+		transformed = *(FT_Glyph *)g;
 		FT_Glyph_Transform(transformed, NULL, &u->final);
 		o = &((FT_OutlineGlyph)transformed)->outline;
 

@@ -104,7 +104,7 @@ struct ssav_node {
 
 	unsigned nchars;
 	unsigned *indici;
-	FT_Glyph *glyphs;
+	FT_OutlineGlyph *glyphs;
 };
 
 struct ssav_unit {

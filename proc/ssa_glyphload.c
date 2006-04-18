@@ -56,7 +56,6 @@ void ssgl_prepare(struct ssav_line *l)
 	FT_Vector pos;
 	FT_Matrix mat;
 	FT_Face fnt;
-	FT_Glyph tmp;
 	FT_OutlineGlyph *g, *end;
 	unsigned idx, stop, *src;
 
@@ -110,9 +109,10 @@ void ssgl_prepare(struct ssav_line *l)
 					"non-outline glyph format %d\n",
 					fnt->glyph->format);
 			} else {
-				FT_Get_Glyph(fnt->glyph, &tmp); 
+				FT_Glyph tmp;
+				FT_Get_Glyph(fnt->glyph, &tmp);
 				FT_Glyph_Transform(tmp, &mat, &pos);
-				*g = tmp;
+				*g = (FT_OutlineGlyph)tmp;
 				pos.x += (tmp->advance.x >> 10) +
 					(int)(n->params->m.fsp * 64);
 				pos.y += tmp->advance.y >> 10;
