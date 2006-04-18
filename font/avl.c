@@ -18,10 +18,11 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  ****************************************************************************/
 
+#include "common.h"
+
 #include <stdlib.h>
 #include <string.h>
 
-#include "common.h"
 #include "avl.h"
 
 /* single rotate for insert; overloaded (0 or 1) is the side

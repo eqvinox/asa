@@ -19,6 +19,7 @@
  ****************************************************************************/
 /** @file spanproc.c - FreeType2 span->cell processor */
 
+#include "common.h"
 #include "asaproc.h"
 
 /** allocate a cellline, probably using reservoir ones.

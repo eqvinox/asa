@@ -18,6 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  ****************************************************************************/
 
+#include "common.h"
+
 #include <unistd.h>
 #include <sys/time.h>
 #include <sys/types.h>
@@ -29,7 +31,6 @@
 #include "asa.h"
 #include "asaproc.h"
 #include "ssavm.h"
-#include "acconf.h"
 
 struct asa_inst {
 	struct assp_fgroup *framegroup;
