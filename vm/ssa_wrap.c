@@ -28,7 +28,6 @@
 #include <ctype.h>
 #include <stddef.h>
 #include <stdlib.h>
-#include <alloca.h>
 #include <iconv.h>
 
 /* might add zero-width break space (u200B) */

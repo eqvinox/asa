@@ -32,7 +32,6 @@
 #include <ctype.h>
 #include <stddef.h>
 #include <stdlib.h>
-#include <alloca.h>
 #include <iconv.h>
 #include <errno.h>
 #include <math.h>
