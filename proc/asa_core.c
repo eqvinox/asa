@@ -49,7 +49,7 @@ static const char *asa_version_string =
 
 static int nref = 0;
 
-const char *asa_init(unsigned version)
+f_export const char *asa_init(unsigned version)
 {
 	if (version != ASA_VERSION)
 		return NULL;
@@ -59,7 +59,7 @@ const char *asa_init(unsigned version)
 }
 
 #ifndef WIN32
-asa_inst *asa_open(const char *filename, enum asa_oflags flags)
+f_export asa_inst *asa_open(const char *filename, enum asa_oflags flags)
 {
 	int fd;
 	struct stat st;
@@ -82,7 +82,7 @@ asa_inst *asa_open(const char *filename, enum asa_oflags flags)
 }
 #endif
 
-asa_inst *asa_open_mem(const char *mem, size_t size,
+f_export asa_inst *asa_open_mem(const char *mem, size_t size,
 	enum asa_oflags flags)
 {
 	struct ssa lexout;
@@ -106,7 +106,7 @@ asa_inst *asa_open_mem(const char *mem, size_t size,
 	return rv;
 }
 
-void asa_setsize(asa_inst *i, unsigned width, unsigned height)
+f_export void asa_setsize(asa_inst *i, unsigned width, unsigned height)
 {
 	if (i->framegroup)
 		assp_fgroupfree(i->framegroup);
@@ -118,7 +118,7 @@ void asa_setsize(asa_inst *i, unsigned width, unsigned height)
 	assa_setup(&i->vm, width, height);
 }
 
-void asa_render(asa_inst *i, double ftime, struct asa_frame *frame)
+f_export void asa_render(asa_inst *i, double ftime, struct asa_frame *frame)
 {
 	if (!i->framegroup)
 		return;
@@ -243,13 +243,13 @@ static void _asar_commit(struct assp_frame *f, int lay)
 //	assp_framefree(f); XXX XXX XXX put this somewhere else, memory leaking!
 }
 
-void asa_close(asa_inst *i)
+f_export void asa_close(asa_inst *i)
 {
 	/* XXX */
 	free(i);
 }
 
-void asa_done()
+f_export void asa_done()
 {
 }
 

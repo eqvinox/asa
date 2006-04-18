@@ -69,7 +69,7 @@ static void assp_cellfree(struct assp_fgroup *g, cellline *c)
 	g->reservoir[g->ptr++] = c;
 }
 
-void assp_spanfunc(int y, int count, const FT_Span *spans, void *user)
+f_fptr void assp_spanfunc(int y, int count, const FT_Span *spans, void *user)
 {
 	struct assp_param *p = (struct assp_param *)user;
 	const FT_Span *end = spans + count;

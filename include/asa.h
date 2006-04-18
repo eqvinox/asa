@@ -76,18 +76,18 @@ enum asa_oflags {
 /** opaque renderer instance */
 typedef struct asa_inst asa_inst;
 
-extern const char *asa_init(unsigned version);
+f_export extern const char *asa_init(unsigned version);
 
-extern asa_inst *asa_open(const char *filename, enum asa_oflags flags);
-extern asa_inst *asa_open_mem(const char *mem, size_t size,
+f_export extern asa_inst *asa_open(const char *filename, enum asa_oflags flags);
+f_export extern asa_inst *asa_open_mem(const char *mem, size_t size,
 	enum asa_oflags flags);
 
-extern void asa_setsize(asa_inst *i, unsigned width, unsigned height);
-extern void asa_render(asa_inst *i, double ftime, struct asa_frame *frame);
+f_export extern void asa_setsize(asa_inst *i, unsigned width, unsigned height);
+f_export extern void asa_render(asa_inst *i, double ftime, struct asa_frame *frame);
 
-extern void asa_close(asa_inst *i);
+f_export extern void asa_close(asa_inst *i);
 
-extern void asa_done();
+f_export extern void asa_done();
 
 #endif /* _ASA_H */
 
