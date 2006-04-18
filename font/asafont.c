@@ -138,7 +138,8 @@ struct asa_fontinst *asaf_reqsize(struct asa_font *af, double size)
 
 	FT_New_Size(af->face, &rv->size);
 	FT_Activate_Size(rv->size);
-	FT_Set_Char_Size(af->face, size * 64, size * 64, 0, 0);
+	FT_Set_Char_Size(af->face, (FT_F26Dot6)(size * 64),
+			(FT_F26Dot6)(size * 64), 0, 0);
 
 	return rv;
 }

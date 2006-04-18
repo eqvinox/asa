@@ -151,9 +151,9 @@ static void _asar_commit(struct assp_frame *f, int lay)
 	colour_t col = f->colours[lay];
 
 	a = col.c.a;
-	y = 0.299 * col.c.r + 0.587 * col.c.g + 0.114 * col.c.b;
-	u = 0.713 * (col.c.r - y) + 128;
-	v = 0.564 * (col.c.b - y) + 128;
+	y = (unsigned char)(0.299 * col.c.r + 0.587 * col.c.g + 0.114 * col.c.b);
+	u = (unsigned char)(0.713 * (col.c.r - y) + 128);
+	v = (unsigned char)(0.564 * (col.c.b - y) + 128);
 
 	d = dst->bmp.yuv_planar.y.d;
 #ifdef ASA_OPT_NONE

@@ -142,7 +142,7 @@ static struct ssa_ipnode iplist[SSAN_MAX] = {
 
 static inline int ssa_strcmp(const ssa_string *a, const ssa_string *b)
 {
-	unsigned lena = a->e - a->s, lenb = b->e - b->s;
+	ptrdiff_t lena = a->e - a->s, lenb = b->e - b->s;
 	if (lena != lenb)
 		return 1;
 	return memcmp(a->s, b->s, lena * sizeof(ssaout_t));
@@ -342,7 +342,7 @@ static inline void ssav_setalign(struct ssav_line *vl, long int v,
 static void ssav_align(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
 	ptrdiff_t param)
 {
-	ssav_setalign(ctx->vl, n->v.lval, param);
+	ssav_setalign(ctx->vl, n->v.lval, (int)param);
 }
 
 static void ssav_lineint(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
@@ -383,7 +383,7 @@ static void ssav_text(struct ssav_prepare_ctx *ctx, struct ssa_node *n, ptrdiff_
 	vn->params = ssav_addref(ctx->pset);
 	vn->group = ctx->ng;
 	ctx->ng_ref++;
-	vn->nchars = n->v.text.e - n->v.text.s;
+	vn->nchars = (unsigned)(n->v.text.e - n->v.text.s);
 	vn->indici = xmalloc(sizeof(unsigned) * (n->v.text.e - n->v.text.s));
 	vn->glyphs = NULL;
 	*ctx->nodenextp = vn;

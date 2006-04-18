@@ -50,6 +50,7 @@
 #include <errno.h>
 
 #ifdef WIN32
+#pragma warning( disable : 4047)
 #pragma warning( disable : 4100)
 #pragma warning( disable : 4706)
 #endif
