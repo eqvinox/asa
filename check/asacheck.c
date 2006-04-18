@@ -178,10 +178,10 @@ int main(int argc, char **argv)
 					ut8out(nnow->v.text.s, nnow->v.text.e); */
 				fwprintf(stdout, L"\t%d %ls\n",
 					nnow->type,
-					nnow->type == SSAN_TEXT ? nnow->v.text.s :
+					nnow->type == SSAN_TEXT ? (wchar_t *)nnow->v.text.s :
 					nnow->type == SSAN_NEWLINE ? L"\\n" :
 					nnow->type == SSAN_NEWLINEH ? L"\\N" :
-					nnow->type == SSAN_RESET ? (nnow->v.style ? nnow->v.style->name.s : L"default" ) :
+					nnow->type == SSAN_RESET ? (nnow->v.style ? (wchar_t*)(nnow->v.style->name.s) : L"default" ) :
 					L"\\?");
 				nnow = nnow->next;
 			}

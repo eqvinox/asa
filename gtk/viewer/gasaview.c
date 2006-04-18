@@ -167,7 +167,7 @@ static void gvw_open(GtkWidget *widget, gpointer data)
 				char *pos = buf0;
 				unsigned *ptr = n->indici, *dst = n->indici + n->nchars;
 
-				snprintf(buf1, 511, "%p <%d>", n->params, n->params->nref);
+				snprintf(buf1, 511, "%p <%d>", (void *)n->params, n->params->nref);
 				snprintf(buf2, 511, "%4.1lfpt %s", n->params->f.size, n->params->f.name);
 				pos += snprintf(pos, sizeof(buf0) - (pos - buf0), "%d: ", n->nchars);
 				while (ptr < dst)

@@ -581,7 +581,7 @@ static const ssasrc_t *ssa_chr(const ssasrc_t *now, const ssasrc_t *end,
  */
 static unsigned ssa_setver(struct ssa_state *state, par_t param, void *elem)
 {
-	long ver = param.lparam;
+	enum ssa_version ver = param.lparam;
 	if (!ver) {
 		const ssasrc_t *after, *err;
 		if ((after = ssa_compare(state, state->param, state->pend,
@@ -811,7 +811,7 @@ static unsigned ssa_time(struct ssa_state *state, par_t param, void *elem)
 	return 1;
 }
 
-#define SSAV_MASK(x) (x & (~SSAV_OPTIONAL))
+#define SSAV_MASK(x) (enum ssa_version)(x & (~SSAV_OPTIONAL))
 /** ssa_parse_xsv - parses X-separated values according to ssa_parselist.
  * @param p dispatch list
  * @param elem passed to dispatch parsefuncs
