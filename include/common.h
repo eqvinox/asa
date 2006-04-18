@@ -32,6 +32,10 @@
 #define xrealloc realloc
 #define xfree free
 
+#ifdef WIN32
+#include "acconf_win32.h"
+#else
 #include "acconf.h"
+#endif
 
 #endif /* _COMMON_H */

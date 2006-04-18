@@ -58,6 +58,7 @@ const char *asa_init(unsigned version)
 	return asa_version_string;
 }
 
+#ifndef WIN32
 asa_inst *asa_open(const char *filename, enum asa_oflags flags)
 {
 	int fd;
@@ -79,6 +80,7 @@ asa_inst *asa_open(const char *filename, enum asa_oflags flags)
 	errno = save_errno;
 	return rv;
 }
+#endif
 
 asa_inst *asa_open_mem(const char *mem, size_t size,
 	enum asa_oflags flags)

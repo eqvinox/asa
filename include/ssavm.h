@@ -29,7 +29,9 @@
 #include "ssarun.h"
 #include "asaproc.h"
 
+#ifndef WIN32
 #define SSA_DEBUG 1
+#endif
 
 union ssav_ctrval {
 	colour_t colour;

@@ -38,6 +38,9 @@
 ^ac/install-sh$
 ^ac/ltmain.sh$
 ^ac/missing$
+^ac/Debug(/|$)
+^ac/Release(/|$)
+^ac/.*\.(ncb|user)$
 #
 ^include/acconf.h$
 ^include/acconf.h.in$
