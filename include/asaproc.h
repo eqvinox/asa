@@ -63,7 +63,7 @@ extern struct assp_fgroup *assp_fgroupnew(unsigned w, unsigned h);
 extern void assp_fgroupfree(struct assp_fgroup *g);
 
 extern struct assp_frame *assp_framenew(struct assp_fgroup *g);
-extern void assp_spanfunc(int y, int count, FT_Span *spans, void *user);
+extern void assp_spanfunc(int y, int count, const FT_Span *spans, void *user);
 extern void assp_framefree(struct assp_frame *f);
 extern void assp_framekill(struct assp_frame *f);
 

@@ -69,10 +69,10 @@ static void assp_cellfree(struct assp_fgroup *g, cellline *c)
 	g->reservoir[g->ptr++] = c;
 }
 
-void assp_spanfunc(int y, int count, FT_Span *spans, void *user)
+void assp_spanfunc(int y, int count, const FT_Span *spans, void *user)
 {
 	struct assp_param *p = (struct assp_param *)user;
-	FT_Span *end = spans + count;
+	const FT_Span *end = spans + count;
 	int ry = y + p->yo;
 	cellline *row;
 
@@ -81,7 +81,7 @@ void assp_spanfunc(int y, int count, FT_Span *spans, void *user)
 	row = assp_cellgrab(p->f, ry);
 
 	while (spans < end) {
-		FT_Span *now = spans++;
+		const FT_Span *now = spans++;
 		int rx = now->x + p->xo;
 		int x0, x1;
 		cell *cnow, *cend;
