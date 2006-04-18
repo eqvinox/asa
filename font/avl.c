@@ -267,6 +267,9 @@ static void avl_delete_leaf(struct avl_head **root, struct avl_head *item,
  */
 void avl_delete(struct avl_head **root, struct avl_head *item)
 {
+	unsigned direction, other;
+	struct avl_head *now;
+
 	if (!item->side[0]) {
 		if (item->side[1])
 			item->side[1]->parent = item->parent;
@@ -279,8 +282,9 @@ void avl_delete(struct avl_head **root, struct avl_head *item)
 		return;
 	}
 
-	unsigned direction = (item->balance == 1), other = 1 - direction;
-	struct avl_head *now = item->side[direction];
+	direction = (item->balance == 1);
+	other = 1 - direction;
+	now = item->side[direction];
 
 	while (now->side[other])
 		now = now->side[other];

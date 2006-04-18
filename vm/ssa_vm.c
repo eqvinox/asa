@@ -498,6 +498,7 @@ void ssav_create(struct ssa_vm *vm, struct ssa *ssa)
 {
 	struct ssa_style *s = ssa->style_first;
 	struct ssa_line *l = ssa->line_first;
+	struct ssa_frag *hint;
 
 	vm->playresx = ssa->playresx;
 	vm->playresy = ssa->playresy;
@@ -515,7 +516,6 @@ void ssav_create(struct ssa_vm *vm, struct ssa *ssa)
 		s = s->next;
 	}
 
-	struct ssa_frag *hint;
 	hint = ssap_frag_init(vm);
 
 	while (l) {

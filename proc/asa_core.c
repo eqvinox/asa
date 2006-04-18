@@ -142,7 +142,8 @@ void asar_commit(struct assp_frame *f)
 static void _asar_commit(struct assp_frame *f, int lay)
 {
 	struct asa_frame *dst = f->group->active;
-	unsigned line = 0;
+	unsigned line = 0,
+		numx, numy;
 	unsigned char *d, *origin,
 		y, u, v;
 	cell *now, *lend;
@@ -172,8 +173,8 @@ static void _asar_commit(struct assp_frame *f, int lay)
 	}
 #endif
 
-	unsigned numx = 1 << dst->bmp.yuv_planar.chroma_x_red;
-	unsigned numy = 1 << dst->bmp.yuv_planar.chroma_y_red;
+	numx = 1 << dst->bmp.yuv_planar.chroma_x_red;
+	numy = 1 << dst->bmp.yuv_planar.chroma_y_red;
 
 	line = 0;
 	origin = dst->bmp.yuv_planar.u.d;
