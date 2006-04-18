@@ -32,7 +32,4 @@
 #define xrealloc realloc
 #define xfree free
 
-#define D(x,y...) fwprintf(stderr, L"%s:%d %s() " x "\n", \
-	__FILE__, __LINE__, __func__, ## y)
-
 #endif /* _COMMON_H */
