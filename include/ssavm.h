@@ -52,7 +52,7 @@ struct ssav_controller {
 	struct {
 		double t1, t2, accel;
 		union ssav_ctrval nextval;
-	} ;
+	} anim;
 };
 
 struct ssav_params {

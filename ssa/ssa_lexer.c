@@ -1285,7 +1285,7 @@ static unsigned ssa_std(struct ssa_state *state, par_t param, void *elem)
 			SSAEC_TRAILGB_PARAM);
 		return 0;
 	}
-	*state->param++;
+	state->param++;
 	state->pend = state->end;
 
 	if (param.lparam == SSAL_DIALOGUE)
