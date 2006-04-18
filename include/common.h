@@ -32,4 +32,6 @@
 #define xrealloc realloc
 #define xfree free
 
+#include "acconf.h"
+
 #endif /* _COMMON_H */

@@ -161,7 +161,7 @@ AC_PATH_XTRA
 # Checks for header files.
 AC_HEADER_STDC
 AC_HEADER_STDBOOL
-AC_CHECK_HEADERS([stdlib.h string.h sys/ioctl.h sys/socket.h sys/time.h sys/wait.h syslog.h unistd.h getopt.h])
+AC_CHECK_HEADERS([stdlib.h string.h sys/ioctl.h sys/socket.h sys/time.h sys/wait.h sys/mman.h syslog.h unistd.h getopt.h])
 AC_CHECK_HEADERS([arpa/inet.h malloc.h netdb.h netinet/in.h netinet/ip.h libgen.h getopt.h])
 AC_CHECK_FUNCS([getopt_long])
 #

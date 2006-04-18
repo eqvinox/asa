@@ -21,7 +21,9 @@
 #ifndef _SSAVM_H
 #define _SSAVM_H
 
+#ifdef HAVE_STDINT_H
 #include <stdint.h>
+#endif
 #include <malloc.h>
 #include "ssa.h"
 #include "ssarun.h"
