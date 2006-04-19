@@ -23,6 +23,10 @@
 
 #include <stddef.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /** to be passed to asa_init.
  * 0xAAXXYYZZ
  *  - scheme only valid if AA = 00
@@ -88,6 +92,10 @@ f_export extern void asa_render(asa_inst *i, double ftime, struct asa_frame *fra
 f_export extern void asa_close(asa_inst *i);
 
 f_export extern void asa_done();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _ASA_H */
 
