@@ -27,6 +27,14 @@
 extern "C" {
 #endif
 
+#ifndef f_export
+# ifdef WIN32
+#  define f_export __declspec(dllimport)
+# else
+#  define f_export
+# endif
+#endif
+
 /** to be passed to asa_init.
  * 0xAAXXYYZZ
  *  - scheme only valid if AA = 00
