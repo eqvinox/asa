@@ -219,6 +219,14 @@
 				RelativePath="..\include\ssawrap.h"
 				>
 			</File>
+			<Filter
+				Name="Interfaces"
+				>
+				<File
+					RelativePath="..\interfaces\avisynth.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Resource Files"
@@ -283,6 +291,14 @@
 				RelativePath="..\ssa\utf8.c"
 				>
 			</File>
+			<Filter
+				Name="Interfaces"
+				>
+				<File
+					RelativePath="..\interfaces\avisynth.cpp"
+					>
+				</File>
+			</Filter>
 		</Filter>
 	</Files>
 	<Globals>
