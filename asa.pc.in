@@ -1,0 +1,10 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: asa
+Description: asa (advanced subtitle architecture) - subtitle renderer library
+Version: 0.3.0
+Libs: -L${libdir} -lasa -lasa_proc
+Cflags: -I${includedir}

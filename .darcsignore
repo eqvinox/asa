@@ -30,6 +30,7 @@
 ^libtool$
 ^config.mak$
 ^aclocal.m4$
+^asa\.pc$
 #
 ^ac/compile$
 ^ac/config.guess$

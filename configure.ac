@@ -186,6 +186,8 @@ echo "     using optimization: $asa_opt_disp"
 echo "   build Gtk+-2.0 GUIs:  $asa_gtk_disp"
 echo " "
 
+AC_CONFIG_FILES([asa.pc])
+
 AC_OUTPUT([
 	ac/Makefile
 	include/Makefile
