@@ -33,6 +33,9 @@
 #endif
 #include <fcntl.h>
 #include <errno.h>
+#ifdef WIN32
+#include <windows.h>
+#endif
 
 #include "asa.h"
 #include "asaproc.h"
@@ -78,6 +81,47 @@ f_export asa_inst *asa_open(const char *filename, enum asa_oflags flags)
 	munmap(data, st.st_size);
 	close(fd);
 	errno = save_errno;
+	return rv;
+}
+#else
+f_export asa_inst *asa_open(const char *filename, enum asa_oflags flags)
+{
+	HANDLE file, mapping;
+	DWORD size;
+	void *data;
+	asa_inst *rv = NULL;
+	int namesize;
+	wchar_t *namebuf;
+
+	namesize = MultiByteToWideChar(CP_UTF8, 0, filename, -1, NULL, 0);
+	if (!namesize)
+		return NULL;
+	namesize++;
+	namebuf = xmalloc(sizeof(wchar_t) * namesize);
+	MultiByteToWideChar(CP_UTF8, 0, filename, -1, namebuf, namesize);
+
+	file = CreateFileW(namebuf, GENERIC_READ, FILE_SHARE_READ,
+		NULL, OPEN_EXISTING, 0, NULL);
+	xfree(namebuf);
+	if (file == INVALID_HANDLE_VALUE)
+		return NULL;
+	size = GetFileSize(file, NULL);
+	if (size == INVALID_FILE_SIZE || !size)
+		goto out_closefile;
+	mapping = CreateFileMappingW(file, NULL, PAGE_READONLY, 0, 0, NULL);
+	if (!mapping)
+		goto out_closefile;
+	data = MapViewOfFile(mapping, FILE_MAP_READ, 0, 0, size);
+	if (!data)
+		goto out_closemap;
+	
+	rv = asa_open_mem(data, size, flags);
+
+	UnmapViewOfFile(data);
+out_closemap:
+	CloseHandle(mapping);
+out_closefile:
+	CloseHandle(file);
 	return rv;
 }
 #endif
