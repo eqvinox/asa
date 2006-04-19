@@ -75,4 +75,13 @@
 # define f_fptr
 #endif
 
+#ifdef WIN32
+#include <stdlib.h>
+extern int * (__cdecl * vcrt_errno)();
+#ifdef errno
+#undef errno
+#endif
+#define errno (*vcrt_errno())
+#endif
+
 #endif /* _COMMON_H */
