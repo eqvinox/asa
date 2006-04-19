@@ -186,5 +186,21 @@ echo "     using optimization: $asa_opt_disp"
 echo "   build Gtk+-2.0 GUIs:  $asa_gtk_disp"
 echo " "
 
-AC_OUTPUT([ac/Makefile include/Makefile ssa/Makefile font/Makefile vm/Makefile proc/Makefile proc/amd64/Makefile gtk/Makefile gtk/include/Makefile gtk/common/Makefile gtk/gcheck/Makefile gtk/viewer/Makefile check/Makefile Makefile])
+AC_OUTPUT([
+	ac/Makefile
+	include/Makefile
+	ssa/Makefile
+	font/Makefile
+	vm/Makefile
+	proc/Makefile
+	proc/amd64/Makefile
+	interfaces/Makefile
+	gtk/Makefile
+	gtk/include/Makefile
+	gtk/common/Makefile
+	gtk/gcheck/Makefile
+	gtk/viewer/Makefile
+	check/Makefile
+	Makefile
+])
 
