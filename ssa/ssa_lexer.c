@@ -633,8 +633,7 @@ static unsigned ssa_notsup(struct ssa_state *state, par_t param, void *elem)
 static void ssa_src2str(struct ssa_state *state,
 	const ssasrc_t *now, const ssasrc_t *end, ssa_string *str)
 {
-	size_t outsize = (end - now) * (sizeof(wchar_t) - 1),
-		outleft = outsize,
+	size_t outsize = 0, outleft = 0,
 		inleft = end - now;
 	/* (iconv madness - should be const) */
 	char *innow = (char *)now;
@@ -644,8 +643,8 @@ static void ssa_src2str(struct ssa_state *state,
 	iconv(state->ic_srcout, NULL, NULL, NULL, NULL);
 
 	do {
-		outsize += inleft;
-		outleft += inleft;
+		outsize += (inleft + 1) * sizeof(wchar_t);
+		outleft += (inleft + 1) * sizeof(wchar_t);
 		outbuf = xrealloc(outbuf, outsize);
 		outnow = outbuf + outnowd;
 
