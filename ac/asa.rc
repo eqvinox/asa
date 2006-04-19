@@ -1,0 +1,34 @@
+#include "WinVer.h"
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 0,3,0,0
+ PRODUCTVERSION 0,3,0,0
+ FILEFLAGSMASK VS_FF_PRERELEASE | VS_FF_DEBUG | VS_FF_INFOINFERRED | VS_FF_PATCHED
+ FILEFLAGS VS_FF_PRERELEASE
+ FILEOS VOS__WINDOWS32
+ FILETYPE VFT_DLL
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "04000400"
+        BEGIN
+            VALUE "Comments", "contains no interfaces\0"
+            VALUE "CompanyName", "David Lamparter\0"
+            VALUE "FileDescription", "asa core\0"
+            VALUE "FileVersion", "0,3,0,0\0"
+            VALUE "InternalName", "asa\0"
+            VALUE "LegalCopyright", "(c) 2004, 2005, 2006 David Lamparter\0"
+            VALUE "LegalTrademarks", "\0"
+            VALUE "OriginalFilename", "ASA.DLL\0"
+            VALUE "ProductName", "asa portable subtitle renderer\0"
+            VALUE "ProductVersion", "0,3,0,0\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x400, 0x400
+    END
+END
+
+

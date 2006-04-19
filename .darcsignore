@@ -41,6 +41,7 @@
 ^ac/Debug(/|$)
 ^ac/Release(/|$)
 ^ac/.*\.(ncb|user)$
+^ac/asa\.(RES|res)$
 #
 ^include/acconf.h$
 ^include/acconf.h.in$
