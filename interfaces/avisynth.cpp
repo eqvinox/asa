@@ -28,7 +28,7 @@
 
 class ASAAviSynth : public GenericVideoFilter {
 	struct asa_inst *asa;
-	double fps;
+	double spf;
 
 public:
 	ASAAviSynth(PClip _child, const char *file, IScriptEnvironment *env);
@@ -49,7 +49,7 @@ ASAAviSynth::ASAAviSynth(PClip _child, const char *file,
 	if (!asa)
 		env->ThrowError("Failed to open script \"%s\"", file);
 	asa_setsize(asa, vi.width, vi.height);
-	fps = (double)vi.fps_numerator / (double)vi.fps_denominator;
+	spf = (double)vi.fps_denominator / (double)vi.fps_numerator;
 }
 
 PVideoFrame __stdcall ASAAviSynth::GetFrame(int n, IScriptEnvironment *env)
@@ -69,7 +69,7 @@ PVideoFrame __stdcall ASAAviSynth::GetFrame(int n, IScriptEnvironment *env)
 	frame.bmp.yuv_planar.chroma_x_red = 1;
 	frame.bmp.yuv_planar.chroma_y_red = 1;
 
-	asa_render(asa, n * fps, &frame);
+	asa_render(asa, n * spf, &frame);
 	return avsframe;
 }
 
