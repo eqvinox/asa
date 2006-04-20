@@ -78,6 +78,7 @@
 #ifdef WIN32
 #include <stddef.h>
 #include <stdlib.h>
+#include <errno.h>
 extern int * (__cdecl * vcrt_errno)();
 #ifdef errno
 #undef errno
