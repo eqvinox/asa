@@ -27,24 +27,37 @@
 #include FT_OUTLINE_H
 #include FT_SIZES_H
 
+#ifdef WIN32
+#include <windows.h>
+#endif
+
+#ifndef WIN32
 FcConfig *fontconf;
-FT_Library asaf_ftlib;
 FcPattern *aux;
+#endif
+FT_Library asaf_ftlib;
+HDC screenDC;
 
 static struct avl_head *fontroot = NULL;
 
 void asaf_init()
 {
+#ifndef WIN32
 	fontconf = FcInitLoadConfigAndFonts();
 	if (!fontconf) {
 		fprintf(stderr, "Fontconfig initialization failed\n");
 		return;
 	}
+#else
+	screenDC = CreateDCW(L"DISPLAY", NULL, NULL, NULL);
+#endif
 	if (FT_Init_FreeType(&asaf_ftlib)) {
 		fprintf(stderr, "FreeType initialization failed\n");
 		return;
 	}
+#ifndef WIN32
 	aux = FcPatternCreate();
+#endif
 }
 
 static inline int asaf_lv2weight(long int lv)
@@ -57,13 +70,15 @@ static inline int asaf_lv2weight(long int lv)
 struct asa_font *asaf_request(const char *name, int slant, int weight)
 {
 	struct asa_font *rv;
+	FT_Face face;
+	struct avl_head *pcache;
+#ifndef WIN32
 	FcPattern *final, *tmp1, *tmp2;
 	FcResult res;
-	FT_Face face;
 	FcChar8 *filename;
 	int fontindex;
 	unsigned hash;
-	struct avl_head *pcache, *cent;
+	struct avl_head *cent;
 
 	tmp1 = FcPatternBuild(NULL,
 		FC_FAMILY, FcTypeString, name,
@@ -108,6 +123,26 @@ struct asa_font *asaf_request(const char *name, int slant, int weight)
 /*	FcPatternGetDouble(af->pattern, FC_SIZE, 0, &size);
 	FT_Set_Char_Size(af->face, size * 64, size * 64, 0, 0); */
 	FcPatternDestroy(final);
+#else
+	HFONT font;
+	DWORD size;
+	void *buffer;
+	static unsigned hash = 0;
+
+	font = CreateFont(16, 0, 0, 0, asaf_lv2weight(weight) * 2, slant, 0, 0, 0, 0, 0, 0, 0, name);
+	SelectObject(screenDC, font);
+	size = GetFontData(screenDC, 0, 0, NULL, 0);
+	if (size == GDI_ERROR)
+		return NULL;
+	buffer = xmalloc(size);
+	if (!buffer)
+		return NULL;
+	GetFontData(screenDC, 0, 0, buffer, size);
+	if (FT_New_Memory_Face(asaf_ftlib, buffer, size, 0, &face))
+		return NULL;
+	hash++;
+	avl_find_pcache(fontroot, hash, &pcache);
+#endif
 
 	rv = xmalloc(sizeof(struct asa_font));
 	memset(&rv->avl, 0, sizeof(rv->avl));

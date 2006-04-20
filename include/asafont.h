@@ -21,8 +21,10 @@
 #ifndef _ASAFONT_H
 #define _ASAFONT_H
 
+#ifndef WIN32
 #include <fontconfig/fontconfig.h>
 #include <fontconfig/fcfreetype.h>
+#endif
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_GLYPH_H
