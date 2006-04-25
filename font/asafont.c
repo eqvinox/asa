@@ -34,9 +34,10 @@
 #ifndef WIN32
 FcConfig *fontconf;
 FcPattern *aux;
+#else
+HDC screenDC;
 #endif
 FT_Library asaf_ftlib;
-HDC screenDC;
 
 static struct avl_head *fontroot = NULL;
 
