@@ -44,6 +44,11 @@ while (n) {
 	FT_OutlineGlyph *g, *gend;
 	FT_Stroker stroker;
 
+	if (n->type != SSAVN_TEXT) {
+		n = n->next;
+		continue;
+	}
+
 	if (!ng->frame)
 		ng->frame = assp_framenew(fg);
 
@@ -123,7 +128,8 @@ static void ssar_commit(struct ssav_line *l)
 	struct ssav_node *n = l->node_first;
 
 	while (n) {
-		if (n->group != prev && n->group->frame)
+		if (n->type == SSAVN_TEXT && n->group != prev
+			&& n->group->frame)
 			asar_commit((prev = n->group)->frame);
 		n = n->next;
 	}
