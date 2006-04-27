@@ -84,6 +84,7 @@ struct ssa_frag *ssap_frag_add(struct ssa_vm *v,
 	unsigned idx;
 	if (l->end < l->start)
 		return NULL;
+	v->cache = NULL;
 	first = ssap_frag_split(v, prev, l->start, &seekp);
 	last = ssap_frag_split(v, first, l->end, &discard);
 	
@@ -125,7 +126,8 @@ struct ssa_frag *ssap_frag_init(struct ssa_vm *vm)
 	sentinel->next = NULL;
 	sentinel->start = 0.0;
 	sentinel->nrend = 0;
-	
+	vm->cache = NULL;
+
 	return sentinel;
 }
 
