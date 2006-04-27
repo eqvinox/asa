@@ -509,6 +509,7 @@ void ssav_create(struct ssa_vm *vm, struct ssa *ssa)
 		else
 			vm->playresy = vm->playresx * (3./4.);
 	}
+	vm->firstlayer = NULL;
 
 	while (s) {
 		s->vmptr = ssav_alloc_style(ssa, s);
