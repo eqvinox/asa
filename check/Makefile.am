@@ -1,5 +1,5 @@
 if BUILD_RENDERER
-RENDLIB = ../vm/libasa.la ../font/libasa_font.a
+RENDLIB = ../vm/libasa.la ../font/libasa_font.a ../proc/libasa_proc.la
 endif
 noinst_PROGRAMS = asacheck
 asacheck_SOURCES = asacheck.c

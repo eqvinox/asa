@@ -23,6 +23,7 @@
 #include "acconf.h"
 #ifdef ASA_BUILD_RENDERER
 #include "asafont.h"
+#include "ssavm.h"
 #endif
 
 #include <stdio.h>
@@ -52,6 +53,11 @@ void ut8out(char *start, char *end)
 	write(1, outbuf, 4096 - outsize);
 }
 
+struct rendlist {
+	struct rendlist *next;
+	double time;
+};
+
 int main(int argc, char **argv)
 {
 	int fd;
@@ -62,6 +68,12 @@ int main(int argc, char **argv)
 	struct ssa_style *snow;
 	struct ssa_line *lnow;
 	struct ssa output;
+#ifdef ASA_BUILD_RENDERER
+	struct ssa_vm vm;
+#endif
+
+	struct rendlist *rend = NULL, **rendnext = &rend;
+	char *errpos;
 
 	struct rusage bef, aft;
 	long usec;
@@ -76,11 +88,12 @@ int main(int argc, char **argv)
 	unsigned print = 0;
 	const struct option long_opts[] = {
 		{ "verbose",	0, NULL, 'v' },
-		{ "file",	0, NULL, 'f' },
+		{ "file",	1, NULL, 'f' },
 		{ "sparse",	0, NULL, 's' },
+		{ "render",	1, NULL, 'r' },
 		{ NULL,		0, NULL, 0 }
 	};
-	const char *short_opts = "vf:s";
+	const char *short_opts = "vf:sr:";
 	char *fname = NULL;
 
 	do {
@@ -94,6 +107,17 @@ int main(int argc, char **argv)
 			break;
 		case 's':
 			sparseout = 1;
+			break;
+		case 'r':
+			*rendnext = malloc(sizeof(struct rendlist));
+			(*rendnext)->next = NULL;
+			(*rendnext)->time = strtod(optarg, &errpos);
+			if (!*optarg || *errpos) {
+				fwprintf(stderr,
+					L"-r requires an argument\n");
+				return 1;
+			}
+			rendnext = &(*rendnext)->next;
 			break;
 		case -1:
 			break;
@@ -125,10 +149,6 @@ int main(int argc, char **argv)
 	output.ignoreenc = 1;
 	getrusage(RUSAGE_SELF, &bef);
 	ssa_lex(&output, data, st.st_size);
-#if 0
- ifdef ASA_BUILD_RENDERER
-	ssa_prepare(&output);
-#endif
 	getrusage(RUSAGE_SELF, &aft);
 
 	munmap(data, 0);
@@ -137,9 +157,54 @@ int main(int argc, char **argv)
 	
 	usec = (aft.ru_utime.tv_sec - bef.ru_utime.tv_sec) * 1000000 +
 		(aft.ru_utime.tv_usec - bef.ru_utime.tv_usec);
+	fwprintf(stdout, L"- parsing complete (%5.3f s)\n", (float)usec / 1000000.0f);
 
-	fwprintf(stdout, L"- parsing complete (%5.3f s)\n\n", (float)usec / 1000000.0f);
+#ifdef ASA_BUILD_RENDERER
+#define WIDTH 640
+#define HEIGHT 480
+#define LSIZE (WIDTH*HEIGHT)
+#define CSIZE ((WIDTH*HEIGHT)>>2)
+#define LSTRIDE WIDTH
+#define CSTRIDE (WIDTH >> 1)
+	getrusage(RUSAGE_SELF, &bef);
+	ssav_create(&vm, &output);
+	getrusage(RUSAGE_SELF, &aft);
+	usec = (aft.ru_utime.tv_sec - bef.ru_utime.tv_sec) * 1000000 +
+		(aft.ru_utime.tv_usec - bef.ru_utime.tv_usec);
+	fwprintf(stdout, L"- processing complete (%5.3f s)\n", (float)usec / 1000000.0f);
+	if (rend) {
+		struct assp_fgroup *fgroup = assp_fgroupnew(WIDTH, HEIGHT);
+		unsigned char *y = malloc(LSIZE), *u = malloc(CSIZE), *v = malloc(CSIZE);
+		struct asa_frame frame;
+		frame.csp = ASACSP_YUV_PLANAR;
+		frame.bmp.yuv_planar.y.d = y;
+		frame.bmp.yuv_planar.y.stride = LSTRIDE;
+		frame.bmp.yuv_planar.u.d = u;
+		frame.bmp.yuv_planar.u.stride = CSTRIDE;
+		frame.bmp.yuv_planar.v.d = v;
+		frame.bmp.yuv_planar.v.stride = CSTRIDE;
+		frame.bmp.yuv_planar.chroma_x_red = 1;
+		frame.bmp.yuv_planar.chroma_y_red = 1;
+		fgroup->active = &frame;
 
+		assa_setup(&vm, WIDTH, HEIGHT);
+		do {
+			fwprintf(stdout, L"rendering: %lf\n", rend->time);
+			fflush(stdout);
+			getrusage(RUSAGE_SELF, &bef);
+			ssar_run(&vm, rend->time, fgroup);
+			getrusage(RUSAGE_SELF, &aft);
+			usec = (aft.ru_utime.tv_sec - bef.ru_utime.tv_sec) * 1000000 +
+				(aft.ru_utime.tv_usec - bef.ru_utime.tv_usec);
+			fwprintf(stdout, L" - %5.3f s\n", (float)usec / 1000000.0f);
+			rend = rend->next;
+		} while (rend);
+		free(y); free(u); free(v);
+		return 0;
+	}
+#endif
+
+	fwprintf(stdout, L"\n");
 	enow = output.errlist;
 	while (enow) {
 		fwprintf(stderr, L"+- (severity %d) line %ld, column %ld: %s\n| %s\n+-",
