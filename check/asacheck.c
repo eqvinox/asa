@@ -18,6 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  ****************************************************************************/
 
+#define ASA_BUILD_RENDERER 1
+
 #include "common.h"
 #include "ssa.h"
 #include "acconf.h"

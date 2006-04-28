@@ -204,10 +204,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\include\ssarend.h"
-				>
-			</File>
-			<File
 				RelativePath="..\include\ssarun.h"
 				>
 			</File>
@@ -244,55 +240,55 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\proc\asa_core.c"
+				RelativePath="..\lib\asa_core.c"
 				>
 			</File>
 			<File
-				RelativePath="..\font\asafont.c"
+				RelativePath="..\lib\asafont.c"
 				>
 			</File>
 			<File
-				RelativePath="..\proc\assa.c"
+				RelativePath="..\lib\assa.c"
 				>
 			</File>
 			<File
-				RelativePath="..\font\avl.c"
+				RelativePath="..\lib\avl.c"
 				>
 			</File>
 			<File
-				RelativePath="..\proc\spanproc.c"
+				RelativePath="..\lib\spanproc.c"
 				>
 			</File>
 			<File
-				RelativePath="..\ssa\ssa_errtexts.c"
+				RelativePath="..\lib\ssa_errtexts.c"
 				>
 			</File>
 			<File
-				RelativePath="..\vm\ssa_frag.c"
+				RelativePath="..\lib\ssa_frag.c"
 				>
 			</File>
 			<File
-				RelativePath="..\proc\ssa_glyphload.c"
+				RelativePath="..\lib\ssa_glyphload.c"
 				>
 			</File>
 			<File
-				RelativePath="..\ssa\ssa_lexer.c"
+				RelativePath="..\lib\ssa_lexer.c"
 				>
 			</File>
 			<File
-				RelativePath="..\proc\ssa_run.c"
+				RelativePath="..\lib\ssa_run.c"
 				>
 			</File>
 			<File
-				RelativePath="..\vm\ssa_vm.c"
+				RelativePath="..\lib\ssa_vm.c"
 				>
 			</File>
 			<File
-				RelativePath="..\vm\ssa_wrap.c"
+				RelativePath="..\lib\ssa_wrap.c"
 				>
 			</File>
 			<File
-				RelativePath="..\ssa\utf8.c"
+				RelativePath="..\lib\utf8.c"
 				>
 			</File>
 			<Filter

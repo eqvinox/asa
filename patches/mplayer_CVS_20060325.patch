@@ -73,11 +73,11 @@ diff -u -3 -p -r1.1149 configure
 +#endif
 +int main(void) { asa_open ("", 0); return 0; }
 +EOF
-+  cc_check $_inc_asa $_ld_asa -lasa -lasa_proc && _asa=yes
++  cc_check $_inc_asa $_ld_asa -lasa && _asa=yes
 +fi
 +if test "$_asa" = yes ; then
 +  _def_asa='#define CONFIG_ASA 1'
-+  _ld_asa="$_ld_asa -lasa -lasa_proc"
++  _ld_asa="$_ld_asa -lasa"
 +  _vfmodules="asa $_vfmodules"
 +else
 +  _def_asa='#undef CONFIG_ASA'

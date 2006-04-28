@@ -6,5 +6,5 @@ includedir=@includedir@
 Name: asa
 Description: asa (advanced subtitle architecture) - subtitle renderer library
 Version: @PACKAGE_VERSION@
-Libs: -L${libdir} -lasa -lasa_proc
+Libs: -L${libdir} -lasa
 Cflags: -I${includedir}

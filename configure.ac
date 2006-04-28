@@ -6,11 +6,9 @@ AC_CONFIG_HEADER([include/acconf.h])
 AC_PREFIX_DEFAULT(~)
 
 # stuff that gets undefined...
-asa_rend_ok=yes
 asa_gtk_ok=yes
 asa_optimize=NONE
 
-asa_rend_disp=no
 asa_opt_disp="none - renderer slower than a snail on slow-motion"
 asa_gtk_disp=no
 
@@ -29,23 +27,16 @@ AC_CHECK_HEADERS([wchar.h],,[
 	AC_MSG_FAILURE([asa needs wide character support, find a wchar.h])
 ])
 AC_MSG_NOTICE([--- checking major library dependencies ---])
-AC_ARG_ENABLE([renderer],
-	AC_HELP_STRING([--disable-renderer], [do not build the FreeType2 and FontConfig based renderer]),
-	[	if test "$enableval" == "no"
-		then	unset asa_rend_ok
-			asa_rend_disp="disabled by parameter"
-		fi])
 AC_ARG_ENABLE([gtk],
 	AC_HELP_STRING([--disable-gtk], [do not build the Gtk+-2.0 GUI frontends]),
 	[	if test "$enableval" == "no"
 		then	unset asa_gtk_ok
 			asa_gtk_disp="disabled by parameter"
 		fi])
-if test -n "$asa_rend_ok"
-then	AC_MSG_NOTICE([note: freetype2 versions earlier than 2.1.10 contain various bugs])
+
+	AC_MSG_NOTICE([note: freetype2 versions earlier than 2.1.10 contain various bugs])
 	PKG_CHECK_MODULES([FREETYPE], freetype2 >= 9.8.3 fontconfig >= 2.2.0,, [
-		AC_MSG_WARN([asa needs FreeType2 and fontconfig to be able to render something - ALL RENDERING DISABLED])
-		unset asa_rend_ok
+		AC_MSG_FAILURE([asa needs freetype2 2.1.10])
 	])
 
 	try_optimize=1
@@ -69,7 +60,7 @@ then	AC_MSG_NOTICE([note: freetype2 versions earlier than 2.1.10 contain various
 		;;
 	esac
 	fi
-fi
+
 if test -n "$asa_gtk_ok"
 then	PKG_CHECK_MODULES([GTK], gtk+-2.0 >= 2.4.0 glib-2.0 >= 2.4.0,, [
 		AC_MSG_WARN([asa GUI frontends disabled due to lack of Gtk+-2.0])
@@ -162,11 +153,6 @@ AC_CHECK_FUNCS([memset strdup strerror strtoul])
 #eval cfgfile="${sysconfdir}/asa.conf"
 #AC_DEFINE_UNQUOTED([CONFIG_FILE], ["${cfgfile}"], [default configuration file])
 
-if test -n "$asa_rend_ok"
-then	AC_DEFINE([ASA_BUILD_RENDERER], 1, [build renderer (have freetype, fontconfig)])
-	asa_rend_disp=yes
-fi
-AM_CONDITIONAL([BUILD_RENDERER], [test -n "$asa_rend_ok"])
 if test -n "$asa_gtk_ok"
 then	AC_DEFINE([ASA_BUILD_GTKGUI], 1, [build Gtk GUIs (have Gtk+2.0)])
 	asa_gtk_disp=yes
@@ -180,10 +166,9 @@ AM_CONDITIONAL([BUILD_AMD64], [test "$asa_optimize" == "AMD64"])
 echo " "
 echo " configuration summary: "
 echo " "
-echo "   build ssa libs:       always built"
-echo "   build renderer:       $asa_rend_disp"
-echo "     using optimization: $asa_opt_disp"
-echo "   build Gtk+-2.0 GUIs:  $asa_gtk_disp"
+echo "   build renderer & ssa libs: always built"
+echo "     using optimization:      $asa_opt_disp"
+echo "   build Gtk+-2.0 GUIs:       $asa_gtk_disp"
 echo " "
 
 AC_CONFIG_FILES([asa.pc])
@@ -191,11 +176,8 @@ AC_CONFIG_FILES([asa.pc])
 AC_OUTPUT([
 	ac/Makefile
 	include/Makefile
-	ssa/Makefile
-	font/Makefile
-	vm/Makefile
-	proc/Makefile
-	proc/amd64/Makefile
+	lib/Makefile
+	lib/amd64/Makefile
 	interfaces/Makefile
 	gtk/Makefile
 	gtk/include/Makefile
