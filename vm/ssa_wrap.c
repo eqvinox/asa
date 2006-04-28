@@ -81,7 +81,7 @@ void ssaw_finish(struct ssa_wrap_env *we)
 {
 	we->vl->nchars = we->pos;
 
-#ifdef SSA_DEBUG
+#if 0
 	struct ssav_unit *u;
 	struct ssa_node *n;
 	unsigned uc = 0, pos = 0, endpos;
