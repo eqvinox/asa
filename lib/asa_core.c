@@ -212,7 +212,7 @@ static void asar_commit_rgb(struct assp_frame *f)
 	struct asa_frame *dst = f->group->active;
 	int c, lay;
 	unsigned line;
-	int blend = 0;
+	int blend = 0, nbytes = 4;
 
 #define order(v,w,x,y) \
 		for (c = 0; c < 4; c++) \
@@ -222,6 +222,7 @@ static void asar_commit_rgb(struct assp_frame *f)
 			cv[c][3] = f->colours[c].c.y; \
 		break;
 #define orderx(v,w,x,y) blend = 1; order(v,w,x,y)
+#define order3(v,w,x) blend = 1; nbytes = 3; order(v,w,x,a & 0)
 #define x a & 0
 	switch (dst->bmp.rgb.fmt) {
 	case ASACSPR_RGBA: order(r,g,b,a)
@@ -232,6 +233,8 @@ static void asar_commit_rgb(struct assp_frame *f)
 	case ASACSPR_BGRx: orderx(b,g,r,x)
 	case ASACSPR_xRGB: orderx(x,r,g,b)
 	case ASACSPR_xBGR: orderx(x,b,g,r)
+	case ASACSPR_RGB: order3(r,g,b)
+	case ASACSPR_BGR: order3(b,g,r)
 	case ASACSPR_COUNT: ;
 	}
 #undef x
@@ -243,17 +246,17 @@ static void asar_commit_rgb(struct assp_frame *f)
 		if (f->lines[line] != f->group->unused) { \
 			cell *now = f->lines[line]->data + f->lines[line]->first, \
 				*lend = f->lines[line]->data + f->lines[line]->last; \
-			unsigned char *dp = d + 4 * f->lines[line]->first; \
+			unsigned char *dp = d + nbytes * f->lines[line]->first; \
 			while (now < lend) { \
 				cell cl = *now;
 #define common2 \
-				for (c = 0; c < 4; c++) { \
+				for (c = 0; c < nbytes; c++) { \
 					unsigned short value = dp[c] * (256 - raccum); \
 					for (lay = 0; lay < 4; lay++) \
 						value += cl.e[lay] * cv[lay][c]; \
 					dp[c] = value >> 8; \
 				} \
-				dp += 4; \
+				dp += nbytes; \
 				now++; \
 			} \
 		} \

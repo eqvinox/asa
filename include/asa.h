@@ -71,6 +71,9 @@ enum asa_csp_rgb {
 	ASACSPR_xRGB,
 	ASACSPR_xBGR,
 
+	ASACSPR_RGB,
+	ASACSPR_BGR,
+
 	ASACSPR_COUNT
 };
 
