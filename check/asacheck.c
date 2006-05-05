@@ -60,6 +60,21 @@ struct rendlist {
 	double time;
 };
 
+static void usage()
+{
+	fprintf(stderr,
+		"asa subtitle renderer version "PACKAGE_VERSION", command-line tester\n\n"
+		"Usage: asacheck [OPTIONS] -f SCRIPTFILE\n\n"
+		"Options:\n"
+		"  -v, --verbose\t\t\tgive more output\n"
+		"  -f, --file=FILE\t\tspecify input script file\n"
+		"  -s, --sparse\t\t\tdo not add error markers\n"
+		"  -r, --render=TIME\t\trender frame at given timestamp\n"
+		"  -R, --range=START:END:STEP\trender frames at given timerange\n"
+		"\n");
+	exit(1);
+}
+
 int main(int argc, char **argv)
 {
 	int fd;
@@ -93,9 +108,10 @@ int main(int argc, char **argv)
 		{ "file",	1, NULL, 'f' },
 		{ "sparse",	0, NULL, 's' },
 		{ "render",	1, NULL, 'r' },
+		{ "range",	1, NULL, 'R' },
 		{ NULL,		0, NULL, 0 }
 	};
-	const char *short_opts = "vf:sr:";
+	const char *short_opts = "vf:sr:R:";
 	char *fname = NULL;
 
 	do {
@@ -114,26 +130,48 @@ int main(int argc, char **argv)
 			*rendnext = malloc(sizeof(struct rendlist));
 			(*rendnext)->next = NULL;
 			(*rendnext)->time = strtod(optarg, &errpos);
-			if (!*optarg || *errpos) {
-				fwprintf(stderr,
-					L"-r requires an argument\n");
-				return 1;
-			}
+			if (!*optarg || *errpos)
+				usage();
 			rendnext = &(*rendnext)->next;
 			break;
+		case 'R': {
+			char *sstart = optarg, *send, *sstep;
+			double start, end, step;
+			send = strchr(sstart, ':');
+			if (!send || sstart == send)
+				usage();
+			send++;
+			sstep = strchr(send, ':');
+			if (!sstep || sstep == send)
+				usage();
+			sstep++;
+			start = strtod(sstart, &errpos);
+			if (errpos != send - 1)
+				usage();
+			end = strtod(send, &errpos);
+			if (errpos != sstep - 1)
+				usage();
+			step = strtod(sstep, &errpos);
+			if (*errpos)
+				usage();
+			for (; start <= end; start += step) {
+				*rendnext = malloc(sizeof(struct rendlist));
+				(*rendnext)->next = NULL;
+				(*rendnext)->time = start;
+				rendnext = &(*rendnext)->next;
+			}
+		}
 		case -1:
 			break;
 		case '?':
 		default:
-			return 1;
+			usage();
 		}
 	} while (next_opt != -1);
 #endif
 
-	if (!fname) {
-		fwprintf(stderr, L"%s -f <ssafile> [-v[v]]\n", argv[0]);
-		return 1;
-	}
+	if (!fname)
+		usage();
 
 	if ((fd = open(fname, O_RDONLY)) == -1) {
 		fwprintf(stderr, L"error opening %s\n", fname);
