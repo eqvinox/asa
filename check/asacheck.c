@@ -45,6 +45,7 @@
 #include <errno.h>
 #include <locale.h>
 #include <iconv.h>
+#include <assert.h>
 
 void ut8out(char *start, char *end)
 {
@@ -71,6 +72,10 @@ static void usage()
 		"  -s, --sparse\t\t\tdo not add error markers\n"
 		"  -r, --render=TIME\t\trender frame at given timestamp\n"
 		"  -R, --range=START:END:STEP\trender frames at given timerange\n"
+#ifdef HAVE_LIBPNG
+		"  -o, --output=BASE\t\tsave rendered frames to BASE####.png\n"
+		"  -m, --motion\t\t\tdo not clear frames inbetween\n"
+#endif
 		"\n");
 	exit(1);
 }
@@ -97,6 +102,8 @@ int main(int argc, char **argv)
 
 	setlocale(LC_ALL, NULL);
 	int sparseout = 0;
+	char *outrend = NULL;
+	int noclear = 0;
 #ifndef HAVE_GETOPT_LONG
 	unsigned print = 3;
 	char *fname = argv[1];
@@ -109,9 +116,11 @@ int main(int argc, char **argv)
 		{ "sparse",	0, NULL, 's' },
 		{ "render",	1, NULL, 'r' },
 		{ "range",	1, NULL, 'R' },
+		{ "output",	1, NULL, 'o' },
+		{ "motion",	0, NULL, 'm' },
 		{ NULL,		0, NULL, 0 }
 	};
-	const char *short_opts = "vf:sr:R:";
+	const char *short_opts = "vf:sr:R:o:m";
 	char *fname = NULL;
 
 	do {
@@ -125,6 +134,12 @@ int main(int argc, char **argv)
 			break;
 		case 's':
 			sparseout = 1;
+			break;
+		case 'm':
+			noclear = 1;
+			break;
+		case 'o':
+			outrend = optarg;
 			break;
 		case 'r':
 			*rendnext = malloc(sizeof(struct rendlist));
@@ -213,18 +228,33 @@ int main(int argc, char **argv)
 		(aft.ru_utime.tv_usec - bef.ru_utime.tv_usec);
 	fwprintf(stdout, L"- processing complete (%5.3f s)\n", (float)usec / 1000000.0f);
 	if (rend) {
+		int yuv = 0;
+		int nframe = 0;
 		struct assp_fgroup *fgroup = assp_fgroupnew(WIDTH, HEIGHT);
-		unsigned char *y = malloc(LSIZE), *u = malloc(CSIZE), *v = malloc(CSIZE);
 		struct asa_frame frame;
-		frame.csp = ASACSP_YUV_PLANAR;
-		frame.bmp.yuv_planar.y.d = y;
-		frame.bmp.yuv_planar.y.stride = LSTRIDE;
-		frame.bmp.yuv_planar.u.d = u;
-		frame.bmp.yuv_planar.u.stride = CSTRIDE;
-		frame.bmp.yuv_planar.v.d = v;
-		frame.bmp.yuv_planar.v.stride = CSTRIDE;
-		frame.bmp.yuv_planar.chroma_x_red = 1;
-		frame.bmp.yuv_planar.chroma_y_red = 1;
+		png_bytep rowptrs[HEIGHT];
+		if (yuv) {
+			unsigned char *y = malloc(LSIZE), *u = malloc(CSIZE), *v = malloc(CSIZE);
+			frame.csp = ASACSP_YUV_PLANAR;
+			frame.bmp.yuv_planar.y.d = y;
+			frame.bmp.yuv_planar.y.stride = LSTRIDE;
+			frame.bmp.yuv_planar.u.d = u;
+			frame.bmp.yuv_planar.u.stride = CSTRIDE;
+			frame.bmp.yuv_planar.v.d = v;
+			frame.bmp.yuv_planar.v.stride = CSTRIDE;
+			frame.bmp.yuv_planar.chroma_x_red = 1;
+			frame.bmp.yuv_planar.chroma_y_red = 1;
+		} else {
+			unsigned char *d = malloc(WIDTH * HEIGHT * 4);
+			int y;
+			for (y = 0; y < HEIGHT; y++)
+				rowptrs[y] = d + WIDTH * 4 * y;
+			frame.csp = ASACSP_RGB;
+			frame.bmp.rgb.d.d = d;
+			frame.bmp.rgb.d.stride = WIDTH * 4;
+			frame.bmp.rgb.fmt = ASACSPR_RGBA;
+			memset(frame.bmp.rgb.d.d, 0x88, WIDTH * HEIGHT * 4);
+		}
 		fgroup->active = &frame;
 
 		assa_setup(&vm, WIDTH, HEIGHT);
@@ -236,10 +266,33 @@ int main(int argc, char **argv)
 			getrusage(RUSAGE_SELF, &aft);
 			usec = (aft.ru_utime.tv_sec - bef.ru_utime.tv_sec) * 1000000 +
 				(aft.ru_utime.tv_usec - bef.ru_utime.tv_usec);
-			fwprintf(stdout, L" - %5.3f s\n", (float)usec / 1000000.0f);
+			fwprintf(stdout, L" - %5.3f s", (float)usec / 1000000.0f);
+#ifdef HAVE_LIBPNG
+			if (outrend && !yuv) {
+				char outname[256];
+				snprintf(outname, sizeof(outname), "%s%04d.png", outrend, nframe);
+				fwprintf(stdout, L", writing to %s", outname);
+				FILE *fp = fopen(outname, "wb");
+				assert(fp);
+				png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING,
+					NULL, NULL, NULL);
+				assert(png_ptr);
+				png_infop info_ptr = png_create_info_struct(png_ptr);
+				assert(info_ptr);
+				png_init_io(png_ptr, fp);
+				png_set_compression_level(png_ptr, Z_BEST_COMPRESSION);
+				png_set_IHDR(png_ptr, info_ptr, WIDTH, HEIGHT, 8, PNG_COLOR_TYPE_RGB_ALPHA,
+					PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+				png_set_rows(png_ptr, info_ptr, rowptrs);
+				png_write_png(png_ptr, info_ptr, PNG_TRANSFORM_INVERT_ALPHA, NULL);
+			}
+#endif
+			fwprintf(stdout, L"\n");
+			nframe++;
 			rend = rend->next;
+			if (!yuv && !noclear)
+				memset(frame.bmp.rgb.d.d, 0x88, WIDTH * HEIGHT * 4);
 		} while (rend);
-		free(y); free(u); free(v);
 		return 0;
 	}
 #endif
