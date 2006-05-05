@@ -67,6 +67,12 @@ then	PKG_CHECK_MODULES([GTK], gtk+-2.0 >= 2.4.0 glib-2.0 >= 2.4.0,, [
 		unset asa_gtk_ok
 	])
 fi
+
+AC_CHECK_HEADERS([png.h])
+AC_CHECK_LIB([z], [inflate])
+AC_CHECK_LIB([m], [pow])
+AC_CHECK_LIB([png], [png_init_io])
+
 AC_MSG_NOTICE([--- done checking special dependencies ---])
 
 AC_PROG_RANLIB

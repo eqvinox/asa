@@ -75,6 +75,10 @@
 # define f_fptr
 #endif
 
+#ifdef HAVE_PNG_H
+#include <png.h>
+#endif
+
 #ifdef WIN32
 #include <stddef.h>
 #include <stdlib.h>
