@@ -75,6 +75,7 @@ static void usage()
 #ifdef HAVE_LIBPNG
 		"  -o, --output=BASE\t\tsave rendered frames to BASE####.png\n"
 		"  -m, --motion\t\t\tdo not clear frames inbetween\n"
+		"  -b, --blend\t\t\tblend (evaluate) alpha instead of returning it\n"
 #endif
 		"\n");
 	exit(1);
@@ -104,6 +105,7 @@ int main(int argc, char **argv)
 	int sparseout = 0;
 	char *outrend = NULL;
 	int noclear = 0;
+	int blend = 0;
 #ifndef HAVE_GETOPT_LONG
 	unsigned print = 3;
 	char *fname = argv[1];
@@ -118,9 +120,10 @@ int main(int argc, char **argv)
 		{ "range",	1, NULL, 'R' },
 		{ "output",	1, NULL, 'o' },
 		{ "motion",	0, NULL, 'm' },
+		{ "blend",	0, NULL, 'b' },
 		{ NULL,		0, NULL, 0 }
 	};
-	const char *short_opts = "vf:sr:R:o:m";
+	const char *short_opts = "vf:sr:R:o:mb";
 	char *fname = NULL;
 
 	do {
@@ -137,6 +140,9 @@ int main(int argc, char **argv)
 			break;
 		case 'm':
 			noclear = 1;
+			break;
+		case 'b':
+			blend = 1;
 			break;
 		case 'o':
 			outrend = optarg;
@@ -252,7 +258,7 @@ int main(int argc, char **argv)
 			frame.csp = ASACSP_RGB;
 			frame.bmp.rgb.d.d = d;
 			frame.bmp.rgb.d.stride = WIDTH * 4;
-			frame.bmp.rgb.fmt = ASACSPR_RGBA;
+			frame.bmp.rgb.fmt = blend ? ASACSPR_RGBx : ASACSPR_RGBA;
 			memset(frame.bmp.rgb.d.d, 0x88, WIDTH * HEIGHT * 4);
 		}
 		fgroup->active = &frame;

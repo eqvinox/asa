@@ -212,6 +212,7 @@ static void asar_commit_rgb(struct assp_frame *f)
 	struct asa_frame *dst = f->group->active;
 	int c, lay;
 	unsigned line;
+	int blend = 0;
 
 #define order(v,w,x,y) \
 		for (c = 0; c < 4; c++) \
@@ -220,35 +221,73 @@ static void asar_commit_rgb(struct assp_frame *f)
 			cv[c][2] = f->colours[c].c.x, \
 			cv[c][3] = f->colours[c].c.y; \
 		break;
+#define orderx(v,w,x,y) blend = 1; order(v,w,x,y)
+#define x a & 0
 	switch (dst->bmp.rgb.fmt) {
 	case ASACSPR_RGBA: order(r,g,b,a)
 	case ASACSPR_BGRA: order(b,g,r,a)
 	case ASACSPR_ARGB: order(a,r,g,b)
 	case ASACSPR_ABGR: order(a,b,g,r)
+	case ASACSPR_RGBx: orderx(r,g,b,x)
+	case ASACSPR_BGRx: orderx(b,g,r,x)
+	case ASACSPR_xRGB: orderx(x,r,g,b)
+	case ASACSPR_xBGR: orderx(x,b,g,r)
 	case ASACSPR_COUNT: ;
 	}
+#undef x
 
 	unsigned char *d = dst->bmp.rgb.d.d;
 	line = 0;
-	while (line < f->group->h) {
-		if (f->lines[line] != f->group->unused) {
-			cell *now = f->lines[line]->data + f->lines[line]->first,
-				*lend = f->lines[line]->data + f->lines[line]->last;
-			unsigned char *dp = d + 4 * f->lines[line]->first;
-			while (now < lend) {
-				for (lay = 3; lay >= 0; lay--) {
-					unsigned short va = now->e[lay] + 1, vb = 257 - va;
-					for (c = 0; c < 4; c++) {
-						dp[c] = (dp[c] * vb + cv[lay][c] * va) >> 8;
-					}
-				}
-				dp += 4;
-				now++;
-			}
-		}
-		d += dst->bmp.rgb.d.stride;
-		line++;
+#define common1 \
+	while (line < f->group->h) { \
+		if (f->lines[line] != f->group->unused) { \
+			cell *now = f->lines[line]->data + f->lines[line]->first, \
+				*lend = f->lines[line]->data + f->lines[line]->last; \
+			unsigned char *dp = d + 4 * f->lines[line]->first; \
+			while (now < lend) { \
+				cell cl = *now;
+#define common2 \
+				for (c = 0; c < 4; c++) { \
+					unsigned short value = dp[c] * (256 - raccum); \
+					for (lay = 0; lay < 4; lay++) \
+						value += cl.e[lay] * cv[lay][c]; \
+					dp[c] = value >> 8; \
+				} \
+				dp += 4; \
+				now++; \
+			} \
+		} \
+		d += dst->bmp.rgb.d.stride; \
+		line++; \
 	}
+
+	if (blend) {
+		common1
+		unsigned char accum = 0, raccum = 0;
+		for (lay = 0; lay <= 3; lay++) {
+			if (cl.e[lay] > 255 - accum) {
+				cl.e[lay] = 255 - accum;
+				accum = 255;
+			} else
+				accum += cl.e[lay];
+			cl.e[lay] = ((cl.e[lay] * (256 - f->colours[lay].c.a)) >> 8);
+			raccum += cl.e[lay];
+		}
+		common2
+	} else {
+		common1
+		unsigned char raccum = 0;
+		for (lay = 0; lay <= 3; lay++) {
+			if (cl.e[lay] > 255 - raccum) {
+				cl.e[lay] = 255 - raccum;
+				raccum = 255;
+			} else
+				raccum += cl.e[lay];
+		}
+		common2
+	}
+#undef common1
+#undef common2
 }
 
 static void asar_commit_yuvp(struct assp_frame *f)
