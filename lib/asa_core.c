@@ -183,6 +183,8 @@ f_export void asa_render(asa_inst *i, double ftime, struct asa_frame *frame)
 	ssar_run(&i->vm, ftime, i->framegroup);
 }
 
+static void asar_commit_yuvp(struct assp_frame *f);
+static void asar_commit_rgb(struct assp_frame *f);
 static void _asar_commit(struct assp_frame *f, int lay);
 
 #ifdef ASA_OPT_AMD64
@@ -190,6 +192,66 @@ extern void asar_commit_y420_x86_64(struct assp_fgroup *g, cellline **lines, cel
 #endif
 
 void asar_commit(struct assp_frame *f)
+{
+	switch (f->group->active->csp) {
+	case ASACSP_YUV_PLANAR:
+		asar_commit_yuvp(f);
+		break;
+	case ASACSP_RGB:
+		asar_commit_rgb(f);
+		break;
+	case ASACSP_YUV_PACKED:
+	case ASACSP_COUNT:
+		;
+	}
+}
+
+static void asar_commit_rgb(struct assp_frame *f)
+{
+	unsigned char cv[4][4];
+	struct asa_frame *dst = f->group->active;
+	int c, lay;
+	unsigned line;
+
+#define order(v,w,x,y) \
+		for (c = 0; c < 4; c++) \
+			cv[c][0] = f->colours[c].c.v, \
+			cv[c][1] = f->colours[c].c.w, \
+			cv[c][2] = f->colours[c].c.x, \
+			cv[c][3] = f->colours[c].c.y; \
+		break;
+	switch (dst->bmp.rgb.fmt) {
+	case ASACSPR_RGBA: order(r,g,b,a)
+	case ASACSPR_BGRA: order(b,g,r,a)
+	case ASACSPR_ARGB: order(a,r,g,b)
+	case ASACSPR_ABGR: order(a,b,g,r)
+	case ASACSPR_COUNT: ;
+	}
+
+	unsigned char *d = dst->bmp.rgb.d.d;
+	line = 0;
+	while (line < f->group->h) {
+		if (f->lines[line] != f->group->unused) {
+			cell *now = f->lines[line]->data + f->lines[line]->first,
+				*lend = f->lines[line]->data + f->lines[line]->last;
+			unsigned char *dp = d + 4 * f->lines[line]->first;
+			while (now < lend) {
+				for (lay = 3; lay >= 0; lay--) {
+					unsigned short va = now->e[lay] + 1, vb = 257 - va;
+					for (c = 0; c < 4; c++) {
+						dp[c] = (dp[c] * vb + cv[lay][c] * va) >> 8;
+					}
+				}
+				dp += 4;
+				now++;
+			}
+		}
+		d += dst->bmp.rgb.d.stride;
+		line++;
+	}
+}
+
+static void asar_commit_yuvp(struct assp_frame *f)
 {
 #ifdef ASA_OPT_AMD64
 	cell yuvc[2];

@@ -60,6 +60,15 @@ enum asa_csp_yuv_packed {
 	ASACSPY_COUNT
 };
 
+enum asa_csp_rgb {
+	ASACSPR_RGBA = 0,
+	ASACSPR_BGRA,
+	ASACSPR_ARGB,
+	ASACSPR_ABGR,
+
+	ASACSPR_COUNT
+};
+
 /** single bitmap plane */
 struct asa_plane {
 	unsigned char *d;
@@ -78,6 +87,10 @@ struct asa_frame {
 			enum asa_csp_yuv_packed fmt;
 			struct asa_plane d;
 		} yuv_packed;
+		struct {
+			enum asa_csp_rgb fmt;
+			struct asa_plane d;
+		} rgb;
 	} bmp;
 };
 
