@@ -14,6 +14,7 @@ libasa_la_SOURCES = \
 	assa.c \
 	avl.c \
 	spanproc.c \
+	ssa_anim.c \
 	ssa_errtexts.c \
 	ssa_frag.c \
 	ssa_glyphload.c \

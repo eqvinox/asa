@@ -43,14 +43,19 @@ while (n) {
 	struct assp_param p;
 	FT_OutlineGlyph *g, *gend;
 	FT_Stroker stroker;
+	struct ssav_params *np = n->params;
+
+	if (np->finalized)
+		np = np->finalized;
 
 	if (n->type != SSAVN_TEXT) {
 		n = n->next;
 		continue;
 	}
 
-	if (!ng->frame)
-		ng->frame = assp_framenew(fg);
+	if (ng->frame)
+		assp_framefree(ng->frame);
+	ng->frame = assp_framenew(fg);
 
 	p.f = ng->frame;
 	p.cx0 = 0;
@@ -58,9 +63,6 @@ while (n) {
 	p.cx1 = ng->frame->group->w;
 	p.cy1 = ng->frame->group->h;
 	p.xo = p.yo = 0;
-
-	ng->frame->colours[0] = n->params->r.colours[0];
-	ng->frame->colours[2] = n->params->r.colours[2];
 
 	g = n->glyphs;
 	gend = g + n->nchars;
@@ -70,11 +72,11 @@ while (n) {
 		return;
 	}
 
-	FT_Stroker_New(n->params->font->face->memory, &stroker);
+	FT_Stroker_New(n->params->font->face->memory, &stroker); /* XXX */
 
 	/* XXX XXX XXX formula is incorrect!
 	 * someone go figure a correct one! */
-	FT_Stroker_Set(stroker, (int)(n->params->border * 64),
+	FT_Stroker_Set(stroker, (int)(np->border * 64),
 		FT_STROKER_LINECAP_ROUND, FT_STROKER_LINEJOIN_ROUND, 0);
 
 	while (g < gend) {
@@ -129,8 +131,18 @@ static void ssar_commit(struct ssav_line *l)
 
 	while (n) {
 		if (n->type == SSAVN_TEXT && n->group != prev
-			&& n->group->frame)
-			asar_commit((prev = n->group)->frame);
+			&& n->group->frame) {
+			struct ssav_params *p = n->params;
+			if (p->finalized)
+				p = p->finalized;
+
+			prev = n->group;
+			prev->frame->colours[0] = p->r.colours[0];
+			prev->frame->colours[1] = p->r.colours[1];
+			prev->frame->colours[2] = p->r.colours[2];
+			prev->frame->colours[3] = p->r.colours[3];
+			asar_commit(prev->frame);
+		}
 		n = n->next;
 	}
 }
@@ -149,11 +161,7 @@ void ssar_run(struct ssa_vm *vm, double ftime, struct assp_fgroup *fg)
 	for (ln = 0; ln < vm->cache->nrend; ln++) {
 		struct ssav_line *l = vm->cache->lines[ln];
 
-#if HACKING
-		fl = 0;
-#else
 		fl = ssar_eval(l, ftime);
-#endif
 		fl = assa_realloc(vm, l, fl);
 		if (fl & SSAR_REND)
 			ssar_line(l, fg);

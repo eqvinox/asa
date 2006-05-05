@@ -24,9 +24,8 @@
 #include <freetype/fttrigon.h>
 #include <assert.h>
 
-void ssgl_matrix(struct ssav_node *n, FT_Matrix *rv)
+void ssgl_matrix(struct ssav_params *p, FT_Matrix *rv)
 {
-
 	FT_Matrix out, tmp;
 
 	out.xx = 0x10000L;
@@ -34,13 +33,13 @@ void ssgl_matrix(struct ssav_node *n, FT_Matrix *rv)
 	out.yx = 0x00000L;
 	out.yy = -0x10000L;
 
-	if (n->params->m.fscx != 100.)
-		out.xx = FT_MulFix(out.xx, (int)(n->params->m.fscx * 655.36));
-	if (n->params->m.fscy != 100.)
-		out.yy = FT_MulFix(out.yy, (int)(n->params->m.fscy * 655.36));
+	if (p->m.fscx != 100.)
+		out.xx = FT_MulFix(out.xx, (int)(p->m.fscx * 655.36));
+	if (p->m.fscy != 100.)
+		out.yy = FT_MulFix(out.yy, (int)(p->m.fscy * 655.36));
 	/* frx & fry? */
-	if (n->params->m.frz != 0.0) {
-		FT_Angle angle = (int)(n->params->m.frz * 65536);
+	if (p->m.frz != 0.0) {
+		FT_Angle angle = (int)(p->m.frz * 65536);
 		tmp.xx = FT_Cos(angle);
 		tmp.xy = FT_Sin(angle);
 		tmp.yx = -FT_Sin(angle);
@@ -61,6 +60,7 @@ void ssgl_prepare(struct ssav_line *l)
 
 	struct ssav_node *n = l->node_first;
 	struct ssav_unit *u = l->unit_first;
+	struct ssav_params *p;
 
 	if (!u || !n)
 		return;
@@ -70,6 +70,9 @@ void ssgl_prepare(struct ssav_line *l)
 	stop = u->next ? u->next->idxstart : l->nchars;
 	pos.x = pos.y = 0;
 	while (u && n) {
+		p = n->params;
+		if (p->finalized)
+			p = p->finalized;
 		if (n->glyphs) {
 			g = n->glyphs;
 			end = g + n->nchars;
@@ -84,8 +87,8 @@ void ssgl_prepare(struct ssav_line *l)
 			end = g + n->nchars;
 		}
 
-		fnt = asaf_sactivate(n->params->fsiz);
-		ssgl_matrix(n, &mat);
+		fnt = asaf_sactivate(n->params->fsiz);	/* XXX: animation */
+		ssgl_matrix(p, &mat);
 		src = n->indici;
 
 		if (idx != stop && fnt->size->metrics.height > u->height)
@@ -114,7 +117,7 @@ void ssgl_prepare(struct ssav_line *l)
 				FT_Glyph_Transform(tmp, &mat, &pos);
 				*g = (FT_OutlineGlyph)tmp;
 				pos.x += (tmp->advance.x >> 10) +
-					(int)(n->params->m.fsp * 64);
+					(int)(p->m.fsp * 64);
 				pos.y += tmp->advance.y >> 10;
 			}
 			g++, idx++;

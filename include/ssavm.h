@@ -34,7 +34,10 @@
 #endif
 
 union ssav_ctrval {
-	colour_t colour;
+	struct {
+		colour_t val;
+		colour_t mask;
+	} colour;
 	double dval;
 };
 
@@ -51,16 +54,13 @@ struct ssav_controller {
 	enum ssav_contrt type;
 
 	ptrdiff_t offset;
-	union ssav_ctrval start;
-
-	struct {
-		double t1, t2, accel;
-		union ssav_ctrval nextval;
-	} anim;
+	union ssav_ctrval nextval;
+	double t1, length_rez, accel;
 };
 
 struct ssav_params {
 	unsigned nref;
+	struct ssav_params *finalized;
 
 	struct {
 		char *name;

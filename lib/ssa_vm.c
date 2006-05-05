@@ -70,6 +70,8 @@ static void ssav_align(ifp);
 static void ssav_lineint(ifp);
 static void ssav_linenode(ifp);
 
+static void ssav_anim(ifp);
+
 struct ssa_ipnode {
 	ssav_ipfunc *func;
 	ptrdiff_t param;
@@ -126,7 +128,7 @@ static struct ssa_ipnode iplist[SSAN_MAX] = {
 	{ssav_lineint,	l(wrap)},	/* SG SSAN_WRAP */
 	{ssav_reset,	0},		/* *l SSAN_RESET */
 
-	{NULL,		0},		/* S* SSAN_T */
+	{ssav_anim,	0},		/* S* SSAN_T */
 	{NULL,		0},		/* SG SSAN_MOVE */
 	{ssav_linenode,	l(pos)},	/* aG SSAN_POS */
 	{NULL,		0},		/* SG SSAN_ORG */
@@ -167,20 +169,47 @@ static struct ssav_params *ssav_get_style(struct ssa_style *style)
 	return ssav_addref((struct ssav_params *)style->vmptr);
 }
 
-static struct ssav_params *ssav_alloc_clone(struct ssav_params *p)
+static struct ssav_params *ssav_alloc_size(struct ssav_params *p,
+	unsigned nctr)
 {
 	struct ssav_params *rv;
+	unsigned ncopy = p->nctr < nctr ? p->nctr : nctr;
 
-	if (p->nref == 1)
-		return p;
-	rv = xmalloc(sizeof(struct ssav_params));
-	memcpy(rv, p, sizeof(*rv));
-	
+	rv = xmalloc(sizeof(struct ssav_params)
+		+ sizeof(struct ssav_controller) * nctr);
+	memcpy(rv, p, sizeof(*rv) + sizeof(struct ssav_controller) * ncopy);
+
 	rv->nref = 1;
 	asaf_faddref(rv->font);
 	asaf_saddref(rv->fsiz);
-	p->nref--;
+	ssav_release(p);
 	return rv;
+}
+
+static struct ssav_params *ssav_alloc_clone(struct ssav_params *p)
+{
+	if (p->nref == 1)
+		return p;
+	return ssav_alloc_size(p, p->nctr);
+}
+
+static struct ssav_params *ssav_alloc_clone_clear(struct ssav_params *p,
+	ptrdiff_t offset)
+{
+	struct ssav_params *rv = p;
+	unsigned c = 0;
+	if (rv->nref != 1)
+		rv = ssav_alloc_size(p, p->nctr);
+	while (c < rv->nctr) {
+		if (rv->ctrs[c].offset == offset) {
+			rv->nctr--;
+			memmove(&rv->ctrs[c], &rv->ctrs[c + 1],
+				rv->nctr - c);
+		} else
+			c++;
+	}
+	return xrealloc(rv, sizeof(struct ssav_params)
+		+ sizeof(struct ssav_controller) * rv->nctr);
 }
 
 static void ssav_set_font(struct ssav_params *pset,
@@ -257,8 +286,24 @@ static void ssav_ng_invalidate(struct ssav_prepare_ctx *ctx)
 static void ssav_assign_pset(struct ssav_prepare_ctx *ctx,
 	struct ssav_params *newpset)
 {
+	unsigned c;
+
 	if (memcmp(&ctx->pset->r, &newpset->r, sizeof(ctx->pset->r)))
 		ssav_ng_invalidate(ctx);
+	else
+		for (c = 0; c < newpset->nctr; c++) {
+			ptrdiff_t offset = newpset->ctrs[c].offset;
+			if (offset < e(r.colours[0])
+				|| offset >= e(r.colours[4]))
+				continue;
+			if (c >= ctx->pset->nctr
+				|| memcmp(&ctx->pset->ctrs[c],
+					&newpset->ctrs[c],
+					sizeof(struct ssav_controller))) {
+				ssav_ng_invalidate(ctx);
+				break;
+			}
+		}
 	ctx->pset = newpset;
 }
 
@@ -267,7 +312,7 @@ static void ssav_assign_pset(struct ssav_prepare_ctx *ctx,
 static void ssav_double(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
 	ptrdiff_t param)
 {
-	ctx->pset = ssav_alloc_clone(ctx->pset);
+	ctx->pset = ssav_alloc_clone_clear(ctx->pset, param);
 	*(double *)apply_offset(ctx->pset, param) = n->v.dval;
 }
 
@@ -303,7 +348,7 @@ static void ssav_colour(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
 	param &= 3;
 	if ((ctx->pset->r.colours[param].l & mask.l) == value.l)
 		return;
-	ctx->pset = ssav_alloc_clone(ctx->pset);
+	ctx->pset = ssav_alloc_clone_clear(ctx->pset, e(r.colours[param]));
 	ctx->pset->r.colours[param].l &= ~mask.l;
 	ctx->pset->r.colours[param].l |= value.l;
 	ssav_ng_invalidate(ctx);
@@ -353,6 +398,67 @@ static void ssav_linenode(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
 	ptrdiff_t param)
 {
 	*(struct ssa_node **)apply_offset(ctx->vl, param) = n;
+}
+
+/****************************************************************************/
+
+static void ssav_anim_insert(struct ssav_prepare_ctx *ctx,
+	struct ssav_controller *ctr)
+{
+	if (ctr->type == SSAVC_NONE)
+		return;
+
+	ctx->pset = ssav_alloc_size(ctx->pset, ctx->pset->nctr + 1);
+	memcpy(&ctx->pset->ctrs[ctx->pset->nctr++], ctr, sizeof(*ctr));
+
+	ctr->type = SSAVC_NONE;
+}
+
+static void ssav_anim(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
+	ptrdiff_t param)
+{
+	struct ssa_node *cn = n->v.t.node_first;
+	struct ssav_controller ctr;
+	ctr.t1 = n->v.t.times[0] * 0.001;
+	ctr.length_rez = 1. / ((n->v.t.times[1] - n->v.t.times[0]) * 0.001);
+	ctr.accel = n->v.t.accel;
+	ctr.type = SSAVC_NONE;
+	while (cn) {
+		if (SSAN(cn->type) < SSAN_MAX) {
+			struct ssa_ipnode *ip = &iplist[SSAN(cn->type)];
+			if (ip->func == ssav_colour) {
+				colour_t mask;
+				ctr.type = SSAVC_COLOUR;
+				ctr.offset = e(r.colours[ip->param & 0xF]);
+				mask.l = 0;
+				if (ip->param & 0x10)
+					mask.c.a = 0xFF;
+				else
+					mask.c.r = mask.c.g = mask.c.b = 0xFF;
+				ctr.nextval.colour.val = cn->v.colour;
+				ctr.nextval.colour.mask = mask;
+			} else if (ip->func == ssav_double) {
+				ctr.type = SSAVC_MATRIX;
+				ctr.offset = ip->param;
+				ctr.nextval.dval = cn->v.dval;
+			}
+			ssav_anim_insert(ctx, &ctr);
+		}
+		cn = cn->next;
+	}
+}
+
+static void ssav_finalizeds(struct ssav_node *vn)
+{
+	while (vn) {
+		if (vn->params->nctr && !vn->params->finalized) {
+			vn->params->finalized = malloc(
+				sizeof(struct ssav_params));
+			memcpy(vn->params->finalized, vn->params,
+				sizeof(*vn->params->finalized));
+		}
+		vn = vn->next;
+	}
 }
 
 /****************************************************************************/
@@ -482,6 +588,7 @@ static void ssav_prep_dialogue(struct ssa *ssa, struct ssa_vm *vm,
 	ssav_release(ctx.pset);
 	if (!ctx.ng_ref)
 		xfree(ctx.ng);
+	ssav_finalizeds(vl->node_first);
 
 	ssaw_finish(&ctx.wrap);
 
