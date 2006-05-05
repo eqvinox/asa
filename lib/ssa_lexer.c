@@ -1531,6 +1531,7 @@ static unsigned ssa_t(struct ssa_state *state, par_t param, void *elem)
 	node->v.t.node_last = &node->v.t.node_first;
 	node->v.t.times[1] = (long)((state->sline->end -
 		state->sline->start) * 1000);
+	node->v.t.accel = 1.0;
 	
 	pstart = ssa_chr(state->param, state->pend, '\\');
 	if (!pstart)
