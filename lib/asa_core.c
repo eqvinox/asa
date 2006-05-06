@@ -213,6 +213,7 @@ static void asar_commit_rgb(struct assp_frame *f)
 	int c, lay;
 	unsigned line;
 	int blend = 0, nbytes = 4;
+	unsigned char *d;
 
 #define order(v,w,x,y) \
 		for (c = 0; c < 4; c++) \
@@ -239,7 +240,7 @@ static void asar_commit_rgb(struct assp_frame *f)
 	}
 #undef x
 
-	unsigned char *d = dst->bmp.rgb.d.d;
+	d = dst->bmp.rgb.d.d;
 	line = 0;
 #define common1 \
 	while (line < f->group->h) { \
