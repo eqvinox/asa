@@ -244,7 +244,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\lib\asafont.c"
+				RelativePath="..\lib\asa_font.c"
 				>
 			</File>
 			<File
@@ -257,6 +257,10 @@
 			</File>
 			<File
 				RelativePath="..\lib\spanproc.c"
+				>
+			</File>
+			<File
+				RelativePath="..\lib\ssa_anim.c"
 				>
 			</File>
 			<File
