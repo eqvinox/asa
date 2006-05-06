@@ -51,3 +51,7 @@
 ^gtk/viewer/gasaview$
 ^gtk/gcheck/gasacheck$
 ^check/asacheck$
+#
+\.png$
+\.ssa$
+\.ass$
