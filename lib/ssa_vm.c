@@ -54,9 +54,15 @@ struct ssav_prepare_ctx {
 	struct ssa_wrap_env wrap;
 };
 
+static void ssav_anim_insert(struct ssav_prepare_ctx *ctx,
+	struct ssav_controller *ctr);
+
 #define ifp struct ssav_prepare_ctx *ctx, struct ssa_node *n, ptrdiff_t param
+#define afp struct ssav_prepare_ctx *ctx, struct ssa_node *n, \
+	ptrdiff_t param, struct ssav_controller *ctr
 
 typedef void ssav_ipfunc(ifp);
+typedef void ssav_apfunc(afp);
 
 static void ssav_nl(ifp);
 static void ssav_text(ifp);
@@ -64,7 +70,9 @@ static void ssav_fontsize(ifp);
 static void ssav_reset(ifp);
 
 static void ssav_double(ifp);
+static void ssava_double(afp);
 static void ssav_colour(ifp);
+static void ssava_colour(afp);
 
 static void ssav_align(ifp);
 static void ssav_lineint(ifp);
@@ -74,6 +82,7 @@ static void ssav_anim(ifp);
 
 struct ssa_ipnode {
 	ssav_ipfunc *func;
+	ssav_apfunc *afunc;
 	ptrdiff_t param;
 };
 
@@ -81,63 +90,63 @@ struct ssa_ipnode {
 #define e(x) ((ptrdiff_t) &((struct ssav_params *)0)->x)
 #define l(x) ((ptrdiff_t) &((struct ssav_line *)0)->x)
 static struct ssa_ipnode iplist[SSAN_MAX] = {
-					/* S - static / nonanimatable,
-					 * a - animatable
-					 * * - special
-					 *  l - local
-					 *  G - line (global)
-					 * ? - undecided
-					 */
-	{NULL,		0},
-	{ssav_text,	0},		/* Sl SSAN_TEXT */
-	{ssav_nl,	0},		/* Sl SSAN_NEWLINE */
-	{ssav_nl,	0},		/* Sl SSAN_NEWLINEH */
-	{NULL,		0},		/* !l SSAN_BOLD */
-	{NULL,		0},		/* ?l SSAN_ITALICS */
-	{NULL,		0},		/* ?l SSAN_UNDERLINE */
-	{NULL,		0},		/* ?l SSAN_STRIKEOUT */	
-	{ssav_double,	e(border)},	/* al SSAN_BORDER */
-	{NULL,		0},		/* al SSAN_SHADOW */
-	{NULL,		0},		/* ?? SSAN_BLUREDGES */
-	{NULL,		0},		/* ?l SSAN_FONT */
-	{ssav_fontsize,	0},		/* ?l SSAN_FONTSIZE */
+							/* S - static / nonanimatable,
+							 * a - animatable
+							 * * - special
+							 *  l - local
+							 *  G - line (global)
+							 * ? - undecided
+							 */
+	{NULL,		NULL,		0},
+	{ssav_text,	NULL,		0},		/* Sl SSAN_TEXT */
+	{ssav_nl,	NULL,		0},		/* Sl SSAN_NEWLINE */
+	{ssav_nl,	NULL,		0},		/* Sl SSAN_NEWLINEH */
+	{NULL,		NULL,		0},		/* !l SSAN_BOLD */
+	{NULL,		NULL,		0},		/* ?l SSAN_ITALICS */
+	{NULL,		NULL,		0},		/* ?l SSAN_UNDERLINE */
+	{NULL,		NULL,		0},		/* ?l SSAN_STRIKEOUT */
+	{ssav_double,	ssava_double,	e(border)},	/* al SSAN_BORDER */
+	{NULL,		NULL,		0},		/* al SSAN_SHADOW */
+	{NULL,		NULL,		0},		/* ?? SSAN_BLUREDGES */
+	{NULL,		NULL,		0},		/* ?l SSAN_FONT */
+	{ssav_fontsize,	NULL,		0},		/* ?l SSAN_FONTSIZE */
 
-	{ssav_double,	e(m.fscx)},	/* al SSAN_FSCX */
-	{ssav_double,	e(m.fscy)},	/* al SSAN_FSCY */
-	{ssav_double,	e(m.frx)},	/* aG SSAN_FRX */
-	{ssav_double,	e(m.fry)},	/* aG SSAN_FRY */
-	{ssav_double,	e(m.frz)},	/* aG SSAN_FRZ */
-	{ssav_double,	e(m.fax)},	/* aG SSAN_FAX */
-	{ssav_double,	e(m.fay)},	/* aG SSAN_FAY */
+	{ssav_double,	ssava_double,	e(m.fscx)},	/* al SSAN_FSCX */
+	{ssav_double,	ssava_double,	e(m.fscy)},	/* al SSAN_FSCY */
+	{ssav_double,	ssava_double,	e(m.frx)},	/* aG SSAN_FRX */
+	{ssav_double,	ssava_double,	e(m.fry)},	/* aG SSAN_FRY */
+	{ssav_double,	ssava_double,	e(m.frz)},	/* aG SSAN_FRZ */
+	{ssav_double,	ssava_double,	e(m.fax)},	/* aG SSAN_FAX */
+	{ssav_double,	ssava_double,	e(m.fay)},	/* aG SSAN_FAY */
 
-	{ssav_double,	e(m.fsp)},	/* ?l SSAN_FSP */
-	{NULL,		0},		/* -- SSAN_FE */
-	{ssav_colour,	0x0},		/* al SSAN_COLOUR */
-	{ssav_colour,	0x1},		/* al SSAN_COLOUR2 */
-	{ssav_colour,	0x2},		/* al SSAN_COLOUR3 */
-	{ssav_colour,	0x3},		/* al SSAN_COLOUR4 */
-	{ssav_colour,	0x10},		/* al SSAN_ALPHA */
-	{ssav_colour,	0x11},		/* al SSAN_ALPHA2 */
-	{ssav_colour,	0x12},		/* al SSAN_ALPHA3 */
-	{ssav_colour,	0x13},		/* al SSAN_ALPHA4 */
-	{ssav_align,	1},		/* SG SSAN_ALIGN */
-	{ssav_align,	0},		/* SG SSAN_ALIGNNUM */
-	{NULL,		0},		/* Sl SSAN_KARA */
-	{NULL,		0},		/* Sl SSAN_KARAF */
-	{NULL,		0},		/* Sl SSAN_KARAO */
-	{ssav_lineint,	l(wrap)},	/* SG SSAN_WRAP */
-	{ssav_reset,	0},		/* *l SSAN_RESET */
+	{ssav_double,	ssava_double,	e(m.fsp)},	/* ?l SSAN_FSP */
+	{NULL,		NULL,		0},		/* -- SSAN_FE */
+	{ssav_colour,	ssava_colour,	0x0},		/* al SSAN_COLOUR */
+	{ssav_colour,	ssava_colour,	0x1},		/* al SSAN_COLOUR2 */
+	{ssav_colour,	ssava_colour,	0x2},		/* al SSAN_COLOUR3 */
+	{ssav_colour,	ssava_colour,	0x3},		/* al SSAN_COLOUR4 */
+	{ssav_colour,	ssava_colour,	0x10},		/* al SSAN_ALPHA */
+	{ssav_colour,	ssava_colour,	0x11},		/* al SSAN_ALPHA2 */
+	{ssav_colour,	ssava_colour,	0x12},		/* al SSAN_ALPHA3 */
+	{ssav_colour,	ssava_colour,	0x13},		/* al SSAN_ALPHA4 */
+	{ssav_align,	NULL,		1},		/* SG SSAN_ALIGN */
+	{ssav_align,	NULL,		0},		/* SG SSAN_ALIGNNUM */
+	{NULL,		NULL,		0},		/* Sl SSAN_KARA */
+	{NULL,		NULL,		0},		/* Sl SSAN_KARAF */
+	{NULL,		NULL,		0},		/* Sl SSAN_KARAO */
+	{ssav_lineint,	NULL,		l(wrap)},	/* SG SSAN_WRAP */
+	{ssav_reset,	NULL,		0},		/* *l SSAN_RESET */
 
-	{ssav_anim,	0},		/* S* SSAN_T */
-	{NULL,		0},		/* SG SSAN_MOVE */
-	{ssav_linenode,	l(pos)},	/* aG SSAN_POS */
-	{NULL,		0},		/* SG SSAN_ORG */
-	{NULL,		0},		/* S? SSAN_FADE */
-	{NULL,		0},		/* S? SSAN_FAD */
-	{NULL,		0},		/* aG SSAN_CLIPRECT */
-	{NULL,		0},		/* SG SSAN_CLIPDRAW */
-	{NULL,		0},		/* Sl SSAN_PAINT */
-	{NULL,		0},		/* ?l SSAN_PBO */
+	{ssav_anim,	NULL,		0},		/* S* SSAN_T */
+	{NULL,		NULL,		0},		/* SG SSAN_MOVE */
+	{ssav_linenode,	NULL,		l(pos)},	/* aG SSAN_POS */
+	{NULL,		NULL,		0},		/* SG SSAN_ORG */
+	{NULL,		NULL,		0},		/* S? SSAN_FADE */
+	{NULL,		NULL,		0},		/* S? SSAN_FAD */
+	{NULL,		NULL,		0},		/* aG SSAN_CLIPRECT */
+	{NULL,		NULL,		0},		/* SG SSAN_CLIPDRAW */
+	{NULL,		NULL,		0},		/* Sl SSAN_PAINT */
+	{NULL,		NULL,		0},		/* ?l SSAN_PBO */
 
 };
 
@@ -316,6 +325,15 @@ static void ssav_double(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
 	*(double *)apply_offset(ctx->pset, param) = n->v.dval;
 }
 
+static void ssava_double(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
+	ptrdiff_t param, struct ssav_controller *ctr)
+{
+	ctr->type = SSAVC_MATRIX;
+	ctr->offset = param;
+	ctr->nextval.dval = n->v.dval;
+	ssav_anim_insert(ctx, ctr);
+}
+
 static void ssav_fontsize(struct ssav_prepare_ctx *ctx,
 				struct ssa_node *n, ptrdiff_t param)
 {
@@ -333,25 +351,42 @@ static void ssav_reset(struct ssav_prepare_ctx *ctx,
 	ssav_assign_pset(ctx, ssav_get_style(reset_to));
 }
 
+static inline void ssav_splitcolour(struct ssa_node *n, ptrdiff_t *param,
+	colour_t *mask, colour_t *value)
+{
+	value->l = mask->l = 0;
+	if (*param & 0x10) {
+		value->c.a = n->v.alpha;
+		mask->c.a = 0xFF;
+	} else {
+		*value = n->v.colour;
+		mask->c.r = mask->c.g = mask->c.b = 0xFF;
+	}
+	*param &= 3;
+}
+
 static void ssav_colour(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
 	ptrdiff_t param)
 {
 	colour_t mask, value;
-	value.l = mask.l = 0;
-	if (param & 0x10) {
-		value.c.a = n->v.alpha;
-		mask.c.a = 0xFF;
-	} else {
-		value = n->v.colour;
-		mask.c.r = mask.c.g = mask.c.b = 0xFF;
-	}
-	param &= 3;
+	ssav_splitcolour(n, &param, &mask, &value);
 	if ((ctx->pset->r.colours[param].l & mask.l) == value.l)
 		return;
 	ctx->pset = ssav_alloc_clone_clear(ctx->pset, e(r.colours[param]));
 	ctx->pset->r.colours[param].l &= ~mask.l;
 	ctx->pset->r.colours[param].l |= value.l;
 	ssav_ng_invalidate(ctx);
+}
+
+static void ssava_colour(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
+	ptrdiff_t param, struct ssav_controller *ctr)
+{
+	ssav_splitcolour(n, &param,
+		&ctr->nextval.colour.mask,
+		&ctr->nextval.colour.val);
+	ctr->type = SSAVC_COLOUR;
+	ctr->offset = e(r.colours[param]);
+	ssav_anim_insert(ctx, ctr);
 }
 
 /****************************************************************************/
@@ -426,23 +461,8 @@ static void ssav_anim(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
 	while (cn) {
 		if (SSAN(cn->type) < SSAN_MAX) {
 			struct ssa_ipnode *ip = &iplist[SSAN(cn->type)];
-			if (ip->func == ssav_colour) {
-				colour_t mask;
-				ctr.type = SSAVC_COLOUR;
-				ctr.offset = e(r.colours[ip->param & 0xF]);
-				mask.l = 0;
-				if (ip->param & 0x10)
-					mask.c.a = 0xFF;
-				else
-					mask.c.r = mask.c.g = mask.c.b = 0xFF;
-				ctr.nextval.colour.val = cn->v.colour;
-				ctr.nextval.colour.mask = mask;
-			} else if (ip->func == ssav_double) {
-				ctr.type = SSAVC_MATRIX;
-				ctr.offset = ip->param;
-				ctr.nextval.dval = cn->v.dval;
-			}
-			ssav_anim_insert(ctx, &ctr);
+			if (ip->afunc)
+				ip->afunc(ctx, cn, ip->param, &ctr);
 		}
 		cn = cn->next;
 	}
