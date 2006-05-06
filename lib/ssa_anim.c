@@ -48,6 +48,10 @@ static void ssar_apply(char *dest, struct ssav_controller *ctr,
 		f0 = in * ctr->length_rez;
 	else
 		f0 = pow(in * ctr->length_rez, ctr->accel);
+	if (f0 < 0.0)
+		f0 = 0.0;
+	if (f0 > 1.0)
+		f0 = 1.0;
 	f1 = 1.0 - f0;
 
 	switch (ctr->type) {
