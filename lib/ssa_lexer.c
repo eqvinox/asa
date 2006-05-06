@@ -65,17 +65,6 @@
 #define ssatol		strtol		/**< @see ssasrc_t */ 
 #define ssatoul		strtoul		/**< @see ssasrc_t */ 
 
-/** a file's base encoding.
- * used everywhere without specified encoding
- * (i.e. syntax stuff)
- */
-enum ssa_baseenc {
-	SSABE_ANSI,			/**< 8859-15 singlebyte */
-	SSABE_UTF8,			/**< 10646 multibyte */
-	SSABE_UCS2LE,			/**< 10646 16bit LE */
-	SSABE_UCS2BE			/**< 10646 16bit BE */
-};
-
 /** lexer state / instance.
  * deallocated after lexing complete
  */
@@ -96,7 +85,7 @@ struct ssa_state {
 					 * in the charset specified by this.
 					 * - always a single-byte charset.
 					 * - only UTF-8 and MS-ANSI currently
-					 *   used. @see ssa_baseenc
+					 *   used.
 					 */
 	iconv_t ic_srcout;		/**< iconv handle 
 					 * ic_srccs -> SSA_DESTCS.
@@ -1743,7 +1732,7 @@ int ssa_lex(struct ssa *output, const void *data, size_t datasize)
 	int ignoreenc = output->ignoreenc;
 	char *oldlocale_ctype, *oldlocale_numeric;
 
-	if (datasize < 3)
+	if (datasize < 4)
 		return 1;
 
 	oldlocale_ctype = setlocale(LC_CTYPE, "C");
@@ -1760,8 +1749,12 @@ int ssa_lex(struct ssa *output, const void *data, size_t datasize)
 
 	s.ic_srccs = "UTF-8";
 
-	if (dc[0] == 0xff && dc[1] == 0xfe)
+	if (dc[0] == 0xff && dc[1] == 0xfe && dc[2] == 0x00 && dc[3] == 0x00)
+		srccs = "UCS-4LE";
+	else if (dc[0] == 0xff && dc[1] == 0xfe)
 		srccs = "UCS-2LE";
+	else if (dc[0] == 0x00 && dc[1] == 0x00 && dc[2] == 0xfe && dc[3] == 0xff)
+		srccs = "UCS-4BE";
 	else if (dc[0] == 0xfe && dc[1] == 0xff)
 		srccs = "UCS-2BE";
 	else if (dc[0] == 0xef && dc[1] == 0xbb && dc[2] == 0xbf) {
