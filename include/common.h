@@ -21,12 +21,6 @@
 #ifndef _COMMON_H
 #define _COMMON_H
 
-#ifdef __GNUC__
-#define deprecated __attribute__ ((deprecated))
-#else
-#define deprecated
-#endif
-
 #define xmalloc malloc
 #define xstrdup strdup
 #define xrealloc realloc
