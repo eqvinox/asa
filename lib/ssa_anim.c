@@ -79,7 +79,7 @@ static void ssar_apply(char *dest, struct ssav_controller *ctr,
 	};
 }
 
-enum ssar_redoflags ssar_eval(struct ssav_line *l, double ftime)
+enum ssar_redoflags ssar_eval(struct ssa_vm *vm, struct ssav_line *l, double ftime)
 {
 	double in = ftime - l->start;
 	struct ssav_node *n = l->node_first;
@@ -88,8 +88,15 @@ enum ssar_redoflags ssar_eval(struct ssav_line *l, double ftime)
 	unsigned c;
 
 	memcpy(&l->active, &l->base, sizeof(struct ssav_lineparams));
-	for (c = 0; c < l->nctr; c++)
-		ssar_apply((char *)l, &l->ctrs[c], in);
+	if (l->active.clip.xMax == -1)
+		l->active.clip.xMax = vm->res.x;
+	if (l->active.clip.yMax == -1)
+		l->active.clip.yMax = vm->res.y;
+	if (l->nctr) {
+		fl |= SSAR_REND | SSAR_WRAP;
+		for (c = 0; c < l->nctr; c++)
+			ssar_apply((char *)l, &l->ctrs[c], in);
+	}
 
 	while (n) {
 		if (n->params != p) {

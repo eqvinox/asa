@@ -80,6 +80,9 @@ static void ssav_align(ifp);
 static void ssav_lineint(ifp);
 static void ssav_linenode(ifp);
 
+static void ssav_clip(ifp);
+static void ssava_clip(afp);
+
 static void ssav_anim(ifp);
 
 struct ssa_ipnode {
@@ -145,7 +148,7 @@ static struct ssa_ipnode iplist[SSAN_MAX] = {
 	{NULL,		NULL,		0},		/* SG SSAN_ORG */
 	{NULL,		NULL,		0},		/* S? SSAN_FADE */
 	{NULL,		NULL,		0},		/* S? SSAN_FAD */
-	{NULL,		NULL,		0},		/* aG SSAN_CLIPRECT */
+	{ssav_clip,	ssava_clip,	0},		/* aG SSAN_CLIPRECT */
 	{NULL,		NULL,		0},		/* SG SSAN_CLIPDRAW */
 	{NULL,		NULL,		0},		/* Sl SSAN_PAINT */
 	{NULL,		NULL,		0},		/* ?l SSAN_PBO */
@@ -437,6 +440,30 @@ static void ssav_linenode(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
 	*(struct ssa_node **)apply_offset(ctx->vl, param) = n;
 }
 
+static void ssav_clip(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
+	ptrdiff_t param)
+{
+	ctx->vl->base.clip.xMin = n->v.clip.x1 << 16;
+	ctx->vl->base.clip.xMax = n->v.clip.x2 << 16;
+	ctx->vl->base.clip.yMin = n->v.clip.y1 << 16;
+	ctx->vl->base.clip.yMax = n->v.clip.y2 << 16;
+}
+
+static void ssava_clip(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
+	ptrdiff_t param, struct ssav_controller *ctr)
+{
+#define clipctr(dst, src) \
+	ctr->type = SSAVC_FTPOS; \
+	ctr->offset = l(active.clip.dst); \
+	ctr->nextval.pos = n->v.clip.src << 16; \
+	ssav_anim_lineinsert(ctx, ctr);
+	clipctr(xMin, x1)
+	clipctr(xMax, x2)
+	clipctr(yMin, y1)
+	clipctr(yMax, y2)
+#undef clipctr
+}
+
 /****************************************************************************/
 
 static void ssav_anim_insert(struct ssav_prepare_ctx *ctx,
@@ -605,6 +632,10 @@ static void ssav_prep_dialogue(struct ssa *ssa, struct ssa_vm *vm,
 	vl->pos = NULL;
 	vl->unit_first = NULL;
 	vl->node_first = NULL;
+	vl->base.clip.xMin = 0;
+	vl->base.clip.xMax = -1;
+	vl->base.clip.yMin = 0;
+	vl->base.clip.yMax = -1;
 	vl->nctr = 0;
 
 	ctx.ssa = ssa;

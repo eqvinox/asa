@@ -29,6 +29,8 @@
 
 #define HACKING 1
 
+#define clip(x,a,b) ((x) < (a) ? a : ((x) > (b) ? (b) : (x)))
+
 void ssar_line(struct ssav_line *l, struct assp_fgroup *fg)
 {
 	struct ssav_node *n = l->node_first;
@@ -58,10 +60,10 @@ while (n) {
 	ng->frame = assp_framenew(fg);
 
 	p.f = ng->frame;
-	p.cx0 = 0;
-	p.cy0 = 0;
-	p.cx1 = ng->frame->group->w;
-	p.cy1 = ng->frame->group->h;
+	p.cx0 = clip(l->active.clip.xMin >> 16, 0, (int)ng->frame->group->w);
+	p.cy0 = clip(l->active.clip.yMin >> 16, 0, (int)ng->frame->group->h);
+	p.cx1 = clip(l->active.clip.xMax >> 16, 0, (int)ng->frame->group->w);
+	p.cy1 = clip(l->active.clip.yMax >> 16, 0, (int)ng->frame->group->h);
 	p.xo = p.yo = 0;
 
 	g = n->glyphs;
@@ -161,7 +163,7 @@ void ssar_run(struct ssa_vm *vm, double ftime, struct assp_fgroup *fg)
 	for (ln = 0; ln < vm->cache->nrend; ln++) {
 		struct ssav_line *l = vm->cache->lines[ln];
 
-		fl = ssar_eval(l, ftime);
+		fl = ssar_eval(vm, l, ftime);
 		fl = assa_realloc(vm, l, fl);
 		if (fl & SSAR_REND)
 			ssar_line(l, fg);

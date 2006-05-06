@@ -32,7 +32,8 @@ enum ssar_redoflags {
 	SSAR_WRAP = (1 << 2),
 };
 
-extern enum ssar_redoflags ssar_eval(struct ssav_line *l, double time);
+extern enum ssar_redoflags ssar_eval(struct ssa_vm *vm, struct ssav_line *l,
+	double time);
 
 struct assa_alloc {
 	struct assa_alloc *next;

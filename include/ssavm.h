@@ -120,7 +120,7 @@ struct ssav_unit {
 };
 
 struct ssav_lineparams {
-	int dummy;
+	FT_BBox clip;
 };
 
 struct ssav_line {
