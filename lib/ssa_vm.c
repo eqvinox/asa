@@ -56,6 +56,8 @@ struct ssav_prepare_ctx {
 
 static void ssav_anim_insert(struct ssav_prepare_ctx *ctx,
 	struct ssav_controller *ctr);
+static void ssav_anim_lineinsert(struct ssav_prepare_ctx *ctx,
+	struct ssav_controller *ctr);
 
 #define ifp struct ssav_prepare_ctx *ctx, struct ssa_node *n, ptrdiff_t param
 #define afp struct ssav_prepare_ctx *ctx, struct ssa_node *n, \
@@ -449,6 +451,24 @@ static void ssav_anim_insert(struct ssav_prepare_ctx *ctx,
 	ctr->type = SSAVC_NONE;
 }
 
+static void ssav_anim_lineinsert(struct ssav_prepare_ctx *ctx,
+	struct ssav_controller *ctr)
+{
+	int reset_nodep = (ctx->nodenextp == &ctx->vl->node_first);
+
+	if (ctr->type == SSAVC_NONE)
+		return;
+
+	ctx->vl = xrealloc(ctx->vl, sizeof(struct ssav_line) +
+		sizeof(struct ssav_controller) * (ctx->vl->nctr + 1));
+	memcpy(&ctx->vl->ctrs[ctx->vl->nctr++], ctr, sizeof(*ctr));
+	if (reset_nodep)
+		ctx->nodenextp = &ctx->vl->node_first;
+	ctx->wrap.vl = ctx->vl;
+
+	ctr->type = SSAVC_NONE;
+}
+
 static void ssav_anim(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
 	ptrdiff_t param)
 {
@@ -585,6 +605,7 @@ static void ssav_prep_dialogue(struct ssa *ssa, struct ssa_vm *vm,
 	vl->pos = NULL;
 	vl->unit_first = NULL;
 	vl->node_first = NULL;
+	vl->nctr = 0;
 
 	ctx.ssa = ssa;
 	ctx.vm = vm;
@@ -606,6 +627,7 @@ static void ssav_prep_dialogue(struct ssa *ssa, struct ssa_vm *vm,
 		cn = cn->next;
 	}
 	ssav_release(ctx.pset);
+	vl = ctx.vl;
 	if (!ctx.ng_ref)
 		xfree(ctx.ng);
 	ssav_finalizeds(vl->node_first);

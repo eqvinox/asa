@@ -85,12 +85,16 @@ enum ssar_redoflags ssar_eval(struct ssav_line *l, double ftime)
 	struct ssav_node *n = l->node_first;
 	struct ssav_params *p = NULL;
 	enum ssar_redoflags fl = 0;
+	unsigned c;
+
+	memcpy(&l->active, &l->base, sizeof(struct ssav_lineparams));
+	for (c = 0; c < l->nctr; c++)
+		ssar_apply((char *)l, &l->ctrs[c], in);
 
 	while (n) {
 		if (n->params != p) {
 			p = n->params;
 			if (p->finalized) {
-				unsigned c;
 				memcpy(p->finalized, p, sizeof(*p->finalized));
 				for (c = 0; c < p->nctr; c++) {
 					ssar_apply((char *)p->finalized,

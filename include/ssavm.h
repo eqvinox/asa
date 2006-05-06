@@ -119,6 +119,10 @@ struct ssav_unit {
 	FT_Vector size, final;
 };
 
+struct ssav_lineparams {
+	int dummy;
+};
+
 struct ssav_line {
 	struct ssav_node *node_first;
 	struct ssav_unit *unit_first;
@@ -138,7 +142,12 @@ struct ssav_line {
 		marginv,
 		wrap;
 
+	struct ssav_lineparams base, active;
+
 	struct ssa_node *pos; /**< XXX TEMP HACK XXX */
+
+	unsigned nctr;
+	struct ssav_controller ctrs[];
 };
 
 /** a (time) fragment, with a list of lines */
