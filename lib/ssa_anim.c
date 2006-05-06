@@ -30,6 +30,7 @@
 union aux {
 	double dval;
 	colour_t colour;
+	FT_Pos pos;
 };
 
 static void ssar_apply(char *dest, struct ssav_controller *ctr,
@@ -52,6 +53,9 @@ static void ssar_apply(char *dest, struct ssav_controller *ctr,
 	switch (ctr->type) {
 	case SSAVC_MATRIX:
 		deste->dval = f1 * deste->dval + f0 * ctr->nextval.dval;
+		break;
+	case SSAVC_FTPOS:
+		deste->pos = (FT_Pos)(f1 * deste->pos + f0 * ctr->nextval.pos);
 		break;
 	case SSAVC_COLOUR:
 		fl0 = (long)(f0 * 256);

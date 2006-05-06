@@ -39,6 +39,7 @@ union ssav_ctrval {
 		colour_t mask;
 	} colour;
 	double dval;
+	FT_Pos pos;
 };
 
 /** controller type */
@@ -46,6 +47,7 @@ enum ssav_contrt {
 	SSAVC_NONE = 0,
 	SSAVC_MATRIX,
 	SSAVC_COLOUR,
+	SSAVC_FTPOS,
 
 	SSAVC_COUNT
 };
