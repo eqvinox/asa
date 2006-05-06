@@ -80,14 +80,10 @@
 #endif
 
 #ifdef WIN32
-#include <stddef.h>
-#include <stdlib.h>
-#include <errno.h>
 extern int * (__cdecl * vcrt_errno)();
-#ifdef errno
-#undef errno
-#endif
-#define errno (*vcrt_errno())
+#define iconv_errno (*vcrt_errno())
+#else
+#define iconv_errno errno
 #endif
 
 #endif /* _COMMON_H */

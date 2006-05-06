@@ -648,12 +648,12 @@ static void ssa_src2str(struct ssa_state *state,
 		outbuf = xrealloc(outbuf, outsize);
 		outnow = outbuf + outnowd;
 
-		errno = 0;
+		iconv_errno = 0;
 		iconv(state->ic_srcout, &innow, &inleft, &outnow, &outleft);
 
 		outnowd = outnow - outbuf;
-	} while (errno == E2BIG);
-	if (errno || inleft) {
+	} while (iconv_errno == E2BIG);
+	if (iconv_errno || inleft) {
 		free(outbuf);
 		str->s = str->e = NULL;
 		ssa_add_error_ext(state, (ssasrc_t *)innow, now,
@@ -1050,12 +1050,12 @@ static void ssa_tmp_iconv(struct ssa_temp_text *tmp,
 		outnow = (char *)tmp->node->v.text.s + tmp->pos;
 		outleft = tmp->allocated - tmp->pos;
 
-		errno = 0;
+		iconv_errno = 0;
 		iconv(state->ic_tcv, (char **)now, &inleft,
 			&outnow, &outleft);
 		tmp->pos = outnow - (char *)tmp->node->v.text.s;
-	} while (errno == E2BIG);
-	if (errno || inleft) {
+	} while (iconv_errno == E2BIG);
+	if (iconv_errno || inleft) {
 		ssa_add_error(state, (ssasrc_t *)*now, SSAEC_INVAL_ENCODING);
 	}
 }
@@ -1787,13 +1787,13 @@ int ssa_lex(struct ssa *output, const void *data, size_t datasize)
 			freeme = xrealloc(freeme, csrcsize);
 			endpos = freeme + outnowd;
 
-			errno = 0;
+			iconv_errno = 0;
 			iconv(preconv, &curconv, &inleft, &endpos, &outleft);
 
 			outnowd = cend - freeme;
-		} while (errno == E2BIG);
+		} while (iconv_errno == E2BIG);
 		iconv_close(preconv);
-		if (errno || inleft) {
+		if (iconv_errno || inleft) {
 			free(freeme);
 			setlocale(LC_CTYPE, oldlocale_ctype);
 			setlocale(LC_NUMERIC, oldlocale_numeric);

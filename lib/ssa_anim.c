@@ -18,9 +18,10 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  ****************************************************************************/
 
+#include "common.h"
+
 #include <math.h>
 
-#include "common.h"
 #include "ssavm.h"
 #include "ssarun.h"
 
