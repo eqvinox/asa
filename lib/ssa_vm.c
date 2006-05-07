@@ -139,6 +139,7 @@ static struct ssa_ipnode iplist[SSAN_MAX] = {
 	{NULL,		NULL,		0},		/* Sl SSAN_KARA */
 	{NULL,		NULL,		0},		/* Sl SSAN_KARAF */
 	{NULL,		NULL,		0},		/* Sl SSAN_KARAO */
+	{NULL,		NULL,		0},		/* Sl SSAN_KARAT */
 	{ssav_lineint,	NULL,		l(wrap)},	/* SG SSAN_WRAP */
 	{ssav_reset,	NULL,		0},		/* *l SSAN_RESET */
 

@@ -412,6 +412,7 @@ static struct ssa_parsetext_tag ptoverr[] = {
 	{"i",			e_long,		SSANR |	SSAN_ITALICS},
 	{"kf",			e_long,			SSAN_KARAF},
 	{"ko",			e_long,			SSAN_KARAO},
+	{"kt",			e_long,			SSAN_KARAT},
 	{"k",			e_long,			SSAN_KARA},
 	{"move",	ssa_move,	{0},		SSAN_MOVE},
 	{"org",			e_brace(plorg),		SSAN_ORG},
