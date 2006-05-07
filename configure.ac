@@ -1,5 +1,5 @@
 AC_PREREQ(2.57)
-AC_INIT(asa, 0.3.1)
+AC_INIT(asa, 0.3.2)
 AC_CONFIG_AUX_DIR(ac)
 AM_INIT_AUTOMAKE
 AC_CONFIG_HEADER([include/acconf.h])
