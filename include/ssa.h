@@ -40,9 +40,10 @@ extern "C" {
  * determines behaviour in many cases
  */
 enum ssa_version {
-	SSAV_UNDEF = 0,			/**< not detected yet or no idea */
-	SSAV_4,
-	SSAV_4P,
+	SSAVV_UNDEF = 0,		/**< not detected yet or no idea */
+	SSAVV_4 = 1 << 0,
+	SSAVV_4P = 1 << 1,
+	SSAVV_4PP = 1 << 2,
 };
 
 /** ssa_line type.
@@ -210,9 +211,11 @@ struct ssa_style {
 		align,
 		marginl,
 		marginr,
-		marginv,
+		margint,
+		marginb,
 		alpha,		/**< SSA doesn't implement this */
-		encoding;	/**< line encoding */
+		encoding,	/**< line encoding */
+		relative;	/**< coordinate base, 0 means screen */
 	void *vmptr;		/**< (opaque) pointer for VM */
 };
 
@@ -343,7 +346,8 @@ struct ssa_line {
 		ass_layer,
 		marginl,
 		marginr,
-		marginv;
+		margint,
+		marginb;
 	double
 		start,		/**< seconds */
 		end;

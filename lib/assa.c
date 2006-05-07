@@ -194,8 +194,8 @@ static void assa_wrap(struct ssa_vm *vm, struct assa_layer *lay,
 	} else {
 		r.pos.x = l->marginl << 16;
 		r.size.x = vm->res.x - ((l->marginl + l->marginr) << 16);
-		r.pos.y = l->marginv << 16;
-		r.size.y = vm->res.y - (l->marginv << 17);
+		r.pos.y = l->margint << 16;
+		r.size.y = vm->res.y - ((l->margint + l->marginb) << 16);
 	}
 	assa_fit(l, &r);
 }

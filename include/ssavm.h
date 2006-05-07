@@ -139,7 +139,8 @@ struct ssav_line {
 	long int
 		marginl,
 		marginr,
-		marginv,
+		margint,
+		marginb,
 		wrap;
 
 	struct ssav_lineparams base, active;

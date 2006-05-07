@@ -278,8 +278,8 @@ static struct ssav_params *ssav_alloc_style(struct ssa *ssa,
 
 	rv->r.colours[0] = style->cprimary;
 	rv->r.colours[1] = style->csecondary;
-	rv->r.colours[2] = ssa->version == SSAV_4P ?
-		style->coutline : style->cback;
+	rv->r.colours[2] = ssa->version & SSAVV_4 ?
+		style->cback : style->coutline;
 	rv->r.colours[3] = style->cback;
 
 	rv->nref = 1;
@@ -624,10 +624,11 @@ static void ssav_prep_dialogue(struct ssa *ssa, struct ssa_vm *vm,
 #if SSA_DEBUG
 	vl->input = l;
 #endif
-	ssav_setalign(vl, l->style->align, ssa->version < SSAV_4P);
+	ssav_setalign(vl, l->style->align, ssa->version & SSAVV_4);
 	override(marginl);
 	override(marginr);
-	override(marginv);
+	override(margint);
+	override(marginb);
 	vl->wrap = ssa->wrapstyle;
 	vl->pos = NULL;
 	vl->unit_first = NULL;

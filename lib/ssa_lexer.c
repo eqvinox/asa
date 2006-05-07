@@ -155,6 +155,14 @@ struct ssa_parsetext_tag {
  *              (see \move for example)
  */
 #define SSAV_OPTIONAL		0x8000
+
+/** all versions */
+#define SSAV_UNDEF		SSAVV_4 | SSAVV_4P | SSAVV_4PP
+#define SSAV_4P			SSAVV_4P | SSAVV_4PP	/**< plus versions */
+#define SSAV_4			SSAVV_4			/**< original SSAv4 */
+#define SSAV_4PP		SSAVV_4PP		/**< ASS2 / ++ */
+#define SSAV_4nPP		SSAVV_4 | SSAVV_4P	/**< all except ++ */
+
 struct ssa_parselist {
 	ssa_parsefunc *func;
 	par_t param;
@@ -163,6 +171,7 @@ struct ssa_parselist {
 
 static unsigned ssa_genstr(struct ssa_state *state, par_t param, void *elem);
 static unsigned ssa_genint(struct ssa_state *state, par_t param, void *elem);
+static unsigned ssa_twoint(struct ssa_state *state, par_t param, void *elem);
 static unsigned ssa_genfp (struct ssa_state *state, par_t param, void *elem);
 
 static unsigned ssa_setver(struct ssa_state *state, par_t param, void *elem);
@@ -196,8 +205,9 @@ static struct ssa_parsetext ptkeys[] = {
 	{"format:",		NULL,		{0}},
 	/* sections */
 	{"[script info]",	NULL,		{1}},
-	{"[v4 styles]",		ssa_setver,	{SSAV_4}},
-	{"[v4+ styles]",	ssa_setver,	{SSAV_4P}},
+	{"[v4 styles]",		ssa_setver,	{SSAVV_4}},
+	{"[v4+ styles]",	ssa_setver,	{SSAVV_4P}},
+	{"[v4++ styles]",	ssa_setver,	{SSAVV_4PP}},
 	{"[events]",		NULL,		{1}},
 	{"[fonts]",		ssa_notsup,	{0}},
 	{"[graphics]",		ssa_notsup,	{0}},
@@ -240,7 +250,9 @@ static struct ssa_parselist plcommon[] = {
 	{ssa_genstr,		{e(name)},		SSAV_UNDEF},
 	{ssa_genint,		{e(marginl)},		SSAV_UNDEF},
 	{ssa_genint,		{e(marginr)},		SSAV_UNDEF},
-	{ssa_genint,		{e(marginv)},		SSAV_UNDEF},
+	{ssa_twoint,		{e(margint)},		SSAV_4nPP},
+	{ssa_genint,		{e(margint)},		SSAV_4PP},
+	{ssa_genint,		{e(marginb)},		SSAV_4PP},
 	{ssa_effect,		{0},			SSAV_UNDEF},
 	/* text isn't parsed by this (commas in it ;) */
 	{NULL,			{0},			0}
@@ -274,9 +286,12 @@ static struct ssa_parselist plstyle[] = {
 	{ssa_genint,		{e(align)},		SSAV_UNDEF},
 	{ssa_genint,		{e(marginl)},		SSAV_UNDEF},
 	{ssa_genint,		{e(marginr)},		SSAV_UNDEF},
-	{ssa_genint,		{e(marginv)},		SSAV_UNDEF},
+	{ssa_twoint,		{e(margint)},		SSAV_4nPP},
+	{ssa_genint,		{e(margint)},		SSAV_4PP},
+	{ssa_genint,		{e(marginb)},		SSAV_4PP},
 	{ssa_genint,		{e(alpha)},		SSAV_4},
 	{ssa_genint,		{e(encoding)},		SSAV_UNDEF},
+	{ssa_genint,		{e(relative)},		SSAV_4PP},
 	{NULL,			{0},			0}
 };
 #undef e
@@ -574,11 +589,14 @@ static unsigned ssa_setver(struct ssa_state *state, par_t param, void *elem)
 	if (!ver) {
 		const ssasrc_t *after, *err;
 		if ((after = ssa_compare(state, state->param, state->pend,
+			"v4.00++", &err)))
+			ver = SSAVV_4PP;
+		else if ((after = ssa_compare(state, state->param, state->pend,
 			"v4.00+", &err)))
-			ver = SSAV_4P;
+			ver = SSAVV_4P;
 		else if ((after = ssa_compare(state, state->param,
 			state->pend, "v4.00", &err)))
-			ver = SSAV_4;
+			ver = SSAVV_4;
 		else {
 			ssa_add_error(state, err, SSAEC_UNKNOWNVER);
 			return 0;
@@ -590,7 +608,7 @@ static unsigned ssa_setver(struct ssa_state *state, par_t param, void *elem)
 		ssa_add_error(state, state->line,
 			SSAEC_AMBIGUOUS_SVER);
 		/* we're going to continue parsing, so expect ASS stuff */
-		state->output->version = SSAV_4P;
+		state->output->version = SSAVV_4P;
 		return 0;
 	}
 	state->output->version = ver;
@@ -713,10 +731,11 @@ static inline unsigned ssa_scannum(struct ssa_state *state, ssasrc_t *buf,
 	return 1;
 }
 
-/** long int into offset.
- * @see ssa_genstr
+/** core for ssa_genint and ssa_twoint.
+ * @see ssa_genint
  */
-static unsigned ssa_genint(struct ssa_state *state, par_t param, void *elem)
+static inline unsigned ssa_genintcore(struct ssa_state *state, par_t param,
+	void *elem, long int *value)
 {
 	long int result;
 	ssasrc_t buf[12]; /* -2147483648\0 */
@@ -733,8 +752,30 @@ static unsigned ssa_genint(struct ssa_state *state, par_t param, void *elem)
 		ssa_add_error(state, state->param, SSAEC_NUM_INVAL);
 		return 0;
 	}
-	*((long int *)apply_offset(elem, param.offset)) = result;
+	*value = result;
 
+	return 1;
+}
+
+/** long int into offset.
+ * @see ssa_genstr
+ */
+static unsigned ssa_genint(struct ssa_state *state, par_t param, void *elem)
+{
+	return ssa_genintcore(state, param, elem,
+		(long int *)apply_offset(elem, param.offset));
+}
+
+/** long int into offset and offset + sizeof(long).
+ * @see ssa_genstr
+ */
+static unsigned ssa_twoint(struct ssa_state *state, par_t param, void *elem)
+{
+	long int value;
+	if (!ssa_genintcore(state, param, elem, &value))
+		return 0;
+	((long int *)apply_offset(elem, param.offset))[0] = value;
+	((long int *)apply_offset(elem, param.offset))[1] = value;
 	return 1;
 }
 
@@ -813,8 +854,7 @@ static inline unsigned ssa_parse_xsv(struct ssa_state *s,
 	const ssasrc_t *comma = s->param - 1, *save_pend = s->pend;
 	unsigned ret;
 	while (p->func || p->param.lparam || p->param.offset) {
-		if (SSAV_MASK(p->ssa_version) != SSAV_UNDEF &&
-			SSAV_MASK(p->ssa_version) != s->output->version) {
+		if (!(SSAV_MASK(p->ssa_version) & s->output->version)) {
 			p++;
 			continue;
 		}
@@ -855,6 +895,7 @@ static unsigned ssa_style(struct ssa_state *state, par_t param, void *elem)
 	*state->output->style_last = style;
 	state->output->style_last = &style->next;
 	/* TODO: init with sane defaults */
+	style->relative = 1;
 
 	if (!ssa_parse_xsv(state, plstyle, style, ','))
 		return 0;
