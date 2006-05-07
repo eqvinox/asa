@@ -46,92 +46,115 @@ struct ssaec_desc ssaec[SSAEC_MAX] = {
 	NULL},
 /* 4 SSAEC_INVAL_ENCODING */
 {3, "invalid input encoding",
-	"An unconvertable, probably invalid byte sequence caused "
-	"charset conversion to fail.\n\nMost of the cases, this is either "
-	"a result of an incorrect \\fe (includes style 'encoding' field) "
-	"or a damaged file.",
-	"ASA supports and does charset convertions on Unicode files as well. "
-	"Use \\fe0 for Unicode text."},
+	"An nonconvertible, probably invalid byte sequence caused "
+	"character set conversion to fail.\n\nMost of the cases, this is "
+	"either a result of an incorrect \\fe (includes style 'encoding' "
+	"field) or a damaged file.",
+	"ASA supports and does character set conversions on Unicode files "
+	"as well. Use \\fe0 for Unicode text."},
 /* 5 SSAEC_PARSEERROR */
 {3, "parse error",
-	NULL,
+	"The parser was unable to find a matching directive at the given "
+	"byte position. Either the directive is unrecognized or there is "
+	"junk in the script file.",
 	NULL},
 /* 6 SSAEC_EXC_NUMORSIGN */
 {3, "expecting number or sign",
-	NULL,
+	"A number, optionally with a sign prefix, was expected at this "
+	"position. However, other data was found.",
 	NULL},
 /* 7 SSAEC_EXC_NUM */
 {3, "expecting number",
-	NULL,
+	"A number was expected at this position, but not found.",
 	NULL},
 /* 8 SSAEC_EXC_COLOUR */
-{3, "expecting colour code",
-	NULL,
+{3, "expecting color code",
+	"A color code was expected by the parser, but unrecognizable "
+	"data was found.",
 	NULL},
 /* 9 SSAEC_EXC_DCOL */
 {2, "expected ':'",
-	NULL,
+	"A double-colon (:) was expected to follow at this position.",
 	NULL},
 /* 10 SSAEC_EXC_AMPERSAND */
 {2, "expected '&'",
-	NULL,
+	"An ampersand (&) was expected to follow at this position.",
 	NULL},
 /* 11 SSAEC_EXC_BRACE */
 {2, "expected '('",
-	NULL,
+	"An opening brace (\"(\")) was expected to follow at this "
+	"position.",
 	NULL},
 /* 12 SSAEC_MISS_BRACE */
 {2, "missing closing brace",
-	NULL,
+	"A brace was opened, but not closed. The parser recognized "
+	"this at the given position, indicating it probably to be "
+	"the last possible place to close the brace.\n\n"
+	"Note this might be a runaway from an earlier brace.",
 	NULL},
 /* 13 SSAEC_LEADWS_BRACE */
-{2, "leading whitespace before '('",
-	NULL,
+{2, "leading white space before '('",
+	"White space was found before the opening brace of a style "
+	"argument.\n\nThe white space is ignored by asa but might cause "
+	"compatibility issues with other renderers.",
 	NULL},
 /* 14 SSAEC_NUM_2LONG */
 {3, "number too long",
-	NULL,
+	"The number at the given position was found to be too long / "
+	"too large for asa to process. Please use a smaller number.",
 	NULL},
 /* 15 SSAEC_NUM_INVAL */
 {3, "invalid number",
-	NULL,
+	"The data at the given position failed to be parsed as "
+	"number. This usually indicates junk in the script file.",
 	NULL},
 /* 16 SSAEC_TRUNCLINE */
 {3, "truncated line",
-	NULL,
+	"More fields were expected to follow at this position, "
+	"but the end of the line was found.\n\nNote this may indicate "
+	"missing field separators (i.e., commas) earlier in this line.",
 	NULL},
 /* 17 SSAEC_TRAILGB_PARAM */
 {3, "trailing garbage in parameter",
 	"Additional unrecognizable data was found after the end of "
-	"parameter data. This usually means the file is errorneous.",
+	"parameter data. This usually means the file is erroneous.",
 	NULL},
 /* 18 SSAEC_TRAILGB_LINE */
 {3, "trailing garbage on line",
-	NULL,
+	"Additional data was found at the end of this line, but not "
+	"recognized. This data might either stem from an unsupported "
+	"extension or indicate extra field separators (commas) earlier "
+	"on the line",
 	NULL},
 /* 19 SSAEC_TRAILGB_EFFECT */
 {3, "trailing garbage in effect",
-	NULL,
+	"Unrecognized data was found at the end of the effect field. "
+	"The effect might be invalid or an unsupported extension.",
 	NULL},
 /* 20 SSAEC_TRAILGB_BRACE */
 {3, "trailing garbage in brace",
-	NULL,
+	"Additional unrecognizable data was found in the brace at "
+	"the given position.",
 	NULL},
 /* 21 SSAEC_TRAILGB_CSVBRACE */
 {3, "trailing garbage in csv brace",
-	NULL,
+	"Additional unrecognizable data was found in the (CSV) brace "
+	"at the given position.",
 	NULL},
 /* 22 SSAEC_TRAILGB_TIME */
 {3, "trailing garbage after time",
-	NULL,
+	"Additional unrecognizable data was found after the time code "
+	"at the given position.",
 	NULL},
 /* 23 SSAEC_TRAILGB_ACCEL */
-{3, "trailing garbage after time",
-	NULL,
+{3, "trailing garbage after acceleration",
+	"Additional unrecognizable data was found after the "
+	"acceleration value at the given position.",
 	NULL},
 /* 24 SSAEC_TRAILGB_COLOUR */
-{3, "trailing garbage in colour",
-	NULL,
+{3, "trailing garbage in color",
+	"Additional unrecognizable data was found after the "
+	"color code at the given position.",
 	NULL},
 /* 25 SSAEC_GB_STYLEOVER */
 {2, "garbage in style override",
@@ -144,15 +167,19 @@ struct ssaec_desc ssaec[SSAEC_MAX] = {
 	NULL},
 /* 26 SSAEC_STYLEOVER_UNRECOG */
 {3, "unrecognized style override",
-	NULL,
+	"The style override at this position is not recognized by asa. "
+	"This probably indicates an unsupported extension.",
 	NULL},
 /* 27 SSAEC_EFFECT_UNRECOG */
 {3, "unrecognized effect",
-	NULL,
+	"The effect in this line is not recognized by asa. "
+	"This probably indicates an unsupported extension.",
 	NULL},
 /* 28 SSAEC_UNKNSTYLE */
 {3, "unknown style",
-	NULL,
+	"The Style: used by this line was not defined previously. "
+	"Please check for typos and/or add a style definition at the "
+	"beginning of the file.",
 	NULL},
 /* 29 SSAEC_R0 */
 {1, "problematic use of '0' style",
@@ -163,11 +190,11 @@ struct ssaec_desc ssaec[SSAEC_MAX] = {
 	NULL},
 /* 30 SSAEC_INVAL_TIME */
 {3, "invalid time",
-	NULL,
+	"An invalid time code was encountered.",
 	NULL},
 /* 31 SSAEC_INVAL_ACCEL */
 {3, "invalid acceleration",
-	NULL,
+	"An invalid acceleration value was encountered.",
 	NULL},
 /* 32 SSAEC_INVAL_ANI */
 {4, "invalid animation",
@@ -177,18 +204,19 @@ struct ssaec_desc ssaec[SSAEC_MAX] = {
 	"WARNING: use of \\fn or \\r in \\t causes the parser to bail out!"},
 /* 33 SSAEC_INVAL_ENC */
 {3, "invalid encoding value",
-	NULL,
+	"The encoding value used here is not known to asa. Either it is "
+	"invalid or it needs to be added to asa.",
 	NULL},
 /* 34 SSAEC_COLOUR_STRANGE */
-{0, "unusual colour length",
-	"A colour value with a seldomly used length has been found.\n\n"
+{0, "unusual color length",
+	"A color value with a seldom used length has been found.\n\n"
 	"While this is not exactly an error, it may be a typo or some bug. "
 	"This message is purely informational and intended as help to spot "
 	"possible logical errors.",
 	NULL},
 /* 35 SSAEC_COLOUR_ALPHALOST */
 {0, "alpha value lost",
-	"An 8-digit colour value was found where a 6-digit one was "
+	"An 8-digit color value was found where a 6-digit one was "
 	"expected, causing the alpha part to be dropped.\n\nThis occurs on "
 	"\\c style overrides as well as on SSA 4.00 Style: lines. Use "
 	"\\«num»a instead.",
