@@ -83,6 +83,9 @@ static void ssav_linenode(ifp);
 static void ssav_clip(ifp);
 static void ssava_clip(afp);
 
+static void ssav_fade(ifp);
+static void ssav_fad(ifp);
+
 static void ssav_anim(ifp);
 
 struct ssa_ipnode {
@@ -147,8 +150,8 @@ static struct ssa_ipnode iplist[SSAN_MAX] = {
 	{NULL,		NULL,		0},		/* SG SSAN_MOVE */
 	{ssav_linenode,	NULL,		l(pos)},	/* aG SSAN_POS */
 	{NULL,		NULL,		0},		/* SG SSAN_ORG */
-	{NULL,		NULL,		0},		/* S? SSAN_FADE */
-	{NULL,		NULL,		0},		/* S? SSAN_FAD */
+	{ssav_fade,	NULL,		0},		/* S? SSAN_FADE */
+	{ssav_fad,	NULL,		0},		/* S? SSAN_FAD */
 	{ssav_clip,	ssava_clip,	0},		/* aG SSAN_CLIPRECT */
 	{NULL,		NULL,		0},		/* SG SSAN_CLIPDRAW */
 	{NULL,		NULL,		0},		/* Sl SSAN_PAINT */
@@ -209,14 +212,15 @@ static struct ssav_params *ssav_alloc_clone(struct ssav_params *p)
 }
 
 static struct ssav_params *ssav_alloc_clone_clear(struct ssav_params *p,
-	ptrdiff_t offset)
+	ptrdiff_t offset, ptrdiff_t size)
 {
 	struct ssav_params *rv = p;
 	unsigned c = 0;
 	if (rv->nref != 1)
 		rv = ssav_alloc_size(p, p->nctr);
 	while (c < rv->nctr) {
-		if (rv->ctrs[c].offset == offset) {
+		if (rv->ctrs[c].offset >= offset
+			&& rv->ctrs[c].offset <= offset + size) {
 			rv->nctr--;
 			memmove(&rv->ctrs[c], &rv->ctrs[c + 1],
 				rv->nctr - c);
@@ -327,7 +331,7 @@ static void ssav_assign_pset(struct ssav_prepare_ctx *ctx,
 static void ssav_double(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
 	ptrdiff_t param)
 {
-	ctx->pset = ssav_alloc_clone_clear(ctx->pset, param);
+	ctx->pset = ssav_alloc_clone_clear(ctx->pset, param, sizeof(double));
 	*(double *)apply_offset(ctx->pset, param) = n->v.dval;
 }
 
@@ -378,7 +382,8 @@ static void ssav_colour(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
 	ssav_splitcolour(n, &param, &mask, &value);
 	if ((ctx->pset->r.colours[param].l & mask.l) == value.l)
 		return;
-	ctx->pset = ssav_alloc_clone_clear(ctx->pset, e(r.colours[param]));
+	ctx->pset = ssav_alloc_clone_clear(ctx->pset, e(r.colours[param]),
+		sizeof(colour_t));
 	ctx->pset->r.colours[param].l &= ~mask.l;
 	ctx->pset->r.colours[param].l |= value.l;
 	ssav_ng_invalidate(ctx);
@@ -393,6 +398,54 @@ static void ssava_colour(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
 	ctr->type = SSAVC_COLOUR;
 	ctr->offset = e(r.colours[param]);
 	ssav_anim_insert(ctx, ctr);
+}
+
+static void ssav_setfade(struct ssav_prepare_ctx *ctx, alpha_t alpha,
+	double start, double end)
+{
+	struct ssav_controller ctr;
+	int c;
+	ctr.t1 = start;
+	ctr.length_rez = 1. / (end - start);
+	ctr.accel = 1.0;
+	ctr.nextval.colour.mask.l = 0;
+	ctr.nextval.colour.mask.c.a = 0xff;
+	ctr.nextval.colour.val.l = 0;
+	ctr.nextval.colour.val.c.a = alpha;
+	for (c = 0; c < 4; c++) {
+		ctr.type = SSAVC_COLOUR;
+		ctr.offset = e(r.colours[c]);
+		ssav_anim_insert(ctx, &ctr);
+	}
+}
+
+static void ssav_fade(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
+	ptrdiff_t param)
+{
+	int c;
+	ctx->pset = ssav_alloc_clone_clear(ctx->pset, e(r.colours[0]),
+		4 * sizeof(colour_t));
+	ssav_ng_invalidate(ctx);
+	for (c = 0; c < 4; c++)
+		ctx->pset->r.colours[param].c.a = n->v.fade.a1;
+	ssav_setfade(ctx, n->v.fade.a2,
+		n->v.fade.start1 * 0.001, n->v.fade.end1 * 0.001);
+	ssav_setfade(ctx, n->v.fade.a3,
+		n->v.fade.start2 * 0.001, n->v.fade.end2 * 0.001);
+}
+
+static void ssav_fad(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
+	ptrdiff_t param)
+{
+	int c;
+	double dur = ctx->vl->end - ctx->vl->start;
+	ctx->pset = ssav_alloc_clone_clear(ctx->pset, e(r.colours[0]),
+		4 * sizeof(colour_t));
+	ssav_ng_invalidate(ctx);
+	for (c = 0; c < 4; c++)
+		ctx->pset->r.colours[param].c.a = 0xff;
+	ssav_setfade(ctx, 0x00, 0.0, n->v.fad.in * 0.001);
+	ssav_setfade(ctx, 0xff, dur - (n->v.fad.out * 0.001), dur);
 }
 
 /****************************************************************************/
