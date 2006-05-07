@@ -36,10 +36,7 @@ void ssar_line(struct ssav_line *l, struct assp_fgroup *fg)
 	struct ssav_node *n = l->node_first;
 	struct ssav_unit *u = l->unit_first;
 	int ustop = u->next ? u->next->idxstart : l->nchars, idx = 0;
-	FT_Vector pos;
 
-	pos.x = pos.y = 0;
-	
 while (n) {
 	struct ssar_nodegroup *ng = n->group;
 	struct assp_param p;
@@ -88,8 +85,6 @@ while (n) {
 		FT_Raster_Params params;
 
 		if (idx == ustop) {
-			pos.x += u->size.x;
-			pos.y += u->size.y;
 			u = u->next;
 			ustop = u->next ? u->next->idxstart : l->nchars;
 		}
