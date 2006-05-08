@@ -74,6 +74,7 @@ static void usage()
 		"  -R, --range=START:END:STEP\trender frames at given timerange\n"
 #ifdef HAVE_LIBPNG
 		"  -o, --output=BASE\t\tsave rendered frames to BASE####.png\n"
+		"  -i, --input=FILE\t\tbackground file (must be PNG)\n"
 		"  -m, --motion\t\t\tdo not clear frames inbetween\n"
 		"  -b, --blend\t\t\tblend (evaluate) alpha instead of returning it\n"
 #endif
@@ -103,7 +104,7 @@ int main(int argc, char **argv)
 
 	setlocale(LC_ALL, NULL);
 	int sparseout = 0;
-	char *outrend = NULL;
+	char *outrend = NULL, *inrend = NULL;
 	int noclear = 0;
 	int blend = 0;
 #ifndef HAVE_GETOPT_LONG
@@ -118,12 +119,13 @@ int main(int argc, char **argv)
 		{ "sparse",	0, NULL, 's' },
 		{ "render",	1, NULL, 'r' },
 		{ "range",	1, NULL, 'R' },
+		{ "input",	1, NULL, 'i' },
 		{ "output",	1, NULL, 'o' },
 		{ "motion",	0, NULL, 'm' },
 		{ "blend",	0, NULL, 'b' },
 		{ NULL,		0, NULL, 0 }
 	};
-	const char *short_opts = "vf:sr:R:o:mb";
+	const char *short_opts = "vf:sr:R:o:mbi:";
 	char *fname = NULL;
 
 	do {
@@ -146,6 +148,9 @@ int main(int argc, char **argv)
 			break;
 		case 'o':
 			outrend = optarg;
+			break;
+		case 'i':
+			inrend = optarg;
 			break;
 		case 'r':
 			*rendnext = malloc(sizeof(struct rendlist));
@@ -221,12 +226,39 @@ int main(int argc, char **argv)
 	fwprintf(stdout, L"- parsing complete (%5.3f s)\n", (float)usec / 1000000.0f);
 
 #ifdef ASA_BUILD_RENDERER
-#define WIDTH 640
-#define HEIGHT 480
+	long width = 640, height = 480;
+#define WIDTH width
+#define HEIGHT height
 #define LSIZE (WIDTH*HEIGHT)
 #define CSIZE ((WIDTH*HEIGHT)>>2)
 #define LSTRIDE WIDTH
 #define CSTRIDE (WIDTH >> 1)
+#ifdef HAVE_LIBPNG
+	png_bytepp row_source;
+	if (inrend) {
+		int bit_depth, color_type;
+		FILE *fp = fopen(inrend, "rb");
+		assert(fp);
+		png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING,
+			NULL, NULL, NULL);
+		assert(png_ptr);
+		png_infop info_ptr = png_create_info_struct(png_ptr);
+		assert(info_ptr);
+		png_init_io(png_ptr, fp);
+		png_read_info(png_ptr, info_ptr);
+		png_get_IHDR(png_ptr, info_ptr, (png_uint_32 *)&width, (png_uint_32 *)&height, &bit_depth, &color_type, NULL, NULL, NULL);
+		if (color_type == PNG_COLOR_TYPE_PALETTE)		png_set_palette_to_rgb(png_ptr);
+		if (bit_depth < 8)					png_set_packing(png_ptr);
+		if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS))	png_set_tRNS_to_alpha(png_ptr);
+		if (bit_depth == 16)					png_set_strip_16(png_ptr);
+		if (color_type == PNG_COLOR_TYPE_RGB)			png_set_filler(png_ptr, 0x00, PNG_FILLER_AFTER);
+		else							png_set_invert_alpha(png_ptr);
+		row_source = malloc(sizeof(png_bytep) * height);
+		for (int y = 0; y < height; y++)
+			row_source[y] = malloc(4 * width);
+		png_read_image(png_ptr, row_source);
+	}
+#endif
 	getrusage(RUSAGE_SELF, &bef);
 	ssav_create(&vm, &output);
 	getrusage(RUSAGE_SELF, &aft);
@@ -259,7 +291,11 @@ int main(int argc, char **argv)
 			frame.bmp.rgb.d.d = d;
 			frame.bmp.rgb.d.stride = WIDTH * 4;
 			frame.bmp.rgb.fmt = blend ? ASACSPR_BGRx : ASACSPR_BGRA;
-			memset(frame.bmp.rgb.d.d, 0x88, WIDTH * HEIGHT * 4);
+			if (!inrend)
+				memset(frame.bmp.rgb.d.d, 0x88, WIDTH * HEIGHT * 4);
+			else
+				for (int x = 0; x < height; x++)
+					memcpy(frame.bmp.rgb.d.d + x * width * 4, row_source[x], width * 4);
 		}
 		fgroup->active = &frame;
 
@@ -296,8 +332,13 @@ int main(int argc, char **argv)
 			fwprintf(stdout, L"\n");
 			nframe++;
 			rend = rend->next;
-			if (!yuv && !noclear)
-				memset(frame.bmp.rgb.d.d, 0x88, WIDTH * HEIGHT * 4);
+			if (!yuv && !noclear) {
+				if (!inrend)
+					memset(frame.bmp.rgb.d.d, 0x88, WIDTH * HEIGHT * 4);
+				else
+					for (int x = 0; x < height; x++)
+						memcpy(frame.bmp.rgb.d.d + x * width * 4, row_source[x], width * 4);
+			}
 		} while (rend);
 		return 0;
 	}
