@@ -78,7 +78,7 @@ struct assa_rect {
 struct fitline {
 	struct fitline *next;
 	FT_Vector size;
-	struct ssav_unit *startat;
+	struct ssav_unit *startat, *endat;
 };
 
 /* first pass: split into lines and sum up their size */
@@ -86,17 +86,16 @@ static struct fitline *assa_fit_split(struct ssav_unit *u, FT_Pos width,
 	FT_Pos *h_total)
 {
 	FT_Pos w_remain = -1;
-	struct fitline *fl = malloc(sizeof(struct fitline)),
+	struct fitline *fl = NULL,
 		*ret = fl, **upd = &ret;
-
-	/* sentinel */
-	fl->next = NULL;
-	fl->startat = NULL;
-	fl->size.y = 0;
 
 	while (u) {
 		if (u->size.x > w_remain) {
-			*h_total += fl->size.y;
+			if (fl) {
+				*h_total += fl->size.y;
+				fl->endat = u;
+			}
+
 			fl = malloc(sizeof(struct fitline));
 			fl->next = *upd;
 			*upd = fl;
@@ -113,12 +112,13 @@ static struct fitline *assa_fit_split(struct ssav_unit *u, FT_Pos width,
 
 		u = u->next;
 	}
+	fl->endat = NULL;
 	*h_total += fl->size.y;
 
 	return ret;
 }
 
-static void assa_fit_arrange(struct ssav_unit *u, struct fitline *fl,
+static void assa_fit_arrange(struct fitline *fl,
 	struct assa_rect *r, FT_Pos h_total)
 {
 	FT_Pos y, x;
@@ -127,23 +127,23 @@ static void assa_fit_arrange(struct ssav_unit *u, struct fitline *fl,
 	if (r->wrapdir < 0)
 		y += h_total;
 
-	x = r->pos.x + (FT_Pos)((double)(r->size.x - fl->size.x) * r->xalign);
-	while (u) {
-		if (u == fl->startat && r->wrapdir > 0)
+	while (fl) {
+		struct ssav_unit *u = fl->startat;
+		x = r->pos.x + (FT_Pos)((double)(r->size.x - fl->size.x) * r->xalign);
+
+		if (r->wrapdir > 0)
 			y += fl->size.y;
 
-		u->final.y = y >> 10;
-		u->final.x = x >> 10;
-		x += u->size.x << 10;
-
-		if (u == fl->next->startat && r->wrapdir < 0)
-			y -= fl->size.y;
-		u = u->next;
-		if (u == fl->next->startat) {
-			fl = fl->next;
-			x = r->pos.x + (FT_Pos)((double)(r->size.x
-					- fl->size.x) * r->xalign);
+		while (u != fl->endat) {
+			u->final.y = y >> 10;
+			u->final.x = x >> 10;
+			x += u->size.x << 10;
+			u = u->next;
 		}
+
+		if (r->wrapdir < 0)
+			y -= fl->size.y;
+		fl = fl->next;
 	}
 }
 
@@ -153,7 +153,7 @@ static void assa_fit(struct ssav_line *l, struct assa_rect *r)
 	struct fitline *fl, *del;
 
 	fl = assa_fit_split(l->unit_first, r->size.x, &h_total);
-	assa_fit_arrange(l->unit_first, fl, r, h_total);
+	assa_fit_arrange(fl, r, h_total);
 
 	for (del = fl; del; del = fl)
 		fl = del->next, free(del);
