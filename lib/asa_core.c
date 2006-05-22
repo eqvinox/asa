@@ -156,10 +156,8 @@ f_export asa_inst *asa_open_mem(const char *mem, size_t size,
 	rv = calloc(sizeof(asa_inst), 1);
 
 	ssav_create(&rv->vm, &lexout);
-#if 0
-	ssav_create error handling here...
-	ssa_free(&lexout); <- not written yet
-#endif
+	/* XXX: ssav_create error handling here... */
+	ssa_free(&lexout);
 	return rv;
 }
 
