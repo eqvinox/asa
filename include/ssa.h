@@ -413,6 +413,7 @@ struct ssa {
 extern void *xmalloc(size_t size); */
 
 extern int ssa_lex(struct ssa *output, const void *data, size_t datasize);
+extern void ssa_free(struct ssa *output);
 extern const char *ssa_lexer_version;
 
 #ifdef __cplusplus

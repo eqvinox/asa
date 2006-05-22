@@ -1887,6 +1887,74 @@ cont:
 	return 0;
 }
 
+/** free a ssa_string.
+ * @param str the string to be freed.
+ */
+static void ssa_freestr(ssa_string *str)
+{
+	if (!str->s)
+		return;
+	xfree(str->s);
+	str->s = str->e = NULL;
+}
+
+/** free a chain of ssa_nodes.
+ * @param nodes first node to be freed. all linked nodes
+ *  (next / v.t.node_first) are freed as well.
+ */
+static void ssa_freenodes(struct ssa_node *nodes)
+{
+	struct ssa_node *node, *nnext;
+	for (node = nodes; node; node = nnext) {
+		switch (node->type) {
+		case SSAN_TEXT:
+			ssa_freestr(&node->v.text);
+			break;
+		case SSAN_T:
+			ssa_freenodes(node->v.t.node_first);
+			break;
+		default:
+			;
+		}
+		nnext = node->next;
+		xfree(node);
+	}
+}
+
+/** release all resources attached to output.
+ * @param output the lexer to be freed. does not free *output itself
+ *  since ssa_lex didn't allocate it
+ *  (so you can use a local variable / put it in a struct / ...)
+ *  @see ssa_lex
+ */
+void ssa_free(struct ssa *output)
+{
+	struct ssa_style *style, *snext;
+	struct ssa_line *line, *lnext;
+	struct ssa_parsetext *pt;
+
+	for (line = output->line_first; line; line = lnext) {
+		ssa_freenodes(line->node_first);
+		ssa_freestr(&line->ssa_marked);
+		ssa_freestr(&line->name);
+		ssa_freestr(&line->text);
+		lnext = line->next;
+		xfree(line);
+	}
+
+	for (style = output->style_first; style; style = snext) {
+		ssa_freestr(&style->name);
+		ssa_freestr(&style->fontname);
+		snext = style->next;
+		xfree(style);
+	}
+
+	for (pt = ptkeys; pt->text; pt++)
+		if (pt->func == ssa_genstr)
+			ssa_freestr((ssa_string *)apply_offset(output,
+				pt->param.offset));
+}
+
 #define nstr(x) #x
 #define str(x) nstr(x)
 

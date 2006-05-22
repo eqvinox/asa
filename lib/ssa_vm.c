@@ -78,7 +78,8 @@ static void ssava_colour(afp);
 
 static void ssav_align(ifp);
 static void ssav_lineint(ifp);
-static void ssav_linenode(ifp);
+
+static void ssav_pos(ifp);
 
 static void ssav_clip(ifp);
 static void ssava_clip(afp);
@@ -148,7 +149,7 @@ static struct ssa_ipnode iplist[SSAN_MAX] = {
 
 	{ssav_anim,	NULL,		0},		/* S* SSAN_T */
 	{NULL,		NULL,		0},		/* SG SSAN_MOVE */
-	{ssav_linenode,	NULL,		l(pos)},	/* aG SSAN_POS */
+	{ssav_pos,	NULL,		0},		/* aG SSAN_POS */
 	{NULL,		NULL,		0},		/* SG SSAN_ORG */
 	{ssav_fade,	NULL,		0},		/* S? SSAN_FADE */
 	{ssav_fad,	NULL,		0},		/* S? SSAN_FAD */
@@ -488,10 +489,10 @@ static void ssav_lineint(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
 	*(long int *)apply_offset(ctx->vl, param) = n->v.lval;
 }
 
-static void ssav_linenode(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
+static void ssav_pos(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
 	ptrdiff_t param)
 {
-	*(struct ssa_node **)apply_offset(ctx->vl, param) = n;
+//	*(struct ssa_node **)apply_offset(ctx->vl, param) = n;
 }
 
 static void ssav_clip(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
