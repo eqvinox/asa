@@ -435,6 +435,20 @@ static struct ssa_parsetext_tag ptoverr[] = {
 #undef e_style
 #undef e_brace
 
+/** return nodetype name.
+ * @param type type to get the name for.
+ * @return a static string (ASCII), containing the override tag name
+ *  (without leading \\)
+ */
+const char *ssa_typename(enum ssa_nodetype type)
+{
+	struct ssa_parsetext_tag *pt = ptoverr;
+	for (pt = ptoverr; pt->text; pt++)
+		if ((pt->type & ~SSANR) == type)
+			return pt->text;
+	return NULL;
+}
+
 /** push error on error list.
  * @param state parser state
  * @param location position where the error occured
