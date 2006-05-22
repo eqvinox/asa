@@ -232,6 +232,8 @@ static void ssav_release(struct ssav_params *p)
 
 static struct ssav_params *ssav_get_style(struct ssa_style *style)
 {
+	if (!style->vmptr)
+		return NULL;
 	return ssav_addref((struct ssav_params *)style->vmptr);
 }
 
@@ -279,8 +281,8 @@ static struct ssav_params *ssav_alloc_clone_clear(struct ssav_params *p,
 		+ sizeof(struct ssav_controller) * rv->nctr);
 }
 
-static void ssav_set_font(struct ssav_params *pset,
-	ssa_string *name, long int weight, long int italic, double size)
+static enum ssav_errc ssav_set_font(struct ssav_params *pset,
+	ssa_string *name, double size)
 {
 	if (pset->fsiz)
 		asaf_srelease(pset->fsiz);
@@ -294,10 +296,8 @@ static void ssav_set_font(struct ssav_params *pset,
 		pset->f.name = xmalloc(namesz);
 		ssa_utf8_conv(pset->f.name, name);
 	}
-	pset->f.weight = weight;
-	pset->f.italic = !!italic;
-	pset->f.size = size;
 
+	pset->f.size = size;
 	pset->font = asaf_request(pset->f.name, pset->f.italic,
 		pset->f.weight);
 	if (!pset->font) {
@@ -307,20 +307,28 @@ static void ssav_set_font(struct ssav_params *pset,
 			pset->font = asaf_request(FONT_FALLBACK2,
 				pset->f.italic, pset->f.weight);
 			if (!pset->font)
-				abort();	/*XXX*/
+				return SSAVEC_FONTNX;
 		}
 	}
 	pset->fsiz = asaf_reqsize(pset->font, pset->f.size);
+	return 0;
 }
 
 static struct ssav_params *ssav_alloc_style(struct ssa *ssa,
-	struct ssa_style *style)
+	struct ssa_vm *vm, struct ssa_style *style)
 {
+	enum ssav_errc ec;
 	struct ssav_params *rv = xmalloc(sizeof(struct ssav_params));
 	memset(rv, 0, sizeof(*rv));
 
-	ssav_set_font(rv, &style->fontname, style->fontweight,
-		style->italic, style->fontsize);
+	ec = ssav_set_font(rv, &style->fontname, style->fontsize);
+	if (ec) {
+		ssav_add_error_style(ec, rv->f.name, vm, style);
+		xfree(rv);
+		return NULL;
+	}
+	rv->f.weight = style->fontweight;
+	rv->f.italic = !!style->italic;
 
 	rv->m.fscx = style->scx;
 	rv->m.fscy = style->scy;
@@ -412,6 +420,8 @@ static void ssav_reset(struct ssav_prepare_ctx *ctx,
 				struct ssa_node *n, ptrdiff_t param)
 {
 	struct ssa_style *reset_to = n->v.style ? n->v.style : ctx->l->style;
+	if (!reset_to->vmptr)
+		return;
 	ssav_release(ctx->pset);
 	ssav_assign_pset(ctx, ssav_get_style(reset_to));
 }
@@ -727,9 +737,13 @@ static void ssav_prep_dialogue(struct ssa *ssa, struct ssa_vm *vm,
 	struct ssa_line *l, struct ssa_frag **hint)
 {
 	struct ssa_node *cn = l->node_first;
-	struct ssav_line *vl = xmalloc(sizeof(struct ssav_line));
+	struct ssav_line *vl;
 	struct ssav_prepare_ctx ctx;
 
+	if (!l->style->vmptr)
+		return;
+
+	vl = xmalloc(sizeof(struct ssav_line));
 	vl->start = l->start;
 	vl->end = l->end;
 	vl->ass_layer = l->ass_layer;
@@ -808,7 +822,7 @@ void ssav_create(struct ssa_vm *vm, struct ssa *ssa)
 	vm->firstlayer = NULL;
 
 	while (s) {
-		s->vmptr = ssav_alloc_style(ssa, s);
+		s->vmptr = ssav_alloc_style(ssa, vm, s);
 		s = s->next;
 	}
 
