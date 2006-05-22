@@ -390,15 +390,15 @@ struct ssa {
 		playresy,
 		timer;
 	ssa_string
-		*collisions,
-		*title,
-		*orig_script,
-		*orig_transl,
-		*orig_edit,
-		*orig_timing,
-		*synch_point,
-		*script_upd_by,
-		*upd_details;
+		collisions,
+		title,
+		orig_script,
+		orig_transl,
+		orig_edit,
+		orig_timing,
+		synch_point,
+		script_upd_by,
+		upd_details;
 /*---*/
 /*	enum asa_csp
 		csp;
