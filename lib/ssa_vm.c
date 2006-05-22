@@ -18,6 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  ****************************************************************************/
 
+#define _BSD_SOURCE /* strdup() */
+
 #include "common.h"
 #include "ssa.h"
 #include "ssawrap.h"
@@ -25,6 +27,7 @@
 #include "ssarun.h"
 #include "asa.h"
 #include "asafont.h"
+#include "asaerror.h"
 
 #include <wchar.h>
 #include <wctype.h>
@@ -65,6 +68,7 @@ static void ssav_anim_lineinsert(struct ssav_prepare_ctx *ctx,
 
 typedef void ssav_ipfunc(ifp);
 typedef void ssav_apfunc(afp);
+static void ssav_ignore(ifp);
 
 static void ssav_nl(ifp);
 static void ssav_text(ifp);
@@ -129,7 +133,7 @@ static struct ssa_ipnode iplist[SSAN_MAX] = {
 	{ssav_double,	ssava_double,	e(m.fay)},	/* aG SSAN_FAY */
 
 	{ssav_double,	ssava_double,	e(m.fsp)},	/* ?l SSAN_FSP */
-	{NULL,		NULL,		0},		/* -- SSAN_FE */
+	{ssav_ignore,	NULL,		0},		/* -- SSAN_FE */
 	{ssav_colour,	ssava_colour,	0x0},		/* al SSAN_COLOUR */
 	{ssav_colour,	ssava_colour,	0x1},		/* al SSAN_COLOUR2 */
 	{ssav_colour,	ssava_colour,	0x2},		/* al SSAN_COLOUR3 */
@@ -160,6 +164,8 @@ static struct ssa_ipnode iplist[SSAN_MAX] = {
 
 };
 
+/****************************************************************************/
+
 static inline int ssa_strcmp(const ssa_string *a, const ssa_string *b)
 {
 	ptrdiff_t lena = a->e - a->s, lenb = b->e - b->s;
@@ -167,6 +173,47 @@ static inline int ssa_strcmp(const ssa_string *a, const ssa_string *b)
 		return 1;
 	return memcmp(a->s, b->s, lena * sizeof(ssaout_t));
 }
+
+static struct ssav_error *ssav_add_error(struct ssa_vm *vm,
+	enum ssav_errc code, char *ext_str)
+{
+	struct ssav_error **prev = &vm->errlist, *me;
+	while (*prev)
+		prev = &(*prev)->next;
+
+	me = xmalloc(sizeof(struct ssav_error));
+	memset(me, 0, sizeof(struct ssav_error));
+	me->errorcode = code;
+	*prev = me;
+	if (ext_str)
+		me->ext_str = xstrdup(ext_str);
+	return me;
+}
+
+static void ssav_add_error_dlg(enum ssav_errc code, char *ext_str,
+	struct ssav_prepare_ctx *ctx, struct ssa_node *n)
+{
+	struct ssav_error *me = ssav_add_error(ctx->vm, code, ext_str);
+	me->context = SSAVECTX_DIALOGUE;
+	me->i.dlg.lineno = ctx->l->no;
+	me->i.dlg.lexline = ctx->l;
+	me->i.dlg.line = ctx->vl;
+	me->i.dlg.node = n;
+	me->i.dlg.ntype = n->type;
+}
+
+static void ssav_add_error_style(enum ssav_errc code, char *ext_str,
+	struct ssa_vm *vm, struct ssa_style *s)
+{
+	struct ssav_error *me = ssav_add_error(vm, code, ext_str);
+	size_t namesz = ssa_utf8_len(&s->name);
+	me->context = SSAVECTX_STYLE;
+	me->i.style.style = s;
+	me->i.style.stylename = xmalloc(namesz);
+	ssa_utf8_conv(me->i.style.stylename, &s->name);
+}
+
+/****************************************************************************/
 
 static struct ssav_params *ssav_addref(struct ssav_params *p)
 {
@@ -325,6 +372,13 @@ static void ssav_assign_pset(struct ssav_prepare_ctx *ctx,
 			}
 		}
 	ctx->pset = newpset;
+}
+
+/****************************************************************************/
+
+static void ssav_ignore(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
+	ptrdiff_t param)
+{
 }
 
 /****************************************************************************/
@@ -565,6 +619,9 @@ static void ssav_anim(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
 			struct ssa_ipnode *ip = &iplist[SSAN(cn->type)];
 			if (ip->afunc)
 				ip->afunc(ctx, cn, ip->param, &ctr);
+			else
+				ssav_add_error_dlg(SSAVEC_NOANIM, NULL,
+					ctx, cn);
 		}
 		cn = cn->next;
 	}
@@ -710,6 +767,9 @@ static void ssav_prep_dialogue(struct ssa *ssa, struct ssa_vm *vm,
 			struct ssa_ipnode *ip = &iplist[SSAN(cn->type)];
 			if (ip->func)
 				ip->func(&ctx, cn, ip->param);
+			else
+				ssav_add_error_dlg(SSAVEC_NOTSUP, NULL,
+					&ctx, cn);
 		}
 		cn = cn->next;
 	}

@@ -39,6 +39,7 @@
 
 #include "common.h"
 #include "ssa.h"
+#include "asaerror.h"
 
 #include <wchar.h>
 #include <wctype.h>

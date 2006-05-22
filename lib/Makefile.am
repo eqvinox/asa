@@ -10,12 +10,12 @@ amd64/commit.o: $(srcdir)/amd64/commit.asm
 lib_LTLIBRARIES = libasa.la
 libasa_la_SOURCES = \
 	asa_core.c \
+	asa_errtexts.c \
 	asa_font.c \
 	assa.c \
 	avl.c \
 	spanproc.c \
 	ssa_anim.c \
-	ssa_errtexts.c \
 	ssa_frag.c \
 	ssa_glyphload.c \
 	ssa_lexer.c \

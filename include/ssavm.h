@@ -33,6 +33,8 @@
 #define SSA_DEBUG 1
 #endif
 
+struct ssav_error;
+
 union ssav_ctrval {
 	struct {
 		colour_t val;
@@ -170,6 +172,8 @@ struct ssa_vm {
 
 	struct ssa_frag *cache;
 	struct assa_layer *firstlayer;
+
+	struct ssav_error *errlist;
 
 /* positioner */
 	double playresx, playresy;

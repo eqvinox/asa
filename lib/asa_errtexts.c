@@ -19,9 +19,9 @@
  ****************************************************************************/
 
 #include "common.h"
-#include "ssa.h"
+#include "asaerror.h"
 
-struct ssaec_desc ssaec[SSAEC_MAX] = {
+struct asaec_desc ssaec[ASAEC_MAX] = {
 /* 0 */
 {0, "no error",
 	"",
@@ -227,6 +227,25 @@ struct ssaec_desc ssaec[SSAEC_MAX] = {
 	"in the middle of the file.\n\nAlthough ASA skips over stray BOMs, "
 	"other parsers may not do so. It is recommended to only put exactly "
 	"one BOM at the very beginning of the file.",
+	NULL},
+/* 37 SSAVEC_NOTSUP */
+{3, "command/option not supported",
+	"ASA is not able to correctly process this option yet.",
+	NULL},
+/* 38 SSAVEC_FONTNX */
+{3, "font not found",
+	"The font requested by this style/override was not found."
+#ifdef _WIN32
+	"\n\nOn Windows this problem is primarily caused by the GetFontData "
+	"interface in conjunction with copyrighted or non-TrueType fonts." 
+#endif
+	,
+	NULL},
+/* 39 SSAVEC_NOANIM */
+{3, "unanimatable parameter",
+	"The script is trying to animate a parameter for which no animation "
+	"controller exists. Either ASA lacks the support for this or "
+	"animating this element does not make sense (e.g. \\fn, \\fad).",
 	NULL}
 };
 

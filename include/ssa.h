@@ -36,6 +36,8 @@ extern "C" {
 #define __BYTE_ORDER	__LITTLE_ENDIAN
 #endif
 
+struct ssa_error;			/* defined in asaerror.h */
+
 /** script version.
  * determines behaviour in many cases
  */
@@ -89,69 +91,6 @@ typedef struct ssa_string {
 
 extern size_t ssa_utf8_len(ssa_string *s);
 extern void ssa_utf8_conv(char *out, ssa_string *s);
-
-/** error codes */
-enum ssa_errc {
-	SSAEC_NOTSUP = 1,		/**< command/option not supported */
-	SSAEC_UNKNOWNVER,		/**< unknown script version */
-	SSAEC_AMBIGUOUS_SVER,		/**< ambiguous script version */
-	SSAEC_INVAL_ENCODING,		/**< invalid input encoding */
-	SSAEC_PARSEERROR,		/**< parse error */
-	SSAEC_EXC_NUMORSIGN,		/**< expecting number or sign */
-	SSAEC_EXC_NUM,			/**< expecting number */
-	SSAEC_EXC_COLOUR,		/**< expecting colour code */
-	SSAEC_EXC_DCOL,			/**< expected ':' */
-	SSAEC_EXC_AMPERSAND,		/**< expected '&' */
-	SSAEC_EXC_BRACE,		/**< expected '(' */
-	SSAEC_MISS_BRACE,		/**< missing closing brace */
-	SSAEC_LEADWS_BRACE,		/**< leading whitespace before '(' */
-	SSAEC_NUM_2LONG,		/**< number too long */
-	SSAEC_NUM_INVAL,		/**< invalid number */
-	SSAEC_TRUNCLINE,		/**< truncated line */
-	SSAEC_TRAILGB_PARAM,		/**< trailing garbage in parameter */
-	SSAEC_TRAILGB_LINE,		/**< trailing garbage on line */
-	SSAEC_TRAILGB_EFFECT,		/**< trailing garbage in effect */
-	SSAEC_TRAILGB_BRACE,		/**< trailing garbage in brace */
-	SSAEC_TRAILGB_CSVBRACE,		/**< trailing garbage in csv brace */
-	SSAEC_TRAILGB_TIME,		/**< trailing garbage after time */
-	SSAEC_TRAILGB_ACCEL,		/**< trailing garbage after time */
-	SSAEC_TRAILGB_COLOUR,		/**< trailing garbage in colour */
-	SSAEC_GB_STYLEOVER,		/**< garbage in style override */
-	SSAEC_STYLEOVER_UNRECOG,	/**< unrecognized style override */
-	SSAEC_EFFECT_UNRECOG,		/**< unrecognized effect */
-	SSAEC_UNKNSTYLE,		/**< unknown style */
-	SSAEC_R0,			/**< problematic use of '0' style */
-	SSAEC_INVAL_TIME,		/**< invalid time */
-	SSAEC_INVAL_ACCEL,		/**< invalid acceleration */
-	SSAEC_INVAL_ANI,		/**< invalid animation */
-	SSAEC_INVAL_ENC,		/**< invalid encoding value */
-	SSAEC_COLOUR_STRANGE,		/**< unusual colour length */
-	SSAEC_COLOUR_ALPHALOST,		/**< alpha value lost */
-	SSAEC_STRAY_BOM,		/**< stray BOM */
-
-	SSAEC_MAX
-};
-
-/** error strings */
-struct ssaec_desc {
-	int sev;			/**< severity */
-	char *sh;			/**< short description */
-	char *add;			/**< long (additional description) */
-	char *warn;			/**< warning text */
-};
-extern struct ssaec_desc ssaec[SSAEC_MAX];	/**< error text table */
-
-#define SSA_ENOORIGIN (~0UL)
-/** error message */
-struct ssa_error {
-	struct ssa_error *next;
-	unsigned lineno;		/**< one-based line number */
-	unsigned column;		/**< zero-based column number */
-	ssasrc_t *textline;		/**< line. free() this! */
-	unsigned linelen;
-	unsigned origin;		/**< zero-based error origin */
-	enum ssa_errc errorcode;
-};
 
 typedef unsigned char alpha_t;
 typedef unsigned char colour_one_t;
