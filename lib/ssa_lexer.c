@@ -595,6 +595,18 @@ static const ssasrc_t *ssa_chr(const ssasrc_t *now, const ssasrc_t *end,
 	return NULL;
 }
 
+/** ssa_strdup - duplicate ssa_string.
+ * @param dst destionation ssa_string.
+ * @param src source
+ * */
+static void ssa_strdup(ssa_string *dst, ssa_string *src)
+{
+	size_t size = (char *)src->e - (char *)src->s + sizeof(ssaout_t);
+	dst->s = xmalloc(size);
+	memcpy(dst->s, src->s, size);
+	dst->e = dst->s + (src->e - src->s);
+}
+
 /** ssa_setver - check & set ssa version (SSA / ASS).
  * @param param (lparam) zero to parse text, nonzero to set to lparam
  * @param elem unused
@@ -1343,16 +1355,17 @@ static unsigned ssa_std(struct ssa_state *state, par_t param, void *elem)
 }
 
 /** find style with given name.
- * @return NULL = not found.
- * BROKEN. (need ssa_string <> ssa_string compare).
  * (for external use)
+ * @return NULL = not found.
  */
 struct ssa_style *ssa_findstyle(struct ssa *output, ssa_string *name)
 {
 	struct ssa_style *now = output->style_first;
+	int len = (char *)name->e - (char *)name->s;
 	while (now) {
-/*		if (!ssa_cmpout(now->name.s, now->name.e, name, NULL))
-			return now; */
+		int nlen = (char *)now->name.e - (char *)now->name.s;
+		if (len == nlen && !memcmp(name->s, now->name.s, len))
+			return now;
 		now = now->next;
 	}
 	return NULL;
