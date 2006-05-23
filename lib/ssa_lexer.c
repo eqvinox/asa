@@ -1812,7 +1812,6 @@ static unsigned ssa_do_colour(struct ssa_state *state, colour_t *ret,
 		if (!ssa_scannum(state, buf, &bptr, 0, 1, 12))
 			return 0;
 		result.l = ssatoul(buf, &endptr, 10);
-		VB_BEGONE
 	}
 		
 	if (bptr != endptr || (digits == 2 && result.l >= 0x100)) {
