@@ -1723,17 +1723,20 @@ static unsigned ssa_clip(struct ssa_state *state, par_t param, void *elem)
 static inline unsigned ssa_scanhex(struct ssa_state *state, ssasrc_t *buf,
 	ssasrc_t **bptr, unsigned maxlen)
 {
+	int html = state->param[0] == '#';
 	*bptr = buf;
 	if (state->param == state->pend
-		|| state->param[0] != '&') {
+		|| (state->param[0] != '&' && !html)) {
 		ssa_add_error(state, state->param, SSAEC_EXC_AMPERSAND);
 		return 0;
 	}
-	state->param++;
-	if (state->param == state->pend
-		|| ssa_toupper(state->param[0]) != 'H') {
-		ssa_add_error(state, state->param, SSAEC_EXC_COLOUR);
-		return 0;
+	if (!html) {
+		state->param++;
+		if (state->param == state->pend
+			|| ssa_toupper(state->param[0]) != 'H') {
+			ssa_add_error(state, state->param, SSAEC_EXC_COLOUR);
+			return 0;
+		}
 	}
 	state->param++;
 		
@@ -1754,6 +1757,9 @@ static inline unsigned ssa_scanhex(struct ssa_state *state, ssasrc_t *buf,
 		ssa_add_error(state, state->param, SSAEC_NUM_2LONG);
 		return 0;
 	}
+	**bptr = '\0';
+	if (html)
+		return 1;
 	if (*state->param != '&')
 		ssa_add_error(state, state->param,
 			(*bptr - buf == 6) || (*bptr - buf == 8)
@@ -1761,7 +1767,6 @@ static inline unsigned ssa_scanhex(struct ssa_state *state, ssasrc_t *buf,
 			: SSAEC_TRAILGB_COLOUR);
 	else
 		state->param++;
-	**bptr = '\0';
 	return 1;
 }
 
@@ -1791,6 +1796,18 @@ static unsigned ssa_do_colour(struct ssa_state *state, colour_t *ret,
 				: SSAEC_COLOUR_STRANGE);
 		result.l = ssatoul(buf, &endptr, 16);
 		VB_BEGONE
+	} else if (state->param[0] == '#') {
+		if (!ssa_scanhex(state, buf, &bptr,
+			digits == 6 ? 9 : digits + 1))
+			return 0;
+		if (bptr - buf != digits)
+			ssa_add_error_ext(state, origin, state->param,
+				(digits == 6) && (bptr - buf == 8)
+				? SSAEC_COLOUR_ALPHALOST
+				: SSAEC_COLOUR_STRANGE);
+		result.l = ssatoul(buf, &endptr, 16);
+		if (digits == 8 || (digits == 6 && bptr - buf == 8))
+			result.l = (result.l >> 8) | (result.l << 24);
 	} else {
 		if (!ssa_scannum(state, buf, &bptr, 0, 1, 12))
 			return 0;
