@@ -96,15 +96,13 @@ static struct ssa output;
 static struct ssa_vm vm;
 static struct asaerrdisp errdisp;
 
-gboolean gas_load()
+static gboolean gas_load(const gchar *curname, gboolean uopt)
 {
 	GtkWidget *dialog;
 	gladewidget(filechooser);
-	gladewidget(opt_unicodehaywire);
 	gladewidget(i_scripttype);
 	gladewidget(t_proc);
 	gladewidget(t_parse);
-	gchar *curname;
 	int fd;
 	void *data;
 	struct ssa_line *l;
@@ -112,18 +110,11 @@ gboolean gas_load()
 	struct rusage bef, mid, aft;
 	long usec1, usec2;
 	int rv, errc, lines;
-	int uopt;
 	gchar *text;
 	
-	curname = gtk_file_chooser_get_filename(
-		GTK_FILE_CHOOSER(filechooser));
-	uopt = !gtk_toggle_button_get_active(
-		GTK_TOGGLE_BUTTON(opt_unicodehaywire));
-
 	if ((fd = open(curname, O_RDONLY)) == -1) {
 		gas_error("Error opening %s:\n(%d) %s", curname,
 			errno, strerror(errno));
-		g_free(curname);
 		return FALSE;
 	};
 	fstat(fd, &st);
@@ -131,7 +122,6 @@ gboolean gas_load()
 		close(fd);
 		gas_error("Error mmap'ing %s:\n(%d) %s", curname,
 			errno, strerror(errno));
-		g_free(curname);
 		return FALSE;
 	};
 
@@ -145,7 +135,6 @@ gboolean gas_load()
 		gas_error("Fundamental parse error in %s:\n%s", curname,
 			rv == 1 ? "File too short" :
 			"Invalid Unicode data");
-		g_free(curname);
 		return FALSE;
 	}
 	getrusage(RUSAGE_SELF, &mid);
@@ -179,32 +168,48 @@ gboolean gas_load()
 	text = g_strdup_printf("%6.4f s", (float)usec2 / 1000000.0f);
 	gtk_entry_set_text(GTK_ENTRY(t_proc), text);
 	g_free(text);
+	return TRUE;
+}
 
-	g_free(curname);
+#if 0
+	gladewidget(load);
+	gtk_window_set_transient_for(GTK_WINDOW(load),
+		GTK_WINDOW(filechooser));
+	gtk_widget_show(load);
+	...
+	gtk_widget_hide(load);
+#endif
+
+gboolean gas_open_do(const gchar *curname, gboolean uopt)
+{
+	gladewidget(mainw);
+	gladewidget(filechooser);
+
+	if (!gas_load(curname, uopt))
+		return FALSE;
+
+	something_open = 1;
+
+	gtk_widget_hide(filechooser);
+	gtk_widget_hide(glade_xml_get_widget(xml, "load_align"));
+	gtk_widget_show(mainw);
+	set_pane(0);
 	return TRUE;
 }
 
 void gas_open_ok(GtkButton *button, gpointer user_data)
 {
-	gladewidget(mainw);
-	gladewidget(load);
 	gladewidget(filechooser);
+	gladewidget(opt_unicodehaywire);
+	gchar *curname;
+	gboolean uopt;
 
-	gtk_window_set_transient_for(GTK_WINDOW(load),
-		GTK_WINDOW(filechooser));
-	gtk_widget_show(load);
-
-	if (!gas_load()) {
-		gtk_widget_hide(load);
-		return;
-	}
-	something_open = 1;
-
-	gtk_widget_hide(load);
-	gtk_widget_hide(filechooser);
-	gtk_widget_hide(glade_xml_get_widget(xml, "load_align"));
-	gtk_widget_show(mainw);
-	set_pane(0);
+	curname = gtk_file_chooser_get_filename(
+		GTK_FILE_CHOOSER(filechooser));
+	uopt = !gtk_toggle_button_get_active(
+		GTK_TOGGLE_BUTTON(opt_unicodehaywire));
+	gas_open_do(curname, uopt);
+	g_free(curname);
 }
 
 void gas_open_cancel(GtkButton *button, gpointer user_data)
@@ -216,14 +221,35 @@ void gas_open_cancel(GtkButton *button, gpointer user_data)
 	gtk_widget_hide(glade_xml_get_widget(xml, "filechooser"));
 }
 
+static gboolean unicodefe = FALSE;
+
+static GOptionEntry entries[] =
+{
+  { "unicode-fe", 'U', 0, G_OPTION_ARG_NONE, &unicodefe,
+  	"Interpret (screw up) \\fe in Unicode files", NULL },
+  { NULL, 0, 0, 0, NULL, NULL, NULL }
+};
+
 int main(int argc, char **argv, char **envp)
 {
+	GError *error = NULL;
+
 	asaf_init();
-	gtk_init(&argc, &argv);
+	gtk_init_with_args(&argc, &argv, "[<SUBFILE>]",
+		entries, NULL, &error);
 	aed_init();
     	xml = glade_xml_new(ASA_GLADE, NULL, NULL);
 	glade_xml_signal_autoconnect(xml);
-	aed_create(&errdisp, xml, "warnview", "warnline", "warninfo", "warnnext", "warnprev");
+	aed_create(&errdisp, xml, "warnview", "warnline", "warninfo",
+		"warnnext", "warnprev");
+	if (unicodefe) {
+		gladewidget(opt_unicodehaywire);
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(opt_unicodehaywire), TRUE);
+	}
+	if (argc != 2 || !gas_open_do(argv[1], unicodefe)) {
+		gladewidget(filechooser);
+		gtk_widget_show(filechooser);
+	}
 	gtk_main();
     
 	return 0;
