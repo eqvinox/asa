@@ -62,7 +62,7 @@ AC_ARG_ENABLE([gtk],
 	fi
 
 if test -n "$asa_gtk_ok"
-then	PKG_CHECK_MODULES([GTK], gtk+-2.0 >= 2.4.0 glib-2.0 >= 2.4.0,, [
+then	PKG_CHECK_MODULES([GTK], gtk+-2.0 >= 2.4.0 glib-2.0 >= 2.4.0 libglade-2.0 >= 2.4.0,, [
 		AC_MSG_WARN([asa GUI frontends disabled due to lack of Gtk+-2.0])
 		unset asa_gtk_ok
 	])
@@ -186,10 +186,6 @@ AC_OUTPUT([
 	lib/amd64/Makefile
 	interfaces/Makefile
 	gtk/Makefile
-	gtk/include/Makefile
-	gtk/common/Makefile
-	gtk/gcheck/Makefile
-	gtk/viewer/Makefile
 	check/Makefile
 	Makefile
 ])

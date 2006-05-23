@@ -22,7 +22,7 @@
 #define _ASAERRDISP_H
 
 struct asaerrdisp {
-	GtkWidget *list, *src, *detl;
+	GtkWidget *list, *src, *detl, *bprev, *bnext;
 
 	GtkListStore *errstor;
 	GtkTreeSelection *errsel;
@@ -34,7 +34,10 @@ struct asaerrdisp {
 };
 
 extern void aed_init();
-extern GtkWidget *aed_create(struct asaerrdisp *disp);
-extern unsigned aed_open(struct asaerrdisp *disp, struct ssa *ssa);
+extern void aed_create(struct asaerrdisp *disp, GladeXML *xml,
+	const gchar *listname, const gchar *srcname, const gchar *detlname,
+	const gchar *bnext, const gchar *bprev);
+extern unsigned aed_open(struct asaerrdisp *disp, struct ssa *ssa,
+	struct ssa_vm *vm);
 
 #endif /* _ASAERRDISP_H */

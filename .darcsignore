@@ -48,8 +48,8 @@
 ^include/acconf.h.in$
 ^include/stamp-h1$
 #
-^gtk/viewer/gasaview$
-^gtk/gcheck/gasacheck$
+^gtk/gasa$
+^gtk/asa.gladep$
 ^check/asacheck$
 #
 \.png$
