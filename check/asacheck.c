@@ -27,6 +27,7 @@
 #include "asafont.h"
 #include "ssavm.h"
 #endif
+#include "asaerror.h"
 
 #include <stdio.h>
 #include <string.h>
