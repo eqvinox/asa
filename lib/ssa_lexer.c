@@ -1762,7 +1762,8 @@ static inline unsigned ssa_scanhex(struct ssa_state *state, ssasrc_t *buf,
 		return 1;
 	if (*state->param != '&')
 		ssa_add_error(state, state->param,
-			(*bptr - buf == 6) || (*bptr - buf == 8)
+			(*bptr - buf == (ptrdiff_t)maxlen - 1)
+			|| (maxlen == 9 && *bptr - buf == 6)
 			? SSAEC_EXC_AMPERSAND
 			: SSAEC_TRAILGB_COLOUR);
 	else
