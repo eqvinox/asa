@@ -1765,10 +1765,12 @@ static inline unsigned ssa_scanhex(struct ssa_state *state, ssasrc_t *buf,
 	return 1;
 }
 
+#define VB_BEGONE onetmp = result.c.r; result.c.r = result.c.b; result.c.b = onetmp;
 /** read (hex or dec) colour-like value */
 static unsigned ssa_do_colour(struct ssa_state *state, colour_t *ret,
 	int digits)
 {
+	colour_one_t onetmp;
 	colour_t result;
 	ssasrc_t buf[12]; /* -2147483648 */
 	ssasrc_t *bptr, *endptr;
@@ -1788,11 +1790,12 @@ static unsigned ssa_do_colour(struct ssa_state *state, colour_t *ret,
 				? SSAEC_COLOUR_ALPHALOST
 				: SSAEC_COLOUR_STRANGE);
 		result.l = ssatoul(buf, &endptr, 16);
-		
+		VB_BEGONE
 	} else {
 		if (!ssa_scannum(state, buf, &bptr, 0, 1, 12))
 			return 0;
 		result.l = ssatoul(buf, &endptr, 10);
+		VB_BEGONE
 	}
 		
 	if (bptr != endptr || (digits == 2 && result.l >= 0x100)) {

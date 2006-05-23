@@ -291,7 +291,7 @@ int main(int argc, char **argv)
 			frame.csp = ASACSP_RGB;
 			frame.bmp.rgb.d.d = d;
 			frame.bmp.rgb.d.stride = WIDTH * 4;
-			frame.bmp.rgb.fmt = blend ? ASACSPR_BGRx : ASACSPR_BGRA;
+			frame.bmp.rgb.fmt = blend ? ASACSPR_RGBx : ASACSPR_RGBA;
 			if (!inrend)
 				memset(frame.bmp.rgb.d.d, 0x88, WIDTH * HEIGHT * 4);
 			else
