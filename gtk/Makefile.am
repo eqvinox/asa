@@ -1,3 +1,5 @@
+EXTRA_DIST = asa.glade
+
 pkgdatadir = $(datadir)/asa
 pkgdata_DATA = asa.glade
 

@@ -52,6 +52,8 @@
 ^gtk/asa.gladep$
 ^check/asacheck$
 #
+^.*\.tar\.(gz|bz2)$
+#
 \.png$
 \.ssa$
 \.ass$
