@@ -1371,29 +1371,22 @@ struct ssa_style *ssa_findstyle(struct ssa *output, ssa_string *name)
 	return NULL;
 }
 
-/** lookup & put style in.
- * longest match counts
+/** find style referenced by input file.
+ * @param state current state with pointers to style name in param / pend
+ * @return found style or NULL
  */
-static unsigned ssa_sstyle(struct ssa_state *state, par_t param, void *elem)
+static struct ssa_style *ssa_sstyle_int(struct ssa_state *state)
 {
 	const ssasrc_t *next, *bestp = NULL, *err;
 	struct ssa_style *now = state->output->style_first, *best = NULL;
-	
-	if (state->anisource)
-		ssa_add_error_ext(state, state->param, state->anisource,
-			SSAEC_INVAL_ANI);
 
-	if (state->param == state->pend) {
-		*((struct ssa_style **)apply_offset(elem, param.offset)) =
-			NULL;
-		return 1;
-	}	
+	if (state->param == state->pend)
+		return NULL;
+
 	if (state->param + 1 == state->pend && *state->param == '0') {
 		ssa_add_error(state, state->param, SSAEC_R0);
-		*((struct ssa_style **)apply_offset(elem, param.offset)) =
-			NULL;
 		state->param++;
-		return 1;
+		return NULL;
 	}
 
 	if (*state->param == '*')
@@ -1418,9 +1411,21 @@ static unsigned ssa_sstyle(struct ssa_state *state, par_t param, void *elem)
 		ssa_add_error(state, state->param, SSAEC_UNKNSTYLE);
 		bestp = state->pend;
 	}
-	
-	*((struct ssa_style **)apply_offset(elem, param.offset)) = best;
 	state->param = bestp;
+	return best;
+}
+
+/** lookup & put style in.
+ * longest match counts
+ */
+static unsigned ssa_sstyle(struct ssa_state *state, par_t param, void *elem)
+{
+	if (state->anisource)
+		ssa_add_error_ext(state, state->param, state->anisource,
+			SSAEC_INVAL_ANI);
+
+	*((struct ssa_style **)apply_offset(elem, param.offset)) =
+		ssa_sstyle_int(state);
 	return 1;
 }
 
