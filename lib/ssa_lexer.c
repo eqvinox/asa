@@ -178,6 +178,7 @@ static unsigned ssa_genfp (struct ssa_state *state, par_t param, void *elem);
 static unsigned ssa_setver(struct ssa_state *state, par_t param, void *elem);
 static unsigned ssa_notsup(struct ssa_state *state, par_t param, void *elem);
 static unsigned ssa_style (struct ssa_state *state, par_t param, void *elem);
+static unsigned ssa_styleex(struct ssa_state *state, par_t param, void *elem);
 static unsigned ssa_std   (struct ssa_state *state, par_t param, void *elem);
 static unsigned ssa_sstyle(struct ssa_state *state, par_t param, void *elem);
 static unsigned ssa_time  (struct ssa_state *state, par_t param, void *elem);
@@ -198,6 +199,7 @@ static struct ssa_parsetext ptkeys[] = {
 	/* content lines - first because used the most */
 	{"dialogue:",		ssa_std,	{SSAL_DIALOGUE}},
 	{"style:",		ssa_style,	{0}},
+	{"styleex:",		ssa_styleex,	{0}},
 	{"comment:",		ssa_std,	{SSAL_COMMENT}},
 	{"picture:",		ssa_std,	{SSAL_PICTURE}},
 	{"sound:",		ssa_std,	{SSAL_SOUND}},
@@ -924,6 +926,7 @@ static unsigned ssa_style(struct ssa_state *state, par_t param, void *elem)
 	state->output->style_last = &style->next;
 	/* TODO: init with sane defaults */
 	style->relative = 1;
+	style->node_last = &style->node_first;
 
 	if (!ssa_parse_xsv(state, plstyle, style, ','))
 		return 0;
@@ -1527,6 +1530,56 @@ static inline unsigned ssa_do_commas(struct ssa_state *state,
 	if (tmp != end)
 		ssa_add_error(state, tmp, SSAEC_TRAILGB_CSVBRACE);
 	return commac;
+}
+
+/** ssa_styleex - parse StyleEx: line.
+ * @param param unused
+ * @param elem (points to output) unused
+ */
+static unsigned ssa_styleex(struct ssa_state *state, par_t param, void *elem)
+{
+	struct ssa_style *basestyle, *style;
+	const ssasrc_t *commas[3], *end;
+	unsigned ncommas;
+
+	ssa_skipws(state, &state->param, state->end);
+	end = ssa_chr(state->param, state->end, '\\');
+	ncommas = ssa_do_commas(state, end ? end : state->end, commas, 4);
+	if (!ncommas) {
+		ssa_add_error(state, state->end, SSAEC_TRUNCLINE);
+		return 0;
+	}
+
+	state->param = commas[1] + 1;
+	state->pend = commas[2];
+	basestyle = ssa_sstyle_int(state);
+	if (!basestyle) {
+		ssa_add_error(state, state->param, SSAEC_UNKNSTYLE);
+		return 0;
+	}
+	style = xmalloc(sizeof(struct ssa_style));
+	memcpy(style, basestyle, sizeof(struct ssa_style));
+	ssa_src2str(state, commas[0], commas[1], &style->name);
+	ssa_strdup(&style->fontname, &basestyle->fontname);
+	style->next = NULL;
+	style->base = basestyle;
+	style->node_first = NULL;
+	style->node_last = &style->node_first;
+	*state->output->style_last = style;
+	state->output->style_last = &style->next;
+
+	if (ncommas == 1) {
+		ssa_add_error(state, state->end, SSAEC_TRUNCLINE);
+		return 0;
+	}
+	state->param = commas[2] + 1;
+	state->pend = state->end;
+	if (!ssa_parseoverr(state, &style->node_last))
+		return 0;
+	if (state->param == state->end)
+		return 1;
+	ssa_add_error(state, state->param, SSAEC_TRAILGB_LINE);
+	return 0;
 }
 
 /** read in start & end time for t */

@@ -115,9 +115,11 @@ typedef union {
 	unsigned int l;			/**< always is 0xAARRGGBB */
 } colour_t;
 
+struct ssa_node;
+
 /** style section entry */
 struct ssa_style {
-	struct ssa_style *next;
+	struct ssa_style *next, *base;
 
 	ssa_string
 		name,
@@ -155,6 +157,9 @@ struct ssa_style {
 		alpha,		/**< SSA doesn't implement this */
 		encoding,	/**< line encoding */
 		relative;	/**< coordinate base, 0 means screen */
+	struct ssa_node
+		*node_first,
+		**node_last;
 	void *vmptr;		/**< (opaque) pointer for VM */
 };
 

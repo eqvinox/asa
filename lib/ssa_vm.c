@@ -230,11 +230,39 @@ static void ssav_release(struct ssav_params *p)
 	}
 }
 
-static struct ssav_params *ssav_get_style(struct ssa_style *style)
+static void ssav_hunt_ex(struct ssav_prepare_ctx *ctx,
+	struct ssa_style *style)
 {
+	struct ssa_node *cn = style->node_first;
+
+	if (style->base)
+		ssav_hunt_ex(ctx, style->base);
+
+	while (cn) {
+		if (SSAN(cn->type) < SSAN_MAX) {
+			struct ssa_ipnode *ip = &iplist[SSAN(cn->type)];
+			if (ip->func)
+				ip->func(ctx, cn, ip->param);
+			else
+				ssav_add_error_style(SSAVEC_NOTSUP, NULL,
+					ctx->vm, style);
+		}
+		cn = cn->next;
+	}
+}
+
+static struct ssav_params *ssav_get_style(struct ssav_prepare_ctx *ctx,
+	struct ssa_style *style)
+{
+	struct ssav_params *rv, *temp;
 	if (!style->vmptr)
 		return NULL;
-	return ssav_addref((struct ssav_params *)style->vmptr);
+	temp = ctx->pset;
+	ctx->pset = ssav_addref((struct ssav_params *)style->vmptr);
+	ssav_hunt_ex(ctx, style);
+	rv = ctx->pset;
+	ctx->pset = temp;
+	return rv;
 }
 
 static struct ssav_params *ssav_alloc_size(struct ssav_params *p,
@@ -423,7 +451,7 @@ static void ssav_reset(struct ssav_prepare_ctx *ctx,
 	if (!reset_to->vmptr)
 		return;
 	ssav_release(ctx->pset);
-	ssav_assign_pset(ctx, ssav_get_style(reset_to));
+	ssav_assign_pset(ctx, ssav_get_style(ctx, reset_to));
 }
 
 static inline void ssav_splitcolour(struct ssa_node *n, ptrdiff_t *param,
@@ -780,7 +808,8 @@ static void ssav_prep_dialogue(struct ssa *ssa, struct ssa_vm *vm,
 
 	ssaw_prepare(&ctx.wrap, vl);
 
-	ctx.pset = ssav_get_style(l->style);
+	ctx.pset = NULL;
+	ctx.pset = ssav_get_style(&ctx, l->style);
 	while (cn) {
 		if (SSAN(cn->type) < SSAN_MAX) {
 			struct ssa_ipnode *ip = &iplist[SSAN(cn->type)];
