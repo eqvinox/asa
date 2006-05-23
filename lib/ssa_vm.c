@@ -620,8 +620,13 @@ static void ssav_anim(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
 {
 	struct ssa_node *cn = n->v.t.node_first;
 	struct ssav_controller ctr;
-	ctr.t1 = n->v.t.times[0] * 0.001;
-	ctr.length_rez = 1. / ((n->v.t.times[1] - n->v.t.times[0]) * 0.001);
+	if (n->v.t.flags & SSA_T_HAVETIMES) {
+		ctr.t1 = n->v.t.times[0] * 0.001;
+		ctr.length_rez = 1. / ((n->v.t.times[1] - n->v.t.times[0]) * 0.001);
+	} else {
+		ctr.t1 = 0.0;
+		ctr.length_rez = 1. / (ctx->vl->end - ctx->vl->start);
+	}
 	ctr.accel = n->v.t.accel;
 	ctr.type = SSAVC_NONE;
 	while (cn) {

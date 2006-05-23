@@ -233,6 +233,12 @@ enum ssa_nodetype {
 #define SSANR		0x80	/**< 00 - empty parameter / revert */
 #define SSAN(x)		((x) & ~SSANR)
 
+/** describes which fields are set in a t node */
+enum ssa_t_flags {
+	SSA_T_HAVEACCEL = 1 << 0,	/**< acceleration was specified */
+	SSA_T_HAVETIMES = 1 << 1	/**< times are valid */
+};
+
 struct ssa_node {
 	struct ssa_node *next;
 
@@ -262,7 +268,14 @@ struct ssa_node {
 			long x1, y1, x2, y2, start, end;
 		} move;
 		struct {
+			enum ssa_t_flags flags;
+			/** animation start/end.
+			 * fill with line unless flags has SSA_T_HAVETIMES.
+			 */
 			long times[2];
+			/** animation acceleration.
+			 * set to 1.0 if unspecified
+			 */
 			double accel;
 			struct ssa_node *node_first, **node_last;
 		} t;

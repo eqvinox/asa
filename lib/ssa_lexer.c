@@ -1575,8 +1575,6 @@ static unsigned ssa_t(struct ssa_state *state, par_t param, void *elem)
 			SSAEC_INVAL_ANI);
 
 	node->v.t.node_last = &node->v.t.node_first;
-	node->v.t.times[1] = (long)((state->sline->end -
-		state->sline->start) * 1000);
 	node->v.t.accel = 1.0;
 	
 	pstart = ssa_chr(state->param, state->pend, '\\');
@@ -1587,6 +1585,7 @@ static unsigned ssa_t(struct ssa_state *state, par_t param, void *elem)
 		pstart = cbrace;
 	commac = ssa_do_commas(state, pstart, commas, 4);
 	state->param = pstart;
+	node->v.t.flags = commac;
 	if (commac & 2)
 		ssa_t_do_times(state, commas, node);
 	if (commac & 1)
