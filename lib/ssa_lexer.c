@@ -1043,19 +1043,19 @@ static iconv_t ssa_enc2iconv(struct ssa_state *state, long int encoding)
 /*	case 2:   cs = "";		break;  - SYMBOL_CHARSET? */
 
 	case 77:  cs = "MAC";		break; /* MAC_CHARSET */
-	case 128: cs = "SJIS";		break; /* SHIFTJIS_CHARSET */
-	case 129: cs = "EUC-KR";	break; /* HANGEUL_CHARSET */
+	case 128: cs = "CP932";		break; /* SHIFTJIS_CHARSET */
+	case 129: cs = "CP949";		break; /* HANGEUL_CHARSET */
 	case 130: cs = "JOHAB";		break; /* JOHAB_CHARSET */
-	case 134: cs = "GB2312";	break; /* GB2312_CHARSET */
-	case 136: cs = "BIG-5";		break; /* CHINESEBIG5_CHARSET */
+	case 134: cs = "CP936";		break; /* GB2312_CHARSET */
+	case 136: cs = "CP950";		break; /* CHINESEBIG5_CHARSET */
 	case 161: cs = "MS-GREEK";	break; /* GREEK_CHARSET */
 	case 162: cs = "MS-TURK";	break; /* TURKISH_CHARSET */
-/*	case 163: cs = "";		break;  - VIETNAMESE_CHARSET? */
+	case 163: cs = "CP1258";	break; /* VIETNAMESE_CHARSET? */
 	case 177: cs = "MS-HEBR";	break; /* HEBREW_CHARSET */
 	case 178: cs = "MS-ARAB";	break; /* ARABIC_CHARSET */
 	case 186: cs = "CP1257";	break; /* BALTIC_CHARSET */
 	case 204: cs = "MS-CYRL";	break; /* RUSSIAN_CHARSET */
-/*	case 222: cs = "";		break;  - THAI_CHARSET? */
+	case 222: cs = "CP874";		break; /* THAI_CHARSET? */
 	case 238: cs = "MS-EE";		break; /* EASTEUROPE_CHARSET */
 
 	default:  cs = "MS-ANSI";
