@@ -264,7 +264,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\lib\ssa_errtexts.c"
+				RelativePath="..\lib\asa_errtexts.c"
 				>
 			</File>
 			<File
