@@ -1,0 +1,6 @@
+# List of source files which contain translatable strings.
+gtk/gasa.c
+gtk/asaerrdisp.c
+gtk/asa.glade
+lib/asa_errtexts.c
+

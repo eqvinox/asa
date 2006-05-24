@@ -1,5 +1,12 @@
 #!/bin/bash -x
 
+for I in config.rpath mkinstalldirs
+do	ln -sf /usr/share/gettext/$I ac
+done
+for I in boldquot.sed en@boldquot.header en@quot.header insert-header.sin Makefile.in.in quot.sed remove-potcdate.sin Rules-quot
+do	ln -sf /usr/share/gettext/po/$I po
+done
+
 aclocal && \
 autoheader && \
 libtoolize --automake && \

@@ -1285,7 +1285,7 @@ ASS2 (v4.00++)</property>
   <property name="name" translatable="yes">asa</property>
   <property name="copyright" translatable="yes">© 2004, 2005, 2006 by David Lamparter (equinox)</property>
   <property name="comments" translatable="yes">portable subtitles</property>
-  <property name="license" translatable="yes">		    GNU GENERAL PUBLIC LICENSE
+  <property name="license" translatable="no">		    GNU GENERAL PUBLIC LICENSE
 		       Version 2, June 1991
 
  Copyright (C) 1989, 1991 Free Software Foundation, Inc.

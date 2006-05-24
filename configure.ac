@@ -2,6 +2,7 @@ AC_PREREQ(2.57)
 AC_INIT(asa, 0.3.2)
 AC_CONFIG_AUX_DIR(ac)
 AM_INIT_AUTOMAKE
+AM_GNU_GETTEXT([external])
 AC_CONFIG_HEADER([include/acconf.h])
 AC_PREFIX_DEFAULT(~)
 
@@ -12,8 +13,6 @@ asa_optimize=NONE
 asa_opt_disp="none - renderer slower than a snail on slow-motion"
 asa_gtk_disp=no
 
-
-AC_CANONICAL_HOST
 
 # Checks for programs.
 AC_PROG_CC
@@ -187,6 +186,7 @@ AC_OUTPUT([
 	interfaces/Makefile
 	gtk/Makefile
 	check/Makefile
+	po/Makefile.in
 	Makefile
 ])
 

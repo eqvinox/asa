@@ -57,3 +57,9 @@
 \.png$
 \.ssa$
 \.ass$
+#
+^po/POTFILES$
+^po/asa.pot$
+^po/remove-potcdate.sed$
+^po/stamp-po$
+^po/.*\.gmo$

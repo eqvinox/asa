@@ -29,12 +29,17 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <locale.h>
+#include <libintl.h>
 
 #include "common.h"
 #include "ssa.h"
 #include "ssavm.h"
 
 #include "asaerrdisp.h"
+
+#define _(str) gettext(str)
+#define N_(str) str
 
 static int something_open = 0;
 static GladeXML *xml;
@@ -142,15 +147,15 @@ static void gas_info_set(struct ssa *ssa)
 
 	gtk_list_store_clear(model);
 
-	setinfo("Title:", title);
-	setinfo("Collisions:", collisions);
-	setinfo("Original Script:", orig_script);
-	setinfo("Original Translation:", orig_transl);
-	setinfo("Original Edit:", orig_edit);
-	setinfo("Original Timing:", orig_timing);
-	setinfo("Synch Point:", synch_point);
-	setinfo("Script updated by:", script_upd_by);
-	setinfo("Update details:", upd_details);
+	setinfo(_("Title:"), title);
+	setinfo(_("Collisions:"), collisions);
+	setinfo(_("Original Script:"), orig_script);
+	setinfo(_("Original Translation:"), orig_transl);
+	setinfo(_("Original Edit:"), orig_edit);
+	setinfo(_("Original Timing:"), orig_timing);
+	setinfo(_("Synch Point:"), synch_point);
+	setinfo(_("Script updated by:"), script_upd_by);
+	setinfo(_("Update details:"), upd_details);
 }
 
 static gboolean gas_load(const gchar *curname, gboolean uopt)
@@ -170,14 +175,14 @@ static gboolean gas_load(const gchar *curname, gboolean uopt)
 	int rv, errc, lines;
 	
 	if ((fd = open(curname, O_RDONLY)) == -1) {
-		gas_error("Error opening %s:\n(%d) %s", curname,
+		gas_error(_("Error opening %s:\n(%d) %s"), curname,
 			errno, strerror(errno));
 		return FALSE;
 	};
 	fstat(fd, &st);
 	if (!(data = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0))) {
 		close(fd);
-		gas_error("Error mmap'ing %s:\n(%d) %s", curname,
+		gas_error(_("Error mmap'ing %s:\n(%d) %s"), curname,
 			errno, strerror(errno));
 		return FALSE;
 	};
@@ -189,9 +194,10 @@ static gboolean gas_load(const gchar *curname, gboolean uopt)
 	if ((rv = ssa_lex(&output, data, st.st_size))) {
 		munmap(data, 0);
 		close(fd);
-		gas_error("Fundamental parse error in %s:\n%s", curname,
-			rv == 1 ? "File too short" :
-			"Invalid Unicode data");
+		gas_error(
+			rv == 1 ? _("Fundamental parse error in %s:\nFile too short")
+			: _("Fundamental parse error in %s:\nInvalid Unicode data"),
+			curname);
 		return FALSE;
 	}
 	getrusage(RUSAGE_SELF, &mid);
@@ -213,14 +219,14 @@ static gboolean gas_load(const gchar *curname, gboolean uopt)
 		lines++, l = l->next;
 
 	snprintf(buf, sizeof(buf),
-		"Script Type: %s\n"
+		_("Script Type: %s\n"
 		"Load time: %6.4fs parsing, %6.4fs processing\n"
-		"%d lines, %d warnings",
-		output.version == SSAVV_UNDEF 	? "undefined / fuzzy mode" :
-		output.version == SSAVV_4 	? "SSA v4.0 / original" :
-		output.version == SSAVV_4P	? "ASS (v4.0+)" :
-		output.version == SSAVV_4PP	? "ASS2 (v4.0++)" :
-						  "unknown",
+		"%d lines, %d warnings"),
+		output.version == SSAVV_UNDEF 	? _("undefined / fuzzy mode") :
+		output.version == SSAVV_4 	? _("SSA v4.0 / original") :
+		output.version == SSAVV_4P	? _("ASS (v4.0+)") :
+		output.version == SSAVV_4PP	? _("ASS2 (v4.0++)") :
+						  _("unknown"),
 		(float)usec1 / 1000000.0f,
 		(float)usec2 / 1000000.0f,
 		lines, errc);
@@ -295,13 +301,17 @@ static gboolean unicodefe = FALSE;
 static GOptionEntry entries[] =
 {
   { "unicode-fe", 'U', 0, G_OPTION_ARG_NONE, &unicodefe,
-  	"Interpret (screw up) \\fe in Unicode files", NULL },
+  	N_("Interpret (screw up) \\fe in Unicode files"), NULL },
   { NULL, 0, 0, 0, NULL, NULL, NULL }
 };
 
 int main(int argc, char **argv, char **envp)
 {
 	GError *error = NULL;
+
+	setlocale(LC_ALL, "");
+	bindtextdomain(PACKAGE, LOCALEDIR);
+	textdomain(PACKAGE);
 
 	asaf_init();
 	gtk_init_with_args(&argc, &argv, "[<SUBFILE>]",

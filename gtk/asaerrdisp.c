@@ -29,8 +29,12 @@
 #include <wchar.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <libintl.h>
 
 #include "asaerrdisp.h"
+
+#define _(str) gettext(str)
+#define N_(str) str
 
 #define DISPWRAP
 #define NEAT_SPACE
@@ -47,7 +51,7 @@ enum {
 
 #include "inline_pngs.h"
 GdkPixbuf *pixs[5];
-char *severity[5] = {"oddness", "normal", "warning", "error", "critical"};
+char *severity[5] = {N_("oddness"), N_("normal"), N_("warning"), N_("error"), N_("critical")};
 
 static void aed_next(GtkWidget *widget, gpointer data)
 {
@@ -130,7 +134,7 @@ static void aed_filliter(struct asaerrdisp *disp, struct ssa_error *e,
 	gtk_list_store_set(disp->errstor, iter,
 		COL_LINE, lineno,
 		COL_COLUMN, column,
-		COL_ERROR, ssaec[e->errorcode].sh,
+		COL_ERROR, gettext(ssaec[e->errorcode].sh),
 		COL_PTR, e,
 		COL_PIXBUF, pixs[ssaec[e->errorcode].sev],
 		COL_VM, 0,
@@ -146,7 +150,7 @@ static void aed_filliter_vm(struct asaerrdisp *disp, struct ssav_error *e,
 	gtk_list_store_set(disp->errstor, iter,
 		COL_LINE, lineno,
 		COL_COLUMN, "",
-		COL_ERROR, ssaec[e->errorcode].sh,
+		COL_ERROR, gettext(ssaec[e->errorcode].sh),
 		COL_PTR, e,
 		COL_PIXBUF, pixs[ssaec[e->errorcode].sev],
 		COL_VM, 1,
@@ -320,31 +324,33 @@ static void aed_update_sel_int(struct asaerrdisp *disp, GtkTreeModel *mod,
 	gtk_text_buffer_delete(disp->detlbuf, &ti1, &ti2);
 
 	gtk_text_buffer_insert_with_tags_by_name(disp->detlbuf, &ti1,
-		ssaec[errorcode].sh, -1, "bold", NULL);
+		gettext(ssaec[errorcode].sh), -1, "bold", NULL);
 
 	gtk_text_buffer_insert_with_tags_by_name(disp->detlbuf, &ti1,
-		"\n(severity: ", 12, "sev", NULL);
+		_("\n(severity: "), -1, "sev", NULL);
 	gtk_text_buffer_insert_pixbuf(disp->detlbuf, &ti1,
 		pixs[ssaec[errorcode].sev]);
 	gtk_text_buffer_insert_with_tags_by_name(disp->detlbuf, &ti1,
 		" ", 1, "sev", NULL);
 	gtk_text_buffer_insert_with_tags_by_name(disp->detlbuf, &ti1,
-		severity[ssaec[errorcode].sev], -1, "sev",
+		gettext(severity[ssaec[errorcode].sev]), -1, "sev",
 		(ssaec[errorcode].sev > 1 ? "bold" : NULL), NULL);
 	gtk_text_buffer_insert_with_tags_by_name(disp->detlbuf, &ti1,
-		")\n\n", 3, "sev", NULL);
+		_(")\n\n"), -1, "sev", NULL);
 	if (ssaec[errorcode].add)
 		gtk_text_buffer_insert(disp->detlbuf, &ti1,
-			ssaec[errorcode].add, -1);
+			*ssaec[errorcode].add
+				? gettext(ssaec[errorcode].add)
+				: "", -1);
 	else {
 		gtk_text_buffer_insert_with_tags_by_name(disp->detlbuf, &ti1,
-			"no additional information availiable", -1, "gray",
+			_("no additional information availiable"), -1, "gray",
 			NULL);
 	}
 	if (ssaec[errorcode].warn) {
 		gtk_text_buffer_insert(disp->detlbuf, &ti1, "\n\n", 2);
 		gtk_text_buffer_insert_with_tags_by_name(disp->detlbuf, &ti1,
-			ssaec[errorcode].warn, -1, "bold", "red", NULL);
+			gettext(ssaec[errorcode].warn), -1, "bold", "red", NULL);
 	}
 	gtk_text_buffer_insert(disp->detlbuf, &ti1, "\n", 1);
 }
@@ -394,7 +400,7 @@ void aed_create(struct asaerrdisp *disp, GladeXML *xml,
 	g_object_set(rend, "xalign", (gfloat)1.0f, NULL);
 	gtk_tree_view_insert_column_with_attributes(
 		GTK_TREE_VIEW(disp->list), -1,
-		"Line", rend,
+		_("Line"), rend,
 		"text", COL_LINE,
 		NULL);
 	col = gtk_tree_view_get_column(GTK_TREE_VIEW(disp->list), 0);
@@ -404,7 +410,7 @@ void aed_create(struct asaerrdisp *disp, GladeXML *xml,
 	rend = gtk_cell_renderer_text_new();
 	gtk_tree_view_insert_column_with_attributes(
 		GTK_TREE_VIEW(disp->list), -1,
-		"Column", rend,
+		_("Column"), rend,
 		"text", COL_COLUMN,
 		NULL);
 	col = gtk_tree_view_get_column(GTK_TREE_VIEW(disp->list), 1);
@@ -412,7 +418,7 @@ void aed_create(struct asaerrdisp *disp, GladeXML *xml,
 
 /* error list: 3rd column - Error (2 renderers, pixmap + text)*/
 	col = gtk_tree_view_column_new();
-	gtk_tree_view_column_set_title(col, "Error");
+	gtk_tree_view_column_set_title(col, _("Error"));
 	rend = gtk_cell_renderer_pixbuf_new();
 	gtk_tree_view_column_pack_start(col, rend, FALSE);
 	gtk_tree_view_column_add_attribute(col, rend,
