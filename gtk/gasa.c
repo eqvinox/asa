@@ -280,6 +280,16 @@ void gas_open_cancel(GtkButton *button, gpointer user_data)
 	gtk_widget_hide(glade_xml_get_widget(xml, "filechooser"));
 }
 
+void gas_help_info(GtkWidget *widget, gpointer user_data)
+{
+	gladewidget(about);
+	gladewidget(mainw);
+
+	gtk_window_set_transient_for(GTK_WINDOW(about),
+		GTK_WINDOW(mainw));
+	gtk_widget_show(about);
+}
+
 static gboolean unicodefe = FALSE;
 
 static GOptionEntry entries[] =
