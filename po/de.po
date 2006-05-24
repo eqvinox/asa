@@ -1,0 +1,844 @@
+# german asa localization.
+# Copyright (C) 2006 David Lamparter
+# This file is distributed under the same license as the asa package.
+# David Lamparter <equinox@diac24.net>, 2006.
+#
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: asa\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2006-05-25 01:49+0200\n"
+"PO-Revision-Date: 2006-05-24 22:44+0200\n"
+"Last-Translator: David Lamparter <equinox@diac24.net>\n"
+"Language-Team: David Lamparter <equinox@diac24.net>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: gtk/gasa.c:150
+msgid "Title:"
+msgstr "Titel:"
+
+#: gtk/gasa.c:151
+msgid "Collisions:"
+msgstr "Kollisionen:"
+
+#: gtk/gasa.c:152
+msgid "Original Script:"
+msgstr "Ursprüngliches Skript:"
+
+#: gtk/gasa.c:153
+msgid "Original Translation:"
+msgstr "Ursprüngliche Übersetzung:"
+
+#: gtk/gasa.c:154
+msgid "Original Edit:"
+msgstr "Ursprüngliche Bearbeitung:"
+
+#: gtk/gasa.c:155
+msgid "Original Timing:"
+msgstr "Ursprüngliches Timing:"
+
+#: gtk/gasa.c:156
+msgid "Synch Point:"
+msgstr "Synchronisationspunkt:"
+
+#: gtk/gasa.c:157
+msgid "Script updated by:"
+msgstr "Skript aktualisiert von:"
+
+#: gtk/gasa.c:158
+msgid "Update details:"
+msgstr "Aktualisierungsdetails:"
+
+#: gtk/gasa.c:178
+#, c-format
+msgid ""
+"Error opening %s:\n"
+"(%d) %s"
+msgstr ""
+"Fehler beim Öffnen von %s:\n"
+"(%d) %s"
+
+#: gtk/gasa.c:185
+#, c-format
+msgid ""
+"Error mmap'ing %s:\n"
+"(%d) %s"
+msgstr ""
+"Fehler beim Laden von %s:\n"
+"(%d) %s"
+
+#: gtk/gasa.c:198
+#, c-format
+msgid ""
+"Fundamental parse error in %s:\n"
+"File too short"
+msgstr ""
+"Kritischer Fehler beim Laden von %s:\n"
+"Datei zu kurz"
+
+#: gtk/gasa.c:199
+#, c-format
+msgid ""
+"Fundamental parse error in %s:\n"
+"Invalid Unicode data"
+msgstr ""
+"Kritischer Fehler beim Laden von %s:\n"
+"Ungültige Unicode-Daten"
+
+#: gtk/gasa.c:222
+#, c-format
+msgid ""
+"Script Type: %s\n"
+"Load time: %6.4fs parsing, %6.4fs processing\n"
+"%d lines, %d warnings"
+msgstr ""
+"Skripttyp: %s\n"
+"Eingelesen in %6.4fs, verarbeitet in %6.4fs\n"
+"%d Zeilen, %d Warnungen"
+
+#: gtk/gasa.c:225
+msgid "undefined / fuzzy mode"
+msgstr "undefiniert / ungenauer Modus"
+
+#: gtk/gasa.c:226
+msgid "SSA v4.0 / original"
+msgstr "SSA v4.0 / original"
+
+#: gtk/gasa.c:227
+msgid "ASS (v4.0+)"
+msgstr "ASS (v4.0+)"
+
+#: gtk/gasa.c:228
+msgid "ASS2 (v4.0++)"
+msgstr "ASS2 (v4.0++)"
+
+#: gtk/gasa.c:229
+msgid "unknown"
+msgstr "unbekannt"
+
+#: gtk/gasa.c:304
+msgid "Interpret (screw up) \\fe in Unicode files"
+msgstr "Benutze (verdrehe) \\f_e in Unicode-Dateien"
+
+#: gtk/asaerrdisp.c:54
+msgid "oddness"
+msgstr "Merkwürdigkeit"
+
+#: gtk/asaerrdisp.c:54
+msgid "normal"
+msgstr "Normal"
+
+#: gtk/asaerrdisp.c:54
+msgid "warning"
+msgstr "Warnung"
+
+#: gtk/asaerrdisp.c:54
+msgid "error"
+msgstr "Fehler"
+
+#: gtk/asaerrdisp.c:54
+msgid "critical"
+msgstr "kritisch"
+
+#: gtk/asaerrdisp.c:330
+msgid ""
+"\n"
+"(severity: "
+msgstr ""
+"\n"
+"(Stufe: "
+
+#: gtk/asaerrdisp.c:339
+msgid ""
+")\n"
+"\n"
+msgstr ""
+")\n"
+"\n"
+
+#: gtk/asaerrdisp.c:347
+msgid "no additional information availiable"
+msgstr "keine zusätzlichen Informationen verfügbar"
+
+#: gtk/asaerrdisp.c:403
+msgid "Line"
+msgstr "Zeile"
+
+#: gtk/asaerrdisp.c:413
+msgid "Column"
+msgstr "Spalte"
+
+#: gtk/asaerrdisp.c:421
+msgid "Error"
+msgstr "Fehler"
+
+#: gtk/asa.glade:9 gtk/asa.glade:1285
+msgid "asa"
+msgstr "asa"
+
+#: gtk/asa.glade:41
+msgid "_File"
+msgstr "_Datei"
+
+#: gtk/asa.glade:78
+msgid "_View"
+msgstr "_Ansicht"
+
+#: gtk/asa.glade:87
+msgid "Script _Information"
+msgstr "_Informationen"
+
+#: gtk/asa.glade:109
+msgid "_Warnings"
+msgstr "_Warnungen"
+
+#: gtk/asa.glade:131
+msgid "_Display"
+msgstr "_Anzeige"
+
+#: gtk/asa.glade:157
+msgid "_Help"
+msgstr "_Hilfe"
+
+#: gtk/asa.glade:222
+msgid "Info"
+msgstr "Info"
+
+#: gtk/asa.glade:240
+msgid "Warnings"
+msgstr "Warnungen"
+
+#: gtk/asa.glade:259
+msgid "Display"
+msgstr "Anzeige"
+
+#: gtk/asa.glade:458
+msgid "_Previous"
+msgstr "_Vorheriger"
+
+#: gtk/asa.glade:515
+msgid "_Next"
+msgstr "_Nächster"
+
+#: gtk/asa.glade:713
+msgid "Image background"
+msgstr "Bildhintergrund"
+
+#: gtk/asa.glade:755
+msgid "Datei auswählen"
+msgstr "Datei auswählen"
+
+#: gtk/asa.glade:811
+msgid "x"
+msgstr "x"
+
+#: gtk/asa.glade:856
+msgid "Keep _alpha"
+msgstr "_Alpha beibehalten"
+
+#: gtk/asa.glade:920
+msgid "_Options"
+msgstr "_Optionen"
+
+#: gtk/asa.glade:1094
+msgid "Use \\f_e even in Unicode files"
+msgstr "\\f_e in Unicode-Dateien benutzen"
+
+#: gtk/asa.glade:1118
+msgid "_Force script type:"
+msgstr "Skripttyp er_zwingen:"
+
+#: gtk/asa.glade:1144
+msgid ""
+"Automatic\n"
+"SSA (v4.00)\n"
+"ASS (v4.00+)\n"
+"ASS2 (v4.00++)"
+msgstr ""
+"Automatisch\n"
+"SSA (v4.00)\n"
+"ASS (v4.00+)\n"
+"ASS2 (v4.00++)"
+
+#: gtk/asa.glade:1172
+msgid "Load Options"
+msgstr "Ladeoptionen"
+
+#: gtk/asa.glade:1203
+msgid "Loading script"
+msgstr "Lade skript"
+
+#: gtk/asa.glade:1241
+msgid "(...)"
+msgstr "(...)"
+
+#: gtk/asa.glade:1286
+msgid "© 2004, 2005, 2006 by David Lamparter (equinox)"
+msgstr "© 2004, 2005, 2006 by David Lamparter (equinox)"
+
+#: gtk/asa.glade:1287
+msgid "portable subtitles"
+msgstr "portable subtitles"
+
+#: gtk/asa.glade:1570
+msgid "http://asa.diac24.net/"
+msgstr "http://asa.diac24.net/"
+
+#: gtk/asa.glade:1572
+msgid "translator-credits"
+msgstr "Übersetzt von David Lamparter (equinox)"
+
+#: lib/asa_errtexts.c:28
+msgid "no error"
+msgstr "kein Fehler"
+
+#: lib/asa_errtexts.c:32 lib/asa_errtexts.c:234
+msgid "command/option not supported"
+msgstr "Befehl/Option nicht unterstützt"
+
+#: lib/asa_errtexts.c:33
+msgid ""
+"Asa does not have parse support for this option/style yet.\n"
+"\n"
+"This currently includes:\n"
+"- embedded fonts\n"
+"- embedded graphics\n"
+"- drawing commands (\\p and \\clip with paint commands)"
+msgstr ""
+"Asa verfügt zur Zeit über keine Unterstützung für diese Option / diesen "
+"Stil.\n"
+"\n"
+"Dies schliesst momentan ein:\n"
+"- eingebettete Schriftarten\n"
+"- eingebettete Grafiken\n"
+"- Zeichenbefehle (\\p und \\clip-Variante)"
+
+#: lib/asa_errtexts.c:38
+msgid "unknown script version"
+msgstr "Unbekannte Skriptversion"
+
+#: lib/asa_errtexts.c:39
+msgid ""
+"The asa parser was not able to recognize the given script version.\n"
+"\n"
+"Currently supported are 'v4.00' and 'v4.00+'"
+msgstr ""
+"Asa konnte nicht erkennen, welche Skriptversion diese Datei benutzt.\n"
+"\n"
+"Derzeit unterstützt sind 'v4.00' und 'v4.00+'"
+
+#: lib/asa_errtexts.c:43
+msgid "ambiguous script version"
+msgstr "Mehrdeutige Skriptversion"
+
+#: lib/asa_errtexts.c:44
+msgid ""
+"Two or more script version indicators are present in this script, not all of "
+"them indicating the same version.\n"
+"\n"
+"Check for and remove incorrect script version indicators. (this includes "
+"'[v4/v4+ Styles]')\n"
+"Asa is assuming ASS 4.00+ for this run."
+msgstr ""
+"Zwei oder mehr verschiedene benutzte Skriptversionen wurden in dieser Datei "
+"gefunden.\n"
+"\n"
+"Suchen und entfernen Sie unzutreffende Versionsindikatoren. (Schliesst "
+"insbesondere '[v4/v4+ Styles]' ein)\n"
+"Für diesen Durchlauf wurde ASS 4.00+ angenommen."
+
+#: lib/asa_errtexts.c:50
+msgid "invalid input encoding"
+msgstr "Ungültige Eingabekodierung"
+
+#: lib/asa_errtexts.c:51
+msgid ""
+"An nonconvertible, probably invalid byte sequence caused character set "
+"conversion to fail.\n"
+"\n"
+"Most of the cases, this is either a result of an incorrect \\fe (includes "
+"style 'encoding' field) or a damaged file."
+msgstr ""
+"Eine unkonvertierbare, wahrscheinlich ungültige Bytesequenz führte zum "
+"Fehlschlagen der Zeichensatzumwandlung.\n"
+"\n"
+"In den meisten Fällen ist die \\fe-Einstellung (bzw. das 'encoding'-Feld des "
+"Styles) falsch oder die Datei beschädigt."
+
+#: lib/asa_errtexts.c:55
+msgid ""
+"Asa supports and does character set conversions on Unicode files as well. "
+"Use \\fe0 for Unicode text."
+msgstr ""
+"Asa führt Zeichensatzumwandlungen auch in Unicode-Dateien durch. Benutzen "
+"Sie \\fe0 für Unicode-Text."
+
+#: lib/asa_errtexts.c:58
+msgid "parse error"
+msgstr "Syntaxfehler"
+
+#: lib/asa_errtexts.c:59
+msgid ""
+"The parser was unable to find a matching directive at the given byte "
+"position. Either the directive is unrecognized or there is junk in the "
+"script file."
+msgstr ""
+"An der markierten Position konnte keine Direktive des angegebenen Namens "
+"gefunden werden. Entweder handelt es sich um eine nicht unterstützte "
+"Direktive oder das Skript ist fehlerhaft."
+
+#: lib/asa_errtexts.c:64
+msgid "expecting number or sign"
+msgstr "Ziffer oder Vorzeichen erwartet"
+
+#: lib/asa_errtexts.c:65
+msgid ""
+"A number, optionally with a sign prefix, was expected at this position. "
+"However, other data was found."
+msgstr ""
+"Eine Ziffer, optional mit Vorzeichen, wurde an dieser Position erwartet. "
+"Stattdessen wurden jedoch andere Daten gefunden."
+
+#: lib/asa_errtexts.c:69
+msgid "expecting number"
+msgstr "Ziffer erwartet"
+
+#: lib/asa_errtexts.c:70
+msgid "A number was expected at this position, but not found."
+msgstr "Eine Ziffer wurde an dieser Position erwartet, aber nicht vorgefunden."
+
+#: lib/asa_errtexts.c:73
+msgid "expecting color code"
+msgstr "Farbcode erwartet"
+
+#: lib/asa_errtexts.c:74
+msgid ""
+"A color code was expected by the parser, but unrecognizable data was found."
+msgstr "Ein Farbcode wurde erwartet, aber unkenntliche Daten wurden gefunden."
+
+#: lib/asa_errtexts.c:78
+msgid "expected ':'"
+msgstr "':' erwartet"
+
+#: lib/asa_errtexts.c:79
+msgid "A double-colon (:) was expected to follow at this position."
+msgstr "Ein Doppelpunkt (:) wurde an dieser Stelle erwartet."
+
+#: lib/asa_errtexts.c:82
+msgid "expected '&'"
+msgstr "'&' erwartet"
+
+#: lib/asa_errtexts.c:83
+msgid "An ampersand (&) was expected to follow at this position."
+msgstr "Ein Kaufmännisches Und (&) wurde an dieser Stelle erwartet."
+
+#: lib/asa_errtexts.c:86
+msgid "expected '('"
+msgstr "'(' erwartet"
+
+#: lib/asa_errtexts.c:87
+msgid "An opening brace (\"(\") was expected to follow at this position."
+msgstr "Eine öffnende Klammer (\"(\") wurde an dieser Stelle erwartet."
+
+#: lib/asa_errtexts.c:91
+msgid "missing closing brace"
+msgstr "Schliessende Klammer fehlt"
+
+#: lib/asa_errtexts.c:92
+msgid ""
+"A brace was opened, but not closed. The parser recognized this at the given "
+"position, indicating it probably to be the last possible place to close the "
+"brace.\n"
+"\n"
+"Note this might be a runaway from an earlier brace."
+msgstr ""
+"Eine Klammer wurde geöffnet, aber nicht geschlossen. Dieser Fehler wurde an "
+"der markierten Stelle bemerkt, was bedeutet dass dies die letzte mögliche "
+"Position für die schliessende Klammer ist.\n"
+"\n"
+"Hinweis: der Fehler kann auch weiter vorne liegen."
+
+#: lib/asa_errtexts.c:98
+msgid "leading white space before '('"
+msgstr "Leerzeichen vor '('"
+
+#: lib/asa_errtexts.c:99
+msgid ""
+"White space was found before the opening brace of a style argument.\n"
+"\n"
+"The white space is ignored by asa but might cause compatibility issues with "
+"other renderers."
+msgstr ""
+"Vor der öffnenden Klammer eines Stilparameters wurde Leerraum gefuden.\n"
+"\n"
+"Während asa diesen Leerraum ignoriert, kann er zu Probemen mit anderen "
+"Renderern führen."
+
+#: lib/asa_errtexts.c:104
+msgid "number too long"
+msgstr "Zahl zu lang"
+
+#: lib/asa_errtexts.c:105
+msgid ""
+"The number at the given position was found to be too long / too large for "
+"asa to process. Please use a smaller number."
+msgstr ""
+"Die Zahl an dieser Stelle ist zu lang/zu gross für asa. Bitte benutzen Sie "
+"eine kleinere Zahl."
+
+#: lib/asa_errtexts.c:109
+msgid "invalid number"
+msgstr "Ungültige Zahl"
+
+#: lib/asa_errtexts.c:110
+msgid ""
+"The data at the given position failed to be parsed as number. This usually "
+"indicates junk in the script file."
+msgstr ""
+"Die gegebene Position konnte nicht als Zahl interpretiert werden. Dies "
+"deutet normalerweise auf ungültige Eingabedaten hin."
+
+#: lib/asa_errtexts.c:114
+msgid "truncated line"
+msgstr "Abgehackte Zeile"
+
+#: lib/asa_errtexts.c:115
+msgid ""
+"More fields were expected to follow at this position, but the end of the "
+"line was found.\n"
+"\n"
+"Note this may indicate missing field separators (i.e., commas) earlier in "
+"this line."
+msgstr ""
+"Weitere Felder wurden erwartet, doch das Ende der Zeile ist erreicht "
+"worden.\n"
+"\n"
+"Dies deutet unter Umständen auf fehlende Kommas weiter vorn auf dieser Zeile "
+"hin."
+
+#: lib/asa_errtexts.c:120
+msgid "trailing garbage in parameter"
+msgstr "Schrott hinter Parameter"
+
+#: lib/asa_errtexts.c:121
+msgid ""
+"Additional unrecognizable data was found after the end of parameter data. "
+"This usually means the file is erroneous."
+msgstr ""
+"Zusätzliche, unkenntliche Daten wurden nachdem Ende der Parameterdaten "
+"gefunden. Dies deutet normalerweise auf einen Fehler im Skript hin."
+
+#: lib/asa_errtexts.c:125
+msgid "trailing garbage on line"
+msgstr "Schrott am Ende der Zeile "
+
+#: lib/asa_errtexts.c:126
+msgid ""
+"Additional data was found at the end of this line, but not recognized. This "
+"data might either stem from an unsupported extension or indicate extra field "
+"separators (commas) earlier on the line"
+msgstr ""
+"Zusätzliche Daten wurden am Ende dieser Zeile gefunden, konnten aber nicht "
+"zugeordnet werden. Die Daten könnten von einer nicht unterstützten "
+"Erweiterung stammen oder auf fehlpositionierte Feldtrenner (Kommas) weiter "
+"vorn hinweisen."
+
+#: lib/asa_errtexts.c:132
+msgid "trailing garbage in effect"
+msgstr "Schrott hinter Effekt"
+
+#: lib/asa_errtexts.c:133
+msgid ""
+"Unrecognized data was found at the end of the effect field. The effect might "
+"be invalid or an unsupported extension."
+msgstr ""
+"Unkenntliche Daten wurden am ende des Effektfeldes gefunden. Der Effekt "
+"könnte ungültig oder eine nicht unterstützte Erweiterung sein."
+
+#: lib/asa_errtexts.c:137
+msgid "trailing garbage in brace"
+msgstr "Schrott am Ende von Klammer"
+
+#: lib/asa_errtexts.c:138
+msgid ""
+"Additional unrecognizable data was found in the brace at the given position."
+msgstr ""
+"Weitere, nicht zuzuordnende Daten wurden innerhalb dieser Klammer gefunden."
+
+#: lib/asa_errtexts.c:142
+msgid "trailing garbage in csv brace"
+msgstr "Schrott am Ende von CSV-Klammer"
+
+#: lib/asa_errtexts.c:143
+msgid ""
+"Additional unrecognizable data was found in the (CSV) brace at the given "
+"position."
+msgstr ""
+"Weitere, nicht zuzuordnende Daten wurden innerhalb dieser CSV-Klammer "
+"gefunden."
+
+#: lib/asa_errtexts.c:147
+msgid "trailing garbage after time"
+msgstr "Schrott hinter Zeit"
+
+#: lib/asa_errtexts.c:148
+msgid ""
+"Additional unrecognizable data was found after the time code at the given "
+"position."
+msgstr ""
+"Weitere, nicht zuzuordnende Daten nach der Zeitangabe an dieser Position "
+"gefunden."
+
+#: lib/asa_errtexts.c:152
+msgid "trailing garbage after acceleration"
+msgstr "Schrott hinter Beschleunigung"
+
+#: lib/asa_errtexts.c:153
+msgid ""
+"Additional unrecognizable data was found after the acceleration value at the "
+"given position."
+msgstr ""
+"Weitere, nicht zuzuordnende Daten nach der Beschleunigngsangabe an dieser "
+"Position gefunden."
+
+#: lib/asa_errtexts.c:157
+msgid "trailing garbage in color"
+msgstr "Schrott hinter Farbe"
+
+#: lib/asa_errtexts.c:158
+msgid ""
+"Additional unrecognizable data was found after the color code at the given "
+"position."
+msgstr ""
+"Weitere, nicht zuzuordnende Daten nach dem Farbcode an dieser Position "
+"gefunden."
+
+#: lib/asa_errtexts.c:162
+msgid "garbage in style override"
+msgstr "Schrott in Override"
+
+#: lib/asa_errtexts.c:163
+msgid ""
+"Unparseable sequences were found within a style override. ('{...}')\n"
+"\n"
+"This usually indicates (ab-)use of style override sections as comments. If "
+"this is the case, please remove the 'comments' and put them in Comment: "
+"lines or start a line with ;.\n"
+"\n"
+"Other possible reasons for this error are typos in style overrides / etc."
+msgstr ""
+"Zusammenhanglose Daten wurden am Ende dieser Stilcodesequenz ('{...}') "
+"gefunden.\n"
+"\n"
+"Dies deutet normalerweise auf den Missbrauch von Codemarkierungn als "
+"Kommentare hin. Falls dies der Fall ist, entfernen Sie bitte die \"Kommentare"
+"\" und ersetzen Sie sie durch Comment:-Zeilen oder beginnen Sie eine Zeile "
+"mit \";\".\n"
+"\n"
+"Andere mögliche Ursachen sind Tippfehler in Stilbefehlen / oder ähnliches."
+
+#: lib/asa_errtexts.c:171
+msgid "unrecognized style override"
+msgstr "Unbekannter Stilbefehl"
+
+#: lib/asa_errtexts.c:172
+msgid ""
+"The style override at this position is not recognized by asa. This probably "
+"indicates an unsupported extension."
+msgstr ""
+"Dieser Stilbefehl ist asa unbekannt. Dies deutet auf eine nicht unterstützte "
+"Erweiterung hin."
+
+#: lib/asa_errtexts.c:176
+msgid "unrecognized effect"
+msgstr "Unbekannter Effekt"
+
+#: lib/asa_errtexts.c:177
+msgid ""
+"The effect in this line is not recognized by asa. This probably indicates an "
+"unsupported extension."
+msgstr ""
+"Der auf dieser Zeile angegebene Effekt ist asa nicht bekannt. Dies deutet "
+"auf eine nicht unterstützte Erweiterung hin."
+
+#: lib/asa_errtexts.c:181
+msgid "unknown style"
+msgstr "Unbekannter Style"
+
+#: lib/asa_errtexts.c:182
+msgid ""
+"The Style: used by this line was not defined previously. Please check for "
+"typos and/or add a style definition at the beginning of the file."
+msgstr ""
+"Der von dieser Zeile benutzte Style: wurde nicht vorher definiert. Bitte "
+"prüfen Sie auf Tippfehler und/oder fügen sie eine passende Style:-Definition "
+"am Beginn der Datei ein."
+
+#: lib/asa_errtexts.c:187
+msgid "problematic use of '0' style"
+msgstr "Problembehaftete Benutzung des '0'-Styles"
+
+#: lib/asa_errtexts.c:188
+msgid ""
+"An element is referring to a style named '0'.\n"
+"\n"
+"A style with '0' as name historically stands for 'revert to line base "
+"style', Although asa supports this notation, it is considered deprecated and "
+"should not be used anymore."
+msgstr ""
+"Ein Element nimmt Zugriff auf einen Style namens '0'.\n"
+"\n"
+"'0' als Style hat historisch die Bedeutung \"auf Zeilenstandard "
+"zurückwechseln\". Obwohl asa diese Angabe unterstützt, wird sie als veraltet "
+"angesehen und sollte nicht weiter benutzt werden."
+
+#: lib/asa_errtexts.c:194
+msgid "invalid time"
+msgstr "Ungültige Zeit"
+
+#: lib/asa_errtexts.c:195
+msgid "An invalid time code was encountered."
+msgstr "Eine ungültige Zeitangabe wurde vorgefunden."
+
+#: lib/asa_errtexts.c:198
+msgid "invalid acceleration"
+msgstr "Ungültige Beschleunigung"
+
+#: lib/asa_errtexts.c:199
+msgid "An invalid acceleration value was encountered."
+msgstr "Eine ungültige Beschleunigungsangabe wurde vorgefunden."
+
+#: lib/asa_errtexts.c:202
+msgid "invalid animation"
+msgstr "Ungültige Animation"
+
+#: lib/asa_errtexts.c:203
+msgid ""
+"The given style override cannot be animated because it does not make sense "
+"or is not possible.\n"
+"\n"
+"This currently includes \\fn, \\r, \\fe, \\move and nested \\t."
+msgstr ""
+"Der angegebene Stilbefehl kann nicht animiert werden, da dies keinen Sinn "
+"ergibt oder nicht möglich ist.\n"
+"\n"
+"Dies schliesst derzeit ein: \\fn, \\r, \\fe, \\move sowie verschachteltes "
+"\\t."
+
+#: lib/asa_errtexts.c:206
+msgid "WARNING: use of \\fn or \\r in \\t causes the parser to bail out!"
+msgstr ""
+"WARNUNG: die Benutzung von \\fn oder \\r innerhalb von \\t führt zu "
+"inkorrekter Verarbeitung!"
+
+#: lib/asa_errtexts.c:208
+msgid "invalid encoding value"
+msgstr "Ungültige Zeichensatznummer"
+
+#: lib/asa_errtexts.c:209
+msgid ""
+"The encoding value used here is not known to asa. Either it is invalid or it "
+"needs to be added to asa."
+msgstr ""
+"Die angegebene Zeichensatznummer ist asa nicht bekannt. Sie ist entweder "
+"ungültig oder muss nachgetragen werden."
+
+#: lib/asa_errtexts.c:213
+msgid "unusual color length"
+msgstr "Unübliche Farblänge"
+
+#: lib/asa_errtexts.c:214
+msgid ""
+"A color value with a seldom used length has been found.\n"
+"\n"
+"While this is not exactly an error, it may be a typo or some bug. This "
+"message is purely informational and intended as help to spot possible "
+"logical errors."
+msgstr ""
+"Ein Farbwert mit einer selten benutzten Länge wurde gefunden\n"
+"\n"
+"Es handelt sich hierbei nicht um einen Fehler, sondern um einen Hinweis auf "
+"einen möglichen Tippfehler / Bug. Diese Nachricht ist rein informativ und "
+"dient lediglich dem Finden möglicher logischer Fehle."
+
+#: lib/asa_errtexts.c:220
+msgid "alpha value lost"
+msgstr "Alphawert ignoriert"
+
+#: lib/asa_errtexts.c:221
+msgid ""
+"An 8-digit color value was found where a 6-digit one was expected, causing "
+"the alpha part to be dropped.\n"
+"\n"
+"This occurs on \\c style overrides as well as on SSA 4.00 Style: lines. Use "
+"\\<num>a instead."
+msgstr ""
+"Ein achtstelliger Farbwert wurde an einer Stelle gefunden, an der ein "
+"sechsstelliger Wert verarbeitet wird, so dass der Alphaanteil ignoriert "
+"wurde.\n"
+"\n"
+"Sechsstellig sind alle \\c-Angaben sowie Style:-Farben in Original-SSA "
+"(4.00) Skripts. Benutzen Sie an diesen Stellen \\<num>a."
+
+#: lib/asa_errtexts.c:227
+msgid "stray BOM"
+msgstr "Freilaufender BOM"
+
+#: lib/asa_errtexts.c:228
+msgid ""
+"The parser encountered an Unicode BOM (byte order marker) in the middle of "
+"the file.\n"
+"\n"
+"Although asa skips over stray BOMs, other parsers may not do so. It is "
+"recommended to only put exactly one BOM at the very beginning of the file."
+msgstr ""
+"Ein freier Unicode-BOM (Byte Order Marker) wurde in der Mitte der Datei "
+"gefunden.\n"
+"\n"
+"Obwohl asa solche BOMs ignoriert, kann dies zu Problemen mit anderen "
+"Renderern führen. Bringen sie exakt einen BOM am Anfang der Datei an."
+
+#: lib/asa_errtexts.c:235
+msgid "Asa is not able to correctly process this option yet."
+msgstr "Asa kann diese Option zur Zeit noch nicht korrekt verarbeiten. "
+
+#: lib/asa_errtexts.c:238
+msgid "font not found"
+msgstr "Schriftart nicht gefunden"
+
+#: lib/asa_errtexts.c:240
+msgid ""
+"The font requested by this style/override was not found.\n"
+"\n"
+"On Windows this problem is primarily caused by the GetFontData interface in "
+"conjunction with copyrighted or non-TrueType fonts."
+msgstr ""
+"Die von diesem Style / Stilbefehl angeforderte Schriftart konnte nicht "
+"lokalisiert werden.\n"
+"\n"
+"Auf Windows-Systemen wird dieses Problem primär durch die GetFontData-"
+"Schnittstelle in Verbindung mit copyrightgeschützten oder nicht-TrueType-"
+"Schriftarten ausgelöst."
+
+#: lib/asa_errtexts.c:244
+msgid "The font requested by this style/override was not found."
+msgstr ""
+"Die von diesem Style / Stilbefehl angeforderte Schriftart konnte nicht "
+"lokalisiert werden."
+
+#: lib/asa_errtexts.c:248
+msgid "unanimatable parameter"
+msgstr "Nicht animierbarer Parameter"
+
+#: lib/asa_errtexts.c:249
+msgid ""
+"The script is trying to animate a parameter for which no animation "
+"controller exists. Either asa lacks the support for this or animating this "
+"element does not make sense (e.g. \\fn, \\fad)."
+msgstr ""
+"Das Skript versucht, einen Parameter zu animieren, für den asa über keine "
+"Animationsmethode verfügt. Entweder der Support hierfür fehlt, oder eine "
+"Animation macht bei diesem Element keinen Sinn (z.B. \\fn, \\fad)."
