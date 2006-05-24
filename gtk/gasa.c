@@ -96,13 +96,71 @@ static struct ssa output;
 static struct ssa_vm vm;
 static struct asaerrdisp errdisp;
 
+enum info_cols {
+	INFOCOL_TITLE = 0,
+	INFOCOL_VALUE,
+	INFOCOL_MAX
+};
+
+static void gas_info_init()
+{
+	gladewidget(infotree);
+	GtkListStore *model;
+	GtkTreeView *view = GTK_TREE_VIEW(infotree);
+
+	model = gtk_list_store_new(INFOCOL_MAX,
+		G_TYPE_STRING, G_TYPE_STRING);
+	gtk_tree_view_set_model(view, GTK_TREE_MODEL(model));
+
+	gtk_tree_view_insert_column_with_attributes(view, -1,
+		"Property", gtk_cell_renderer_text_new(),
+		"text", INFOCOL_TITLE,
+		NULL);
+	gtk_tree_view_insert_column_with_attributes(view, -1,
+		"Value", gtk_cell_renderer_text_new(),
+		"text", INFOCOL_VALUE,
+		NULL);
+}
+
+#define setinfo(name, field) do { \
+	if (ssa->field.s) { \
+		gchar *value = g_ucs4_to_utf8(ssa->field.s, \
+			ssa->field.e - ssa->field.s, NULL, NULL, NULL); \
+		gtk_list_store_append(model, &iter); \
+		gtk_list_store_set(model, &iter, \
+			INFOCOL_TITLE, name, \
+			INFOCOL_VALUE, value, -1); \
+		g_free(value); \
+	} } while (0)
+
+static void gas_info_set(struct ssa *ssa)
+{
+	gladewidget(infotree);
+	GtkTreeView *view = GTK_TREE_VIEW(infotree);
+	GtkListStore *model = GTK_LIST_STORE(gtk_tree_view_get_model(view));
+	GtkTreeIter iter;
+
+	gtk_list_store_clear(model);
+
+	setinfo("Title:", title);
+	setinfo("Collisions:", collisions);
+	setinfo("Original Script:", orig_script);
+	setinfo("Original Translation:", orig_transl);
+	setinfo("Original Edit:", orig_edit);
+	setinfo("Original Timing:", orig_timing);
+	setinfo("Synch Point:", synch_point);
+	setinfo("Script updated by:", script_upd_by);
+	setinfo("Update details:", upd_details);
+}
+
 static gboolean gas_load(const gchar *curname, gboolean uopt)
 {
 	GtkWidget *dialog;
 	gladewidget(filechooser);
-	gladewidget(i_scripttype);
-	gladewidget(t_proc);
-	gladewidget(t_parse);
+	gladewidget(infotext);
+	GtkTextBuffer *infobuf = gtk_text_view_get_buffer(
+		GTK_TEXT_VIEW(infotext));
+	char buf[1024];
 	int fd;
 	void *data;
 	struct ssa_line *l;
@@ -110,7 +168,6 @@ static gboolean gas_load(const gchar *curname, gboolean uopt)
 	struct rusage bef, mid, aft;
 	long usec1, usec2;
 	int rv, errc, lines;
-	gchar *text;
 	
 	if ((fd = open(curname, O_RDONLY)) == -1) {
 		gas_error("Error opening %s:\n(%d) %s", curname,
@@ -155,19 +212,21 @@ static gboolean gas_load(const gchar *curname, gboolean uopt)
 	while (l)
 		lines++, l = l->next;
 
-	gtk_entry_set_text(GTK_ENTRY(i_scripttype),
+	snprintf(buf, sizeof(buf),
+		"Script Type: %s\n"
+		"Load time: %6.4fs parsing, %6.4fs processing\n"
+		"%d lines, %d warnings",
 		output.version == SSAVV_UNDEF 	? "undefined / fuzzy mode" :
 		output.version == SSAVV_4 	? "SSA v4.0 / original" :
 		output.version == SSAVV_4P	? "ASS (v4.0+)" :
 		output.version == SSAVV_4PP	? "ASS2 (v4.0++)" :
-						  "unknown");
+						  "unknown",
+		(float)usec1 / 1000000.0f,
+		(float)usec2 / 1000000.0f,
+		lines, errc);
 
-	text = g_strdup_printf("%6.4f s", (float)usec1 / 1000000.0f);
-	gtk_entry_set_text(GTK_ENTRY(t_parse), text);
-	g_free(text);
-	text = g_strdup_printf("%6.4f s", (float)usec2 / 1000000.0f);
-	gtk_entry_set_text(GTK_ENTRY(t_proc), text);
-	g_free(text);
+	gtk_text_buffer_set_text(infobuf, buf, -1);
+	gas_info_set(&output);
 	return TRUE;
 }
 
@@ -242,6 +301,7 @@ int main(int argc, char **argv, char **envp)
 	glade_xml_signal_autoconnect(xml);
 	aed_create(&errdisp, xml, "warnview", "warnline", "warninfo",
 		"warnnext", "warnprev");
+	gas_info_init();
 	if (unicodefe) {
 		gladewidget(opt_unicodehaywire);
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(opt_unicodehaywire), TRUE);
