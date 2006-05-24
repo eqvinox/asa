@@ -1771,7 +1771,8 @@ static inline unsigned ssa_scanhex(struct ssa_state *state, ssasrc_t *buf,
 	return 1;
 }
 
-#define VB_BEGONE onetmp = result.c.r; result.c.r = result.c.b; result.c.b = onetmp;
+#define VB_BEGONE do { onetmp = result.c.r; result.c.r = result.c.b; \
+	result.c.b = onetmp; } while (0)
 /** read (hex or dec) colour-like value */
 static unsigned ssa_do_colour(struct ssa_state *state, colour_t *ret,
 	int digits)
@@ -1796,7 +1797,8 @@ static unsigned ssa_do_colour(struct ssa_state *state, colour_t *ret,
 				? SSAEC_COLOUR_ALPHALOST
 				: SSAEC_COLOUR_STRANGE);
 		result.l = ssatoul(buf, &endptr, 16);
-		VB_BEGONE
+		if (digits != 2)
+			VB_BEGONE;
 	} else if (state->param[0] == '#') {
 		if (!ssa_scanhex(state, buf, &bptr,
 			digits == 6 ? 9 : digits + 1))
@@ -1813,6 +1815,8 @@ static unsigned ssa_do_colour(struct ssa_state *state, colour_t *ret,
 		if (!ssa_scannum(state, buf, &bptr, 0, 1, 12))
 			return 0;
 		result.l = ssatoul(buf, &endptr, 10);
+		if (digits != 2)
+			VB_BEGONE;
 	}
 		
 	if (bptr != endptr || (digits == 2 && result.l >= 0x100)) {
