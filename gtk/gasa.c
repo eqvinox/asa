@@ -296,6 +296,44 @@ void gas_help_info(GtkWidget *widget, gpointer user_data)
 	gtk_widget_show(about);
 }
 
+static void gas_fc_init()
+{
+	gladewidget(filechooser);
+	gladewidget(dispbg_filechooser);
+	GtkFileChooser *fc = GTK_FILE_CHOOSER(filechooser);
+	GtkFileFilter *ff;
+
+	ff = gtk_file_filter_new();
+	gtk_file_filter_set_name(ff, _("All supported types (*.ssa, *.ass, *.ass2, *.as5)"));
+	gtk_file_filter_add_pattern(ff, "*.ssa");
+	gtk_file_filter_add_pattern(ff, "*.ass");
+	gtk_file_filter_add_pattern(ff, "*.ass2");
+	gtk_file_filter_add_pattern(ff, "*.as5");
+	gtk_file_chooser_add_filter(fc, ff);
+	ff = gtk_file_filter_new();
+	gtk_file_filter_set_name(ff, _("SSA files (*.ssa)"));
+	gtk_file_filter_add_pattern(ff, "*.ssa");
+	gtk_file_chooser_add_filter(fc, ff);
+	ff = gtk_file_filter_new();
+	gtk_file_filter_set_name(ff, _("ASS files (*.ass)"));
+	gtk_file_filter_add_pattern(ff, "*.ass");
+	gtk_file_chooser_add_filter(fc, ff);
+	ff = gtk_file_filter_new();
+	gtk_file_filter_set_name(ff, _("All files"));
+	gtk_file_filter_add_pattern(ff, "*");
+	gtk_file_chooser_add_filter(fc, ff);
+
+	fc = GTK_FILE_CHOOSER(dispbg_filechooser);
+	ff = gtk_file_filter_new();
+	gtk_file_filter_set_name(ff, _("Image files"));
+	gtk_file_filter_add_mime_type(ff, "image/*");
+	gtk_file_chooser_add_filter(fc, ff);
+	ff = gtk_file_filter_new();
+	gtk_file_filter_set_name(ff, _("All files"));
+	gtk_file_filter_add_pattern(ff, "*");
+	gtk_file_chooser_add_filter(fc, ff);
+}
+
 static gboolean unicodefe = FALSE;
 
 static GOptionEntry entries[] =
@@ -322,6 +360,7 @@ int main(int argc, char **argv, char **envp)
 	aed_create(&errdisp, xml, "warnview", "warnline", "warninfo",
 		"warnnext", "warnprev");
 	gas_info_init();
+	gas_fc_init();
 	if (unicodefe) {
 		gladewidget(opt_unicodehaywire);
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(opt_unicodehaywire), TRUE);

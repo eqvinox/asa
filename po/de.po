@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: asa\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2006-05-25 01:49+0200\n"
-"PO-Revision-Date: 2006-05-24 22:44+0200\n"
+"POT-Creation-Date: 2006-05-25 14:51+0200\n"
+"PO-Revision-Date: 2006-05-25 14:51+0200\n"
 "Last-Translator: David Lamparter <equinox@diac24.net>\n"
 "Language-Team: David Lamparter <equinox@diac24.net>\n"
 "MIME-Version: 1.0\n"
@@ -119,7 +119,27 @@ msgstr "ASS2 (v4.0++)"
 msgid "unknown"
 msgstr "unbekannt"
 
-#: gtk/gasa.c:304
+#: gtk/gasa.c:307
+msgid "All supported types (*.ssa, *.ass, *.ass2, *.as5)"
+msgstr "Alle unterstützten Formate (*.ssa, *.ass, *.ass2, *.as5)"
+
+#: gtk/gasa.c:314
+msgid "SSA files (*.ssa)"
+msgstr "SSA-Dateien (*.ssa)"
+
+#: gtk/gasa.c:318
+msgid "ASS files (*.ass)"
+msgstr "ASS-Dateien (*.ass)"
+
+#: gtk/gasa.c:322 gtk/gasa.c:332
+msgid "All files"
+msgstr "Alle Dateien"
+
+#: gtk/gasa.c:328
+msgid "Image files"
+msgstr "Bildateien"
+
+#: gtk/gasa.c:342
 msgid "Interpret (screw up) \\fe in Unicode files"
 msgstr "Benutze (verdrehe) \\f_e in Unicode-Dateien"
 
