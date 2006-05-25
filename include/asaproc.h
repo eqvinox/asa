@@ -21,6 +21,8 @@
 #ifndef _ASAPROC_H
 #define _ASAPROC_H
 
+struct assp_frameref;
+
 #include "ssa.h"
 #include "asa.h"
 #include "asafont.h"
@@ -41,6 +43,7 @@ struct assp_fgroup {
 
 	unsigned w, h;
 	cellline *unused;
+	struct assp_frameref *issued;
 
 	unsigned resvsize, ptr;
 	cellline *reservoir[1];
@@ -59,13 +62,17 @@ struct assp_param {
 	int elem;
 };
 
+struct assp_frameref {
+	struct assp_frameref *next;
+	struct assp_frame *frame;
+};
+
 extern struct assp_fgroup *assp_fgroupnew(unsigned w, unsigned h);
 extern void assp_fgroupfree(struct assp_fgroup *g);
 
-extern struct assp_frame *assp_framenew(struct assp_fgroup *g);
+extern void assp_framenew(struct assp_frameref *ng, struct assp_fgroup *g);
 f_fptr extern void assp_spanfunc(int y, int count, const FT_Span *spans, void *user);
-extern void assp_framefree(struct assp_frame *f);
-extern void assp_framekill(struct assp_frame *f);
+extern void assp_framefree(struct assp_frameref *ng);
 
 extern void asar_commit(struct assp_frame *f);
 

@@ -51,7 +51,7 @@ struct ssav_prepare_ctx {
 	struct ssav_node **nodenextp;
 
 	struct ssav_params *pset;
-	struct ssar_nodegroup *ng;
+	struct assp_frameref *ng;
 	int ng_ref;
 
 	struct ssa_wrap_env wrap;
@@ -380,7 +380,7 @@ static struct ssav_params *ssav_alloc_style(struct ssa *ssa,
 static void ssav_ng_invalidate(struct ssav_prepare_ctx *ctx)
 {
 	if (ctx->ng_ref) {
-		ctx->ng = xmalloc(sizeof(struct ssar_nodegroup));
+		ctx->ng = xmalloc(sizeof(struct assp_frameref));
 		memset(ctx->ng, 0, sizeof(*ctx->ng));
 		ctx->ng_ref = 0;
 	}

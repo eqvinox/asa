@@ -38,7 +38,7 @@ void ssar_line(struct ssav_line *l, struct assp_fgroup *fg)
 	int ustop = u->next ? u->next->idxstart : l->nchars, idx = 0;
 
 while (n) {
-	struct ssar_nodegroup *ng = n->group;
+	struct assp_frameref *ng = n->group;
 	struct assp_param p;
 	FT_OutlineGlyph *g, *gend;
 	FT_Stroker stroker;
@@ -52,9 +52,8 @@ while (n) {
 		continue;
 	}
 
-	if (ng->frame)
-		assp_framefree(ng->frame);
-	ng->frame = assp_framenew(fg);
+	assp_framefree(ng);
+	assp_framenew(ng, fg);
 
 	p.f = ng->frame;
 	p.cx0 = clip(l->active.clip.xMin >> 16, 0, (int)ng->frame->group->w);
@@ -123,12 +122,12 @@ while (n) {
 
 static void ssar_commit(struct ssav_line *l)
 {
-	struct ssar_nodegroup *prev = NULL;
+	struct assp_frameref *prev = NULL;
 	struct ssav_node *n = l->node_first;
 
 	while (n) {
 		if (n->type == SSAVN_TEXT && n->group != prev
-			&& n->group->frame) {
+			&& n->group && n->group->frame) {
 			struct ssav_params *p = n->params;
 			if (p->finalized)
 				p = p->finalized;

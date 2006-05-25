@@ -47,10 +47,6 @@ struct assa_layer {
 	struct assa_alloc *allocs, **curpos;
 };
 
-struct ssar_nodegroup {
-	struct assp_frame *frame;
-};
-
 extern void assa_setup(struct ssa_vm *vm, unsigned width, unsigned height);
 extern enum ssar_redoflags assa_start(struct ssa_vm *vm);
 extern enum ssar_redoflags assa_realloc(struct ssa_vm *vm,

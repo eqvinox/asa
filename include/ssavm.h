@@ -106,7 +106,7 @@ struct ssav_node {
 
 	enum ssav_nodet type;
 	struct ssav_params *params;
-	struct ssar_nodegroup *group;
+	struct assp_frameref *group;
 
 	unsigned nchars;
 	unsigned *indici;

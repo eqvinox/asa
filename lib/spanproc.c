@@ -108,7 +108,7 @@ f_fptr void assp_spanfunc(int y, int count, const FT_Span *spans, void *user)
 /** allocate a new frame, defaulting lines to unused.
  * \param g group to associate with
  */
-struct assp_frame *assp_framenew(struct assp_fgroup *g)
+void assp_framenew(struct assp_frameref *ng, struct assp_fgroup *g)
 {
 	struct assp_frame *rv;
 	unsigned c;
@@ -118,16 +118,30 @@ struct assp_frame *assp_framenew(struct assp_fgroup *g)
 	rv->group = g;
 	for (c = 0; c < g->h; c++)
 		rv->lines[c] = g->unused;
-	return rv;
+	ng->next = g->issued;
+	g->issued = ng;
+	ng->frame = rv;
 }
 
 /** free an allocated frame, probably putting its lines into the reservoir.
  * probably called regularly
  * \param f frame to free
  */
-void assp_framefree(struct assp_frame *f)
+void assp_framefree(struct assp_frameref *ng)
 {
+	struct assp_frame *f = ng->frame;
+	struct assp_frameref **trail;
 	unsigned c;
+
+	if (!f)
+		return;
+
+	for (trail = &f->group->issued; *trail != ng; )
+		trail = &(*trail)->next;
+	*trail = ng->next;
+	ng->next = NULL;
+	ng->frame = NULL;
+
 	for (c = 0; c < f->group->h; c++)
 		assp_cellfree(f->group, f->lines[c]);
 	free(f);
@@ -138,12 +152,18 @@ void assp_framefree(struct assp_frame *f)
  * (putting lines into the reservoir is kind of... useless in that case)
  * \param f frame to free
  */
-void assp_framekill(struct assp_frame *f)
+static void assp_framekill(struct assp_frameref *ng)
 {
+	struct assp_frame *f = ng->frame;
 	unsigned c;
+
 	for (c = 0; c < f->group->h; c++)
-		free(f->lines[c]);
+		if (f->lines[c] != f->group->unused)
+			free(f->lines[c]);
 	free(f);
+
+	ng->next = NULL;
+	ng->frame = NULL;
 }
 
 struct assp_fgroup *assp_fgroupnew(unsigned w, unsigned h)
@@ -156,13 +176,20 @@ struct assp_fgroup *assp_fgroupnew(unsigned w, unsigned h)
 	rv->ptr = 0;
 	rv->resvsize = h * 2;
 	rv->unused = assp_cellalloc(rv);
+	rv->issued = NULL;
 	return rv;
 }
 
 void assp_fgroupfree(struct assp_fgroup *g)
 {
+	struct assp_frameref *ng = g->issued, *next;
 	unsigned c;
 
+	while (ng) {
+		next = ng->next;
+		assp_framekill(ng);
+		ng = next;
+	}
 	free(g->unused);
 	for (c = 0; c < g->ptr; c++)
 		free(g->reservoir[c]);
