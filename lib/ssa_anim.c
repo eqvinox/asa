@@ -79,12 +79,12 @@ static void ssar_apply(char *dest, struct ssav_controller *ctr,
 	};
 }
 
-enum ssar_redoflags ssar_eval(struct ssa_vm *vm, struct ssav_line *l, double ftime)
+enum ssar_redoflags ssar_eval(struct ssa_vm *vm, struct ssav_line *l,
+	double ftime, enum ssar_redoflags fl)
 {
 	double in = ftime - l->start;
 	struct ssav_node *n = l->node_first;
 	struct ssav_params *p = NULL;
-	enum ssar_redoflags fl = 0;
 	unsigned c;
 
 	memcpy(&l->active, &l->base, sizeof(struct ssav_lineparams));

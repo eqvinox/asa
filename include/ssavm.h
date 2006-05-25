@@ -175,6 +175,8 @@ struct ssa_vm {
 
 	struct ssav_error *errlist;
 
+	enum ssar_redoflags redoflags;
+
 /* positioner */
 	double playresx, playresy;
 	FT_Vector res;

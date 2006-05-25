@@ -147,18 +147,18 @@ static void ssar_commit(struct ssav_line *l)
 void ssar_run(struct ssa_vm *vm, double ftime, struct assp_fgroup *fg)
 {
 	unsigned ln;
-	enum ssar_redoflags fl;
+	enum ssar_redoflags fl, basefl;
 
 	if (!vm->cache || vm->cache->start > ftime)
 		vm->cache = vm->fragments;
 	while (vm->cache->next && vm->cache->next->start <= ftime)
 		vm->cache = vm->cache->next;
 
-	assa_start(vm);
+	basefl = assa_start(vm);
 	for (ln = 0; ln < vm->cache->nrend; ln++) {
 		struct ssav_line *l = vm->cache->lines[ln];
 
-		fl = ssar_eval(vm, l, ftime);
+		fl = ssar_eval(vm, l, ftime, basefl);
 		fl = assa_realloc(vm, l, fl);
 		if (fl & SSAR_REND)
 			ssar_line(l, fg);

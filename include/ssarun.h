@@ -33,7 +33,7 @@ enum ssar_redoflags {
 };
 
 extern enum ssar_redoflags ssar_eval(struct ssa_vm *vm, struct ssav_line *l,
-	double time);
+	double time, enum ssar_redoflags fl);
 
 struct assa_alloc {
 	struct assa_alloc *next;
@@ -52,7 +52,7 @@ struct ssar_nodegroup {
 };
 
 extern void assa_setup(struct ssa_vm *vm, unsigned width, unsigned height);
-extern void assa_start(struct ssa_vm *vm);
+extern enum ssar_redoflags assa_start(struct ssa_vm *vm);
 extern enum ssar_redoflags assa_realloc(struct ssa_vm *vm,
 	struct ssav_line *l, enum ssar_redoflags prev);
 extern void assa_end(struct ssa_vm *vm);

@@ -22,7 +22,7 @@
 #include "ssavm.h"
 #include "ssarun.h"
 
-void assa_start(struct ssa_vm *vm)
+enum ssar_redoflags assa_start(struct ssa_vm *vm)
 {
 	struct assa_layer *lay = vm->firstlayer;
 
@@ -30,6 +30,7 @@ void assa_start(struct ssa_vm *vm)
 		lay->curpos = &lay->allocs;
 		lay = lay->next;
 	}
+	return vm->redoflags;
 }
 
 static struct assa_layer *assa_getlayer(struct ssa_vm *vm, long int layer)
@@ -226,6 +227,7 @@ void assa_end(struct ssa_vm *vm)
 		assa_trash(lay);
 		lay = lay->next;
 	}
+	vm->redoflags = 0;
 }
 
 void assa_setup(struct ssa_vm *vm, unsigned width, unsigned height)
@@ -239,5 +241,6 @@ void assa_setup(struct ssa_vm *vm, unsigned width, unsigned height)
 		vm->res.y = height << 16;
 		/* should set scaling matrix to identity here */
 	}
+	vm->redoflags = SSAR_COLO | SSAR_REND | SSAR_WRAP;
 }
 
