@@ -31,7 +31,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <malloc.h>
 #include <wchar.h>
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>

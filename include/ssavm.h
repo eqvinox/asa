@@ -24,7 +24,6 @@
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
 #endif
-#include <malloc.h>
 #include "ssa.h"
 #include "ssarun.h"
 #include "asaproc.h"
