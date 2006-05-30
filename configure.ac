@@ -72,6 +72,9 @@ AC_CHECK_LIB([z], [inflate])
 AC_CHECK_LIB([m], [pow])
 AC_CHECK_LIB([png], [png_init_io])
 
+AM_ICONV
+LDFLAGS="$LDFLAGS $LTLIBICONV"
+
 AC_MSG_NOTICE([--- done checking special dependencies ---])
 
 AC_PROG_RANLIB

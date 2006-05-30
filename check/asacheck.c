@@ -52,7 +52,7 @@ void ut8out(char *start, char *end)
 	char outbuf[4096], *outp = outbuf;
 	size_t insize = end - start, outsize = 4096;
 	iconv_t ic = iconv_open("UTF-8", "UCS-4LE");
-	iconv(ic, &start, &insize, &outp, &outsize);
+	iconv(ic, (ICONV_CONST char **)&start, &insize, &outp, &outsize);
 	write(1, outbuf, 4096 - outsize);
 }
 

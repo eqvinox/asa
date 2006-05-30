@@ -672,8 +672,8 @@ static void ssa_src2str(struct ssa_state *state,
 {
 	size_t outsize = 0, outleft = 0,
 		inleft = end - now;
-	/* (iconv madness - should be const) */
-	char *innow = (char *)now;
+	/* iconv madness */
+	ICONV_CONST char *innow = (ICONV_CONST char *)now;
 	char *outbuf = NULL, *outnow = NULL;
 	ptrdiff_t outnowd = 0;
 
@@ -1112,7 +1112,7 @@ static void ssa_tmp_iconv(struct ssa_temp_text *tmp,
 		outleft = tmp->allocated - tmp->pos;
 
 		iconv_errno = 0;
-		iconv(state->ic_tcv, (char **)now, &inleft,
+		iconv(state->ic_tcv, (ICONV_CONST char **)now, &inleft,
 			&outnow, &outleft);
 		tmp->pos = outnow - (char *)tmp->node->v.text.s;
 	} while (iconv_errno == E2BIG);
@@ -1922,7 +1922,8 @@ int ssa_lex(struct ssa *output, const void *data, size_t datasize)
 		ptrdiff_t outnowd = 0;
 
 		iconv_t preconv = iconv_open("UTF-8", srccs);
-		char *curconv = (char *)data, *endpos;
+		ICONV_CONST char *curconv = (ICONV_CONST char *)data;
+		char *endpos;
 
 		do {
 			csrcsize += 1024;
