@@ -70,7 +70,7 @@ while (n) {
 		return;
 	}
 
-	FT_Stroker_New(n->params->font->face->memory, &stroker); /* XXX */
+	FT_Stroker_New(asaf_ftlib, &stroker); /* XXX */
 
 	/* XXX XXX XXX formula is incorrect!
 	 * someone go figure a correct one! */
