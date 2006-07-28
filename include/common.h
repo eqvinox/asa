@@ -73,11 +73,6 @@
 #include <png.h>
 #endif
 
-#ifdef WIN32
-extern int * (__cdecl * vcrt_errno)();
-#define iconv_errno (*vcrt_errno())
-#else
 #define iconv_errno errno
-#endif
 
 #endif /* _COMMON_H */

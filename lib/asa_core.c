@@ -52,25 +52,12 @@ static const char *asa_version_string =
 
 static int nref = 0;
 
-#ifdef WIN32
-int * (__cdecl * vcrt_errno)();
-#endif
-
 f_export const char *asa_init(unsigned version)
 {
 	if (version != ASA_VERSION)
 		return NULL;
-	if (!nref++) {
-#ifdef WIN32
-		HMODULE msvcrt = GetModuleHandleW(L"MSVCRT.DLL");
-		if (!msvcrt)
-			return NULL;
-		vcrt_errno = (int *(__cdecl *)())GetProcAddress(msvcrt, "_errno");
-		if (!vcrt_errno)
-			return NULL;
-#endif
+	if (!nref++)
 		asaf_init();
-	}
 	return asa_version_string;
 }
 
