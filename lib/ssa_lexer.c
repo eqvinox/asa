@@ -1406,9 +1406,9 @@ static unsigned ssa_std(struct ssa_state *state, par_t param, void *elem)
 struct ssa_style *ssa_findstyle(struct ssa *output, ssa_string *name)
 {
 	struct ssa_style *now = output->style_first;
-	int len = (char *)name->e - (char *)name->s;
+	ptrdiff_t len = (char *)name->e - (char *)name->s;
 	while (now) {
-		int nlen = (char *)now->name.e - (char *)now->name.s;
+		ptrdiff_t nlen = (char *)now->name.e - (char *)now->name.s;
 		if (len == nlen && !memcmp(name->s, now->name.s, len))
 			return now;
 		now = now->next;
