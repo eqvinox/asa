@@ -64,8 +64,9 @@ static void ssar_apply(char *dest, struct ssav_controller *ctr,
 	case SSAVC_COLOUR:
 		fl0 = (long)(f0 * 256);
 		fl1 = 256 - fl0;
-#define apply(field) temp.c.field = (deste->colour.c.field * fl1 + \
-			ctr->nextval.colour.val.c.field * fl0) >> 8;
+#define apply(field) temp.c.field = (colour_one_t)( \
+			(deste->colour.c.field * fl1 + ctr->nextval.colour.val.c.field * fl0) \
+				>> 8);
 		apply(r);
 		apply(g);
 		apply(b);
