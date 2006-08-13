@@ -46,7 +46,7 @@ AC_ARG_ENABLE([gtk],
 			fi
 		])
 
-	if test -n "try_optimize"
+	if test -n "$try_optimize"
 	then	case $host in
 		x86_64-*-*)
 			AC_CHECK_TOOL(YASM, yasm, "")
