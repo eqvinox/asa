@@ -845,6 +845,7 @@ void ssav_create(struct ssa_vm *vm, struct ssa *ssa)
 
 	vm->playresx = ssa->playresx;
 	vm->playresy = ssa->playresy;
+	vm->errlist = NULL;
 	if ((vm->playresx == 0.0) ^ (vm->playresy == 0.0)) {
 		if (vm->playresx == 0.0)
 			vm->playresx = vm->playresy * (4./3.);
