@@ -63,6 +63,8 @@ enum ssa_errc {
 	SSAEC_COLOUR_STRANGE,		/**< unusual colour length */
 	SSAEC_COLOUR_ALPHALOST,		/**< alpha value lost */
 	SSAEC_STRAY_BOM,		/**< stray BOM */
+	SSAEC_RAW_CTX,			/**< no script header */
+	SSAEC_INVALID_CTX,		/**< invalid command for cur ctx */
 
 	SSAEC_MAX
 };

@@ -66,6 +66,17 @@
 #define ssatol		strtol		/**< @see ssasrc_t */ 
 #define ssatoul		strtoul		/**< @see ssasrc_t */ 
 
+/** SSA parsing context.
+ * to warn about misplaced lines (and to somewhen support embedding)
+ */
+enum ssa_context {
+	SSACTX_INIT = 1 << 0,		/**< nothing read yet */
+	SSACTX_RAW = 1 << 1,		/**< no header, accept all */
+	SSACTX_INFO = 1 << 2,		/**< script info */
+	SSACTX_STYLE = 1 << 3,		/**< style */
+	SSACTX_EVENTS = 1 << 4,		/**< events */
+};
+
 /** lexer state / instance.
  * deallocated after lexing complete
  */
@@ -80,6 +91,7 @@ struct ssa_state {
 					 * better error messages
 					 */
 	unsigned lineno;		/**< line number, 1 based */
+	enum ssa_context ctx;		/**< current context */
 	
 	const char *ic_srccs;		/**< internal charset.
 					 * everything typed ssasrc_t is
@@ -129,10 +141,11 @@ typedef unsigned ssa_parsefunc(struct ssa_state *state, par_t param,
 /** key list entry.
  * used to form lookup tables for parsing functions
  */
-struct ssa_parsetext {
+struct ssa_parsetext_ctx {
 	const ssasrc_t *text;		/**< key. NULL = end of list */
 	ssa_parsefunc *func;		/**< responsible parsing function */
 	par_t param;			/**< 2nd parameter to func */
+	enum ssa_context ctx;		/**< context restriction */
 };
 
 /** key list entry, tagged. */
@@ -175,6 +188,7 @@ static unsigned ssa_genint(struct ssa_state *state, par_t param, void *elem);
 static unsigned ssa_twoint(struct ssa_state *state, par_t param, void *elem);
 static unsigned ssa_genfp (struct ssa_state *state, par_t param, void *elem);
 
+static unsigned ssa_setctx(struct ssa_state *state, par_t param, void *elem);
 static unsigned ssa_setver(struct ssa_state *state, par_t param, void *elem);
 static unsigned ssa_notsup(struct ssa_state *state, par_t param, void *elem);
 static unsigned ssa_style (struct ssa_state *state, par_t param, void *elem);
@@ -192,53 +206,69 @@ static unsigned ssa_effect(struct ssa_state *state, par_t param, void *elem);
 static unsigned ssa_clip  (struct ssa_state *state, par_t param, void *elem);
 static unsigned ssa_fe    (struct ssa_state *state, par_t param, void *elem);
 
+
+#define fmts	(SSACTX_STYLE | SSACTX_EVENTS)
+#define evnt	(SSACTX_RAW | SSACTX_EVENTS)
+#define styl	(SSACTX_RAW | SSACTX_STYLE)
+#define info	(SSACTX_RAW | SSACTX_INFO)
+#define init	(SSACTX_INIT)
+#define any	(~0UL)
+
 #define apply_offset(x,y) (((char *)x) + y)		/**< apply e(x) */
 #define e(x) ((ptrdiff_t) &((struct ssa *)0)->x)	/**< store offset */
 /** global keyword table */
-static struct ssa_parsetext ptkeys[] = {
+static struct ssa_parsetext_ctx ptkeys[] = {
 	/* content lines - first because used the most */
-	{"dialogue:",		ssa_std,	{SSAL_DIALOGUE}},
-	{"style:",		ssa_style,	{0}},
-	{"styleex:",		ssa_styleex,	{0}},
-	{"comment:",		ssa_std,	{SSAL_COMMENT}},
-	{"picture:",		ssa_std,	{SSAL_PICTURE}},
-	{"sound:",		ssa_std,	{SSAL_SOUND}},
-	{"movie:",		ssa_std,	{SSAL_MOVIE}},
-	{"command:",		ssa_std,	{SSAL_COMMAND}},
-	{"format:",		NULL,		{0}},
+	{"dialogue:",		ssa_std,	{SSAL_DIALOGUE},	evnt},
+	{"style:",		ssa_style,	{0},			styl},
+	{"styleex:",		ssa_styleex,	{0},			styl},
+	{"comment:",		ssa_std,	{SSAL_COMMENT},		evnt},
+	{"picture:",		ssa_std,	{SSAL_PICTURE},		evnt},
+	{"sound:",		ssa_std,	{SSAL_SOUND},		evnt},
+	{"movie:",		ssa_std,	{SSAL_MOVIE},		evnt},
+	{"command:",		ssa_std,	{SSAL_COMMAND},		evnt},
+	{"format:",		NULL,		{0},			fmts},
 	/* sections */
-	{"[script info]",	NULL,		{1}},
-	{"[v4 styles]",		ssa_setver,	{SSAVV_4}},
-	{"[v4+ styles]",	ssa_setver,	{SSAVV_4P}},
-	{"[v4++ styles]",	ssa_setver,	{SSAVV_4PP}},
-	{"[events]",		NULL,		{1}},
-	{"[fonts]",		ssa_notsup,	{0}},
-	{"[graphics]",		ssa_notsup,	{0}},
+	{"[script info]",	ssa_setctx,	{SSACTX_INFO},		init},
+	{"[v4 styles]",		ssa_setver,	{SSAVV_4},		any},
+	{"[v4+ styles]",	ssa_setver,	{SSAVV_4P},		any},
+	{"[v4++ styles]",	ssa_setver,	{SSAVV_4PP},		any},
+	{"[events]",		ssa_setctx,	{SSACTX_EVENTS},	any},
+	{"[fonts]",		ssa_notsup,	{0},			any},
+	{"[graphics]",		ssa_notsup,	{0},			any},
 	/* info (those no one cares about) */
-	{"title:",		ssa_genstr,	{e(title)}},
-	{"original script:",	ssa_genstr,	{e(orig_script)}},
-	{"original script checking:", ssa_genstr, {e(orig_script)}},
-	{"original translation:", ssa_genstr,	{e(orig_transl)}},
-	{"original editing:",	ssa_genstr,	{e(orig_edit)}},
-	{"original timing:",	ssa_genstr,	{e(orig_timing)}},
-	{"synch point:",	ssa_genstr,	{e(synch_point)}},
-	{"script updated by:",	ssa_genstr,	{e(script_upd_by)}},
-	{"update details:",	ssa_genstr,	{e(upd_details)}},
+	{"title:",		ssa_genstr,	{e(title)},		info},
+	{"original script:",	ssa_genstr,	{e(orig_script)},	info},
+	{"original script checking:", ssa_genstr, {e(orig_script)},	info},
+	{"original translation:", ssa_genstr,	{e(orig_transl)},	info},
+	{"original editing:",	ssa_genstr,	{e(orig_edit)},		info},
+	{"original timing:",	ssa_genstr,	{e(orig_timing)},	info},
+	{"synch point:",	ssa_genstr,	{e(synch_point)},	info},
+	{"script updated by:",	ssa_genstr,	{e(script_upd_by)},	info},
+	{"update details:",	ssa_genstr,	{e(upd_details)},	info},
 	/* info (the important ones) */
-	{"scripttype:",		ssa_setver,	{0}},
-	{"collisions:",		ssa_genstr,	{e(collisions)}},
-	{"playresy:",		ssa_genfp,	{e(playresy)}},
-	{"playresx:",		ssa_genfp,	{e(playresx)}},
-	{"playdepth:",		ssa_genint,	{e(playdepth)}},
-	{"timer:",		ssa_genfp,	{e(timer)}},
+	{"scripttype:",		ssa_setver,	{0},			info},
+	{"collisions:",		ssa_genstr,	{e(collisions)},	info},
+	{"playresy:",		ssa_genfp,	{e(playresy)},		info},
+	{"playresx:",		ssa_genfp,	{e(playresx)},		info},
+	{"playdepth:",		ssa_genint,	{e(playdepth)},		info},
+	{"timer:",		ssa_genfp,	{e(timer)},		info},
 	/* actually WrapStyle only exists in ASS but we aren't picky */
-	{"wrapstyle:",		ssa_genint,	{e(wrapstyle)}},
-	{"scaledborderandshadow:", NULL,	{0}},
-	{"lastwav:",		NULL,		{0}},
-	{"wav:",		NULL,		{0}},
-	{NULL,			NULL,		{0}}
+	{"wrapstyle:",		ssa_genint,	{e(wrapstyle)},		info},
+	{"scaledborderandshadow:", NULL,	{0},			info},
+	{"lastwav:",		NULL,		{0},			info},
+	{"wav:",		NULL,		{0},			info},
+	{NULL,			NULL,		{0},			0}
 };
 #undef e
+
+#undef fmts
+#undef evnt
+#undef styl
+#undef info
+#undef init
+#undef any
+
 #define e(x) ((ptrdiff_t) &((struct ssa_line *)0)->x)
 /** CSV for Dialogue / etc.
  * we could build this from the Format: line, but some scripts are missing
@@ -609,9 +639,20 @@ static void ssa_strdup(ssa_string *dst, ssa_string *src)
 	dst->e = dst->s + (src->e - src->s);
 }
 
+/** ssa_setctx - set context to lparam.
+ * @param param new context
+ * @param elem unused
+ */
+static unsigned ssa_setctx(struct ssa_state *state, par_t param, void *elem)
+{
+	state->ctx = param.lparam;
+	return 1;
+}
+
 /** ssa_setver - check & set ssa version (SSA / ASS).
  * @param param (lparam) zero to parse text, nonzero to set to lparam
  * @param elem unused
+ *  this also enters style context if used with a version number
  */
 static unsigned ssa_setver(struct ssa_state *state, par_t param, void *elem)
 {
@@ -633,7 +674,8 @@ static unsigned ssa_setver(struct ssa_state *state, par_t param, void *elem)
 		}
 		/* see semantics of ssa_parsefunc */
 		state->param = after;
-	}
+	} else
+		state->ctx = SSACTX_STYLE;
 	if (state->output->version && state->output->version != ver) {
 		ssa_add_error(state, state->line,
 			SSAEC_AMBIGUOUS_SVER);
@@ -1854,10 +1896,18 @@ static unsigned ssa_alpha(struct ssa_state *state, par_t param, void *elem)
 }
 
 /** call ssa_parsefunc for output */
-static inline void ssa_main_call(struct ssa_state *s, struct ssa_parsetext *p)
+static inline void ssa_main_call(struct ssa_state *s,
+	struct ssa_parsetext_ctx *p)
 {
 	unsigned ret = p->param.lparam;
 	s->pend = s->end;
+	if (!(s->ctx & p->ctx)) {
+		if (s->ctx == SSACTX_INIT) {
+			ssa_add_error(s, s->line, SSAEC_RAW_CTX);
+			s->ctx = SSACTX_RAW;
+		} else
+			ssa_add_error(s, s->line, SSAEC_INVALID_CTX);
+	}
 	if (p->func)
 		ret = p->func(s, p->param, s->output);
 	if (ret) {
@@ -1892,6 +1942,7 @@ int ssa_lex(struct ssa *output, const void *data, size_t datasize)
 	s.output = output;
 	s.lineno = 0;
 	s.anisource = NULL;
+	s.ctx = SSACTX_INIT;
 
 	memset(output, 0, sizeof(struct ssa));
 	output->ignoreenc = ignoreenc;
@@ -1957,7 +2008,7 @@ int ssa_lex(struct ssa *output, const void *data, size_t datasize)
 	s.ic_srcout = iconv_open(SSA_DESTCS, "UTF-8");
 
 	do {
-		struct ssa_parsetext *pnow = ptkeys;
+		struct ssa_parsetext_ctx *pnow = ptkeys;
 		const ssasrc_t *best_match = NULL, *now;
 		
 		const ssasrc_t *lend = ssa_chr(csrc, cend, '\xA');
@@ -2041,7 +2092,7 @@ void ssa_free(struct ssa *output)
 {
 	struct ssa_style *style, *snext;
 	struct ssa_line *line, *lnext;
-	struct ssa_parsetext *pt;
+	struct ssa_parsetext_ctx *pt;
 
 	for (line = output->line_first; line; line = lnext) {
 		ssa_freenodes(line->node_first);

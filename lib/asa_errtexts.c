@@ -230,11 +230,26 @@ struct asaec_desc ssaec[ASAEC_MAX] = {
 	"other parsers may not do so. It is recommended to only put exactly "
 	"one BOM at the very beginning of the file."),
 	NULL},
-/* 37 SSAVEC_NOTSUP */
+/* 37 SSAEC_RAW_CTX */
+{2, _("no script header"),
+	_("Asa did not find a [Script info] header at the beginning of the "
+	"file.\n\nThis causes asa to enter \"raw section mode\", which means "
+	"it ignores Format: lines. Raw section mode is left on hitting a "
+	"valid section header."),
+	NULL},
+/* 38 SSAEC_INVALID_CTX */
+{3, _("invalid command for current section"),
+	_("The command encountered is not valid for the current section.\n\n"
+	"This usually means you forgot a section header, or accidentally "
+	"moved a line to the wrong section. Asa tries its best to execute "
+	"the command nonetheless, but this might lead to further follow-up "
+	"errors."),
+	NULL},
+/* 39 SSAVEC_NOTSUP */
 {3, _("command/option not supported"),
 	_("Asa is not able to correctly process this option yet."),
 	NULL},
-/* 38 SSAVEC_FONTNX */
+/* 40 SSAVEC_FONTNX */
 {3, _("font not found"),
 #ifdef _WIN32
 	_("The font requested by this style/override was not found."
@@ -244,7 +259,7 @@ struct asaec_desc ssaec[ASAEC_MAX] = {
 	_("The font requested by this style/override was not found."),
 #endif
 	NULL},
-/* 39 SSAVEC_NOANIM */
+/* 41 SSAVEC_NOANIM */
 {3, _("unanimatable parameter"),
 	_("The script is trying to animate a parameter for which no animation "
 	"controller exists. Either asa lacks the support for this or "
