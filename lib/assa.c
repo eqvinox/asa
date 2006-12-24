@@ -18,10 +18,16 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  ****************************************************************************/
 
+/** @file assa.c asa screen space allocator. */
+
 #include "common.h"
 #include "ssavm.h"
 #include "ssarun.h"
 
+/** initialize incremental allocation.
+ * @param vm the VM
+ * @return scrap'n'redo flags
+ */
 enum ssar_redoflags assa_start(struct ssa_vm *vm)
 {
 	struct assa_layer *lay = vm->firstlayer;
@@ -33,6 +39,11 @@ enum ssar_redoflags assa_start(struct ssa_vm *vm)
 	return vm->redoflags;
 }
 
+/** get or allocate layer.
+ * @param vm the VM
+ * @param layer layer number
+ * @return the layer
+ */
 static struct assa_layer *assa_getlayer(struct ssa_vm *vm, long int layer)
 {
 	struct assa_layer **prev = &vm->firstlayer, *newl;
@@ -51,6 +62,10 @@ static struct assa_layer *assa_getlayer(struct ssa_vm *vm, long int layer)
 	return newl;
 }
 
+/** kill remaining allocations on a layer.
+ * starts off current incremental position, kills everything until end.
+ * @param lay the layer
+ */
 static void assa_trash(struct assa_layer *lay)
 {
 	struct assa_alloc *fptr, *fnext;
@@ -76,13 +91,24 @@ struct assa_rect {
 	double xalign, yalign;
 };
 
+/** temporary line entry.
+ * assa_fit_split builds a linked list of these;
+ * horizontal alignment is then calculated afterwards.
+ */
 struct fitline {
-	struct fitline *next;
-	FT_Vector size;
-	struct ssav_unit *startat, *endat;
+	struct fitline *next;			/**< next line */
+	FT_Vector size;				/**< tot line w/h */
+	struct ssav_unit
+		*startat,			/**< first unit */
+		*endat;				/**< first nonunit */
 };
 
-/* first pass: split into lines and sum up their size */
+/** fitting pass #1: split into lines and sum up their size.
+ * @param u first unit
+ * @param width wrapping width
+ * @param h_total (out) total height of everything
+ * @return newly allocated (temp) list of lines
+ */
 static struct fitline *assa_fit_split(struct ssav_unit *u, FT_Pos width,
 	FT_Pos *h_total)
 {
@@ -119,6 +145,12 @@ static struct fitline *assa_fit_split(struct ssav_unit *u, FT_Pos width,
 	return ret;
 }
 
+/** fitting pass #2: fit a linked list of fitlines into a rectangle.
+ * updates ssav_unit->final.{x,y} to be the correct on-screen position
+ * @param fl the list of lines
+ * @param r the rectangle to use (including alignment info)
+ * @param h_total total height of all the lines
+ */
 static void assa_fit_arrange(struct fitline *fl,
 	struct assa_rect *r, FT_Pos h_total)
 {
