@@ -79,7 +79,6 @@ struct ssav_params {
 			fax, fay,
 			fsp;
 	} m;
-//	ssav_mat *mat;
 
 	double border;
 
@@ -118,6 +117,7 @@ struct ssav_unit {
 
 	FT_Pos height;
 	FT_Vector size, final;
+	FT_Matrix fx1;
 };
 
 struct ssav_lineparams {

@@ -24,36 +24,31 @@
 #include <freetype/fttrigon.h>
 #include <assert.h>
 
-void ssgl_matrix(struct ssav_params *p, FT_Matrix *rv)
+void ssgl_matrix(struct ssav_params *p, FT_Matrix *fx0, FT_Matrix *fx1)
 {
-	FT_Matrix out, tmp;
+	fx0->xx = (int)(p->m.fscx * 655.36);
+	fx0->xy = 0x00000L;
+	fx0->yx = 0x00000L;
+	fx0->yy = (int)(-p->m.fscy * 655.36);
 
-	out.xx = 0x10000L;
-	out.xy = 0x00000L;
-	out.yx = 0x00000L;
-	out.yy = -0x10000L;
-
-	if (p->m.fscx != 100.)
-		out.xx = FT_MulFix(out.xx, (int)(p->m.fscx * 655.36));
-	if (p->m.fscy != 100.)
-		out.yy = FT_MulFix(out.yy, (int)(p->m.fscy * 655.36));
-	/* frx & fry? */
 	if (p->m.frz != 0.0) {
 		FT_Angle angle = (int)(p->m.frz * 65536);
-		tmp.xx = FT_Cos(angle);
-		tmp.xy = FT_Sin(angle);
-		tmp.yx = -FT_Sin(angle);
-		tmp.yy = FT_Cos(angle);
-		FT_Matrix_Multiply(&tmp, &out);
+		fx1->xx = FT_Cos(angle);
+		fx1->xy = FT_Sin(angle);
+		fx1->yx = -FT_Sin(angle);
+		fx1->yy = FT_Cos(angle);
+	} else {
+		fx1->xx = 0x10000L;
+		fx1->xy = 0x00000L;
+		fx1->yx = 0x00000L;
+		fx1->yy = 0x10000L;
 	}
-
-	*rv = out;
 }
 
 void ssgl_prepare(struct ssav_line *l)
 {
 	FT_Vector pos;
-	FT_Matrix mat;
+	FT_Matrix mat, fx1;
 	FT_Face fnt;
 	FT_OutlineGlyph *g, *end;
 	unsigned idx, stop, *src;
@@ -88,12 +83,13 @@ void ssgl_prepare(struct ssav_line *l)
 		}
 
 		fnt = asaf_sactivate(n->params->fsiz);	/* XXX: animation */
-		ssgl_matrix(p, &mat);
+		ssgl_matrix(p, &mat, &fx1);
 		src = n->indici;
 
 		if (idx != stop && fnt->size->metrics.height > u->height)
 			u->height = fnt->size->metrics.height;
 		
+		u->fx1 = fx1;
 		while (g < end) {
 			if (idx == stop) {
 				u->size = pos;
@@ -103,6 +99,7 @@ void ssgl_prepare(struct ssav_line *l)
 					: l->nchars;
 				pos.x = pos.y = 0;
 				u->height = fnt->size->metrics.height;
+				u->fx1 = fx1;
 			}
 
 			FT_Load_Glyph(fnt, *src++, FT_LOAD_DEFAULT);
