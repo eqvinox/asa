@@ -192,6 +192,25 @@ static void assa_fit(struct ssav_line *l, struct assa_rect *r)
 		fl = del->next, free(del);
 }
 
+static void assa_simplace(struct ssav_line *l, struct assa_rect *r)
+{
+	struct ssav_unit *u = l->unit_first;
+	struct fitline fl;
+	fl.next = NULL;
+	fl.startat = u;
+	fl.endat = NULL;
+	fl.size.x = 0;
+	fl.size.y = 0;
+	while (u) {
+		fl.size.x += u->size.x << 10;
+		if (u->height > fl.size.y)
+			fl.size.y = u->height;
+		u = u->next;
+	}
+	fl.size.y <<= 10;
+	assa_fit_arrange(&fl, r, fl.size.y);
+}
+
 static void assa_wrap(struct ssa_vm *vm, struct assa_layer *lay,
 	struct ssav_line *l)
 {
@@ -213,24 +232,23 @@ static void assa_wrap(struct ssa_vm *vm, struct assa_layer *lay,
 	r.wrapdir = l->yalign  < 0.25 ? 1 : -1;
 	r.xalign = l->xalign;
 	r.yalign = l->yalign;
-	if (l->pos) {
-		r.pos.x = l->pos->v.pos.x * (long)(l->xalign * 65536.);
-		r.size.x = (FT_Pos)(
-			(double)(l->pos->v.pos.x << 16) * (1. - l->xalign)
-			+ (double)(vm->res.x - (l->pos->v.pos.x << 16))
-				* l->xalign);
-		r.pos.y = l->pos->v.pos.y * (long)(l->yalign * 65536.);
-		r.size.y = (FT_Pos)(
-			(double)(l->pos->v.pos.y << 16) * (1. - l->yalign)
-			+ (double)(vm->res.y - (l->pos->v.pos.y << 16))
-				* l->yalign);
+	if (l->flags & SSAV_FIXPOS) {
+		r.pos.x = l->active.pos.x * (1. - l->xalign);
+		r.size.x = (FT_Pos)(l->active.pos.x * l->xalign
+			+ (vm->res.x - l->active.pos.x)	* (1 - l->xalign));
+		r.pos.y = l->active.pos.y * (1 - l->yalign);
+		r.size.y = (FT_Pos)(l->active.pos.y * l->yalign
+			+ (vm->res.y - l->active.pos.y)	* (1 - l->yalign));
 	} else {
 		r.pos.x = l->marginl << 16;
 		r.size.x = vm->res.x - ((l->marginl + l->marginr) << 16);
 		r.pos.y = l->margint << 16;
 		r.size.y = vm->res.y - ((l->margint + l->marginb) << 16);
 	}
-	assa_fit(l, &r);
+	if (l->wrap == 2)
+		assa_simplace(l, &r);
+	else
+		assa_fit(l, &r);
 }
 
 enum ssar_redoflags assa_realloc(struct ssa_vm *vm,
