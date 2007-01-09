@@ -122,6 +122,13 @@ struct ssav_unit {
 
 struct ssav_lineparams {
 	FT_BBox clip;
+	FT_Vector pos, org;
+};
+
+enum ssav_lineflags {
+	SSAV_FIXPOS = 1 << 0,		/**< pos / move */
+	SSAV_POSANIM = 1 << 1,		/**< set by \t(pos).
+					 * to warn when POSANIM & ~FIXPOS */
 };
 
 struct ssav_line {
@@ -145,8 +152,7 @@ struct ssav_line {
 		wrap;
 
 	struct ssav_lineparams base, active;
-
-	struct ssa_node *pos; /**< XXX TEMP HACK XXX */
+	enum ssav_lineflags flags;
 
 	unsigned nctr;
 	struct ssav_controller ctrs[];
