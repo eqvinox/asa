@@ -126,9 +126,11 @@ struct ssav_lineparams {
 };
 
 enum ssav_lineflags {
-	SSAV_FIXPOS = 1 << 0,		/**< pos / move */
+	SSAV_POS = 1 << 0,		/**< pos / move */
 	SSAV_POSANIM = 1 << 1,		/**< set by \t(pos).
-					 * to warn when POSANIM & ~FIXPOS */
+					 * to warn when POSANIM & ~POS */
+	SSAV_ORG = 1 << 2,		/**< org */
+	SSAV_ORGANIM = 1 << 3,		/**< similar to POSANIM */
 };
 
 struct ssav_line {

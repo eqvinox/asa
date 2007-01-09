@@ -232,7 +232,7 @@ static void assa_wrap(struct ssa_vm *vm, struct assa_layer *lay,
 	r.wrapdir = l->yalign  < 0.25 ? 1 : -1;
 	r.xalign = l->xalign;
 	r.yalign = l->yalign;
-	if (l->flags & SSAV_FIXPOS) {
+	if (l->flags & SSAV_POS) {
 		r.pos.x = l->active.pos.x * (1. - l->xalign);
 		r.size.x = (FT_Pos)(l->active.pos.x * l->xalign
 			+ (vm->res.x - l->active.pos.x)	* (1 - l->xalign));
@@ -249,6 +249,10 @@ static void assa_wrap(struct ssa_vm *vm, struct assa_layer *lay,
 		assa_simplace(l, &r);
 	else
 		assa_fit(l, &r);
+	if ((l->flags & SSAV_ORG) == 0) {
+		l->active.org.x = r.pos.x + r.xalign * r.size.x;
+		l->active.org.y = r.pos.y + r.yalign * r.size.y;
+	}
 }
 
 enum ssar_redoflags assa_realloc(struct ssa_vm *vm,
