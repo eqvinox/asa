@@ -1,7 +1,7 @@
 /*****************************************************************************
  * asa: portable digital subtitle renderer
  *****************************************************************************
- * Copyright (C) 2004, 2005, 2006  David Lamparter
+ * Copyright (C) 2004, 2005, 2006, 2007  David Lamparter
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -82,7 +82,7 @@ struct ssa_frag *ssap_frag_add(struct ssa_vm *v,
 {
 	struct ssa_frag *first, *last, *seek, **seekp, **discard;
 	unsigned idx;
-	if (l->end < l->start)
+	if (l->end <= l->start)
 		return NULL;
 	v->cache = NULL;
 	first = ssap_frag_split(v, prev, l->start, &seekp);
