@@ -44,22 +44,22 @@ static inline void ssar_one(FT_OutlineGlyph *g, struct ssav_unit *u,
 	params.user		= p;
 	params.target		= NULL;
 
-	FT_Glyph_Copy(*g, &transformed);
+	FT_Glyph_Copy(*(FT_Glyph *)g, &transformed);
 	FT_Glyph_Transform(transformed, &u->fx1, &u->final);
 
 	p->elem = 0;
 	o = &((FT_OutlineGlyph)transformed)->outline;
 	FT_Outline_Render(asaf_ftlib, o, &params);
 
-	stroked = &transformed;
+	stroked = transformed;
 	FT_Glyph_Stroke(&stroked, stroker, 0);
 
 	p->elem = 2;
 	o = &((FT_OutlineGlyph)stroked)->outline;
 	FT_Outline_Render(asaf_ftlib, o, &params);
 
-/*	FT_Done_Glyph(transformed);
-	FT_Done_Glyph(stroked); */
+	FT_Done_Glyph(transformed);
+	FT_Done_Glyph(stroked);
 }
 
 void ssar_line(struct ssav_line *l, struct assp_fgroup *fg)
