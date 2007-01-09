@@ -159,6 +159,8 @@ void ssar_run(struct ssa_vm *vm, double ftime, struct assp_fgroup *fg)
 	basefl = assa_start(vm);
 	for (ln = 0; ln < vm->cache->nrend; ln++) {
 		struct ssav_line *l = vm->cache->lines[ln];
+		if (!l->unit_first)
+			continue;
 
 		fl = ssar_eval(vm, l, ftime, basefl);
 		fl = assa_realloc(vm, l, fl);
