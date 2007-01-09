@@ -1,7 +1,7 @@
 /*****************************************************************************
  * asa: portable digital subtitle renderer
  *****************************************************************************
- * Copyright (C) 2005, 2006  David Lamparter
+ * Copyright (C) 2005, 2006, 2007  David Lamparter
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
