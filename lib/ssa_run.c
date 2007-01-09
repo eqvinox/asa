@@ -31,93 +31,90 @@
 
 #define clip(x,a,b) ((x) < (a) ? a : ((x) > (b) ? (b) : (x)))
 
+static inline void ssar_one(FT_OutlineGlyph *g, struct ssav_unit *u,
+	struct assp_param *p, FT_Stroker stroker)
+{
+	FT_Glyph transformed;
+	FT_Glyph stroked;
+	FT_Outline *o;
+	FT_Raster_Params params;
+	params.flags      	= ft_raster_flag_aa | ft_raster_flag_direct;
+	params.black_spans	= assp_spanfunc;
+	params.gray_spans	= assp_spanfunc;
+	params.user		= p;
+	params.target		= NULL;
+
+	FT_Glyph_Copy(*g, &transformed);
+	FT_Glyph_Transform(transformed, &u->fx1, &u->final);
+
+	p->elem = 0;
+	o = &((FT_OutlineGlyph)transformed)->outline;
+	FT_Outline_Render(asaf_ftlib, o, &params);
+
+	stroked = &transformed;
+	FT_Glyph_Stroke(&stroked, stroker, 0);
+
+	p->elem = 2;
+	o = &((FT_OutlineGlyph)stroked)->outline;
+	FT_Outline_Render(asaf_ftlib, o, &params);
+
+/*	FT_Done_Glyph(transformed);
+	FT_Done_Glyph(stroked); */
+}
+
 void ssar_line(struct ssav_line *l, struct assp_fgroup *fg)
 {
 	struct ssav_node *n = l->node_first;
 	struct ssav_unit *u = l->unit_first;
 	int ustop = u->next ? u->next->idxstart : l->nchars, idx = 0;
-
-while (n) {
-	struct assp_frameref *ng = n->group;
-	struct assp_param p;
-	FT_OutlineGlyph *g, *gend;
 	FT_Stroker stroker;
-	struct ssav_params *np = n->params;
 
-	if (np->finalized)
-		np = np->finalized;
+	FT_Stroker_New(asaf_ftlib, &stroker);
+	while (n) {
+		struct assp_frameref *ng = n->group;
+		struct assp_param p;
+		FT_OutlineGlyph *g, *gend;
+		struct ssav_params *np = n->params;
 
-	if (n->type != SSAVN_TEXT) {
-		n = n->next;
-		continue;
-	}
+		if (np->finalized)
+			np = np->finalized;
 
-	assp_framefree(ng);
-	assp_framenew(ng, fg);
-
-	p.f = ng->frame;
-	p.cx0 = clip(l->active.clip.xMin >> 16, 0, (int)ng->frame->group->w);
-	p.cy0 = clip(l->active.clip.yMin >> 16, 0, (int)ng->frame->group->h);
-	p.cx1 = clip(l->active.clip.xMax >> 16, 0, (int)ng->frame->group->w);
-	p.cy1 = clip(l->active.clip.yMax >> 16, 0, (int)ng->frame->group->h);
-	p.xo = p.yo = 0;
-
-	g = n->glyphs;
-	gend = g + n->nchars;
-
-	if (!g) {
-		fprintf(stderr, "NO GLYPH\n");
-		return;
-	}
-
-	FT_Stroker_New(asaf_ftlib, &stroker); /* XXX */
-
-	/* XXX XXX XXX formula is incorrect!
-	 * someone go figure a correct one! */
-	FT_Stroker_Set(stroker, (int)(np->border * 64),
-		FT_STROKER_LINECAP_ROUND, FT_STROKER_LINEJOIN_ROUND, 0);
-
-	while (g < gend) {
-		FT_Glyph transformed;
-		FT_Glyph stroked;
-		FT_Outline *o;
-		FT_Raster_Params params;
-
-		if (idx == ustop) {
-			u = u->next;
-			ustop = u->next ? u->next->idxstart : l->nchars;
+		if (n->type != SSAVN_TEXT) {
+			n = n->next;
+			continue;
 		}
 
-		// FT_Glyph_Copy(*g, &copy); - XXX?
-		transformed = *(FT_Glyph *)g;
-		FT_Glyph_Transform(transformed, NULL, &u->final);
-		o = &((FT_OutlineGlyph)transformed)->outline;
+		assp_framefree(ng);
+		assp_framenew(ng, fg);
 
-		p.elem = 0;
+		p.f = ng->frame;
+		p.cx0 = clip(l->active.clip.xMin >> 16, 0, (int)ng->frame->group->w);
+		p.cy0 = clip(l->active.clip.yMin >> 16, 0, (int)ng->frame->group->h);
+		p.cx1 = clip(l->active.clip.xMax >> 16, 0, (int)ng->frame->group->w);
+		p.cy1 = clip(l->active.clip.yMax >> 16, 0, (int)ng->frame->group->h);
+		p.xo = p.yo = 0;
 
-		params.flags      = ft_raster_flag_aa
-				| ft_raster_flag_direct;
-		params.black_spans	= assp_spanfunc;
-		params.gray_spans	= assp_spanfunc;
-		params.user	= &p;
-		params.target	= NULL;
-			   
-		FT_Outline_Render(asaf_ftlib, o, &params);
-		
-		stroked = transformed; // XXX?
-		FT_Glyph_Stroke(&stroked, stroker, 0);
+		g = n->glyphs;
+		gend = g + n->nchars;
 
-		p.elem = 2;
-		FT_Outline_Render(asaf_ftlib, &((FT_OutlineGlyph)stroked)->outline, &params);
-		//FT_Done_Glyph(transformed); - XXX?
-		//FT_Done_Glyph(stroked); - XXX?
+		if (!g) {
+			fprintf(stderr, "NO GLYPH\n");
+			return;
+		}
 
-		g++, idx++;
+		FT_Stroker_Set(stroker, (int)(np->border * 64),
+			FT_STROKER_LINECAP_ROUND, FT_STROKER_LINEJOIN_ROUND, 0);
+		while (g < gend) {
+			if (idx == ustop) {
+				u = u->next;
+				ustop = u->next ? u->next->idxstart : l->nchars;
+			}
+			ssar_one(g, u, &p, stroker);
+			g++, idx++;
+		}
+		n = n->next;
 	}
-
 	FT_Stroker_Done(stroker);
-	n = n->next;
-}
 }
 
 static void ssar_commit(struct ssav_line *l)
