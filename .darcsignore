@@ -41,8 +41,9 @@
 ^ac/missing$
 ^ac/Debug(/|$)
 ^ac/Release(/|$)
-^ac/.*\.(ncb|user)$
+^ac/.*\.(ncb|user|suo)$
 ^ac/asa\.(RES|res)$
+^ac/directshow_(i\.c|h\.h)$
 #
 ^include/acconf.h$
 ^include/acconf.h.in$

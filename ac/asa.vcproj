@@ -37,7 +37,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\include"
+				AdditionalIncludeDirectories="..\include;."
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;ASA_EXPORTS;"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
@@ -56,8 +56,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="iconv.lib freetype.lib gdi32.lib"
+				AdditionalDependencies="iconv.lib freetype.lib gdi32.lib strmiids.lib strmbase.lib winmm.lib"
 				LinkIncremental="1"
+				ModuleDefinitionFile="asa.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
@@ -113,7 +114,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\include"
+				AdditionalIncludeDirectories="..\include;."
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;ASA_EXPORTS;"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -133,8 +134,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="iconv.lib freetype.lib gdi32.lib"
+				AdditionalDependencies="iconv.lib freetype.lib gdi32.lib strmiids.lib strmbasd.lib winmm.lib"
 				LinkIncremental="1"
+				ModuleDefinitionFile="asa.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
@@ -302,8 +304,20 @@
 					RelativePath="..\interfaces\avisynth.cpp"
 					>
 				</File>
+				<File
+					RelativePath="..\interfaces\directshow.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\interfaces\directshow.idl"
+					>
+				</File>
 			</Filter>
 		</Filter>
+		<File
+			RelativePath=".\asa.def"
+			>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

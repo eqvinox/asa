@@ -1,0 +1,19 @@
+
+[
+	uuid(9DBDB285-41C7-4135-83CE-246361CBDCD4),
+	version(1.0)
+]
+library asa
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+    
+	[
+		uuid(C9AA9D9A-E14D-420f-AFF3-64069511FFD8)
+	]
+	coclass ASADShow
+	{
+		[default] interface IUnknown;
+	};
+};
+
