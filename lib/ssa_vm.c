@@ -179,14 +179,13 @@ static inline int ssa_strcmp(const ssa_string *a, const ssa_string *b)
 static struct ssav_error *ssav_add_error(struct ssa_vm *vm,
 	enum ssav_errc code, char *ext_str)
 {
-	struct ssav_error **prev = &vm->errlist, *me;
-	while (*prev)
-		prev = &(*prev)->next;
+	struct ssav_error **prev = vm->errnext, *me;
 
 	me = xmalloc(sizeof(struct ssav_error));
 	memset(me, 0, sizeof(struct ssav_error));
 	me->errorcode = code;
 	*prev = me;
+	prev = &me->next;
 	if (ext_str)
 		me->ext_str = xstrdup(ext_str);
 	return me;
@@ -892,6 +891,7 @@ void ssav_create(struct ssa_vm *vm, struct ssa *ssa)
 	vm->playresx = ssa->playresx;
 	vm->playresy = ssa->playresy;
 	vm->errlist = NULL;
+	vm->errnext = &vm->errlist;
 	if ((vm->playresx == 0.0) ^ (vm->playresy == 0.0)) {
 		if (vm->playresx == 0.0)
 			vm->playresx = vm->playresy * (4./3.);

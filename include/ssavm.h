@@ -180,7 +180,7 @@ struct ssa_vm {
 	struct ssa_frag *cache;
 	struct assa_layer *firstlayer;
 
-	struct ssav_error *errlist;
+	struct ssav_error *errlist, **errnext;
 
 	enum ssar_redoflags redoflags;
 
