@@ -57,8 +57,10 @@ static inline void ssar_one(FT_OutlineGlyph *g, struct ssav_unit *u,
 
 	FT_Glyph_Get_CBox(transformed, FT_GLYPH_BBOX_PIXELS, &cbox);
 	if (cbox.xMax < p->cx0 || cbox.xMin >= p->cx1
-		|| cbox.yMax < p->cy0 || cbox.yMin >= p->cy1)
+		|| cbox.yMax < p->cy0 || cbox.yMin >= p->cy1) {
+		FT_Done_Glyph(transformed);
 		return;
+	}
 
 	p->elem = 0;
 	o = &((FT_OutlineGlyph)transformed)->outline;
