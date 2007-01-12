@@ -710,9 +710,12 @@ static void ssav_anim(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
 			struct ssa_ipnode *ip = &iplist[SSAN(cn->type)];
 			if (ip->afunc)
 				ip->afunc(ctx, cn, ip->param, &ctr);
-			else
+			else {
 				ssav_add_error_dlg(SSAVEC_NOANIM, NULL,
 					ctx, cn);
+				if (ip->func)
+					ip->func(ctx, cn, ip->param);
+			}
 		}
 		cn = cn->next;
 	}
