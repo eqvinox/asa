@@ -233,12 +233,19 @@ static void assa_wrap(struct ssa_vm *vm, struct assa_layer *lay,
 	r.xalign = l->xalign;
 	r.yalign = l->yalign;
 	if (l->flags & SSAV_POS) {
+#if 0
 		r.pos.x = l->active.pos.x * (1. - l->xalign);
 		r.size.x = (FT_Pos)(l->active.pos.x * l->xalign
 			+ (vm->res.x - l->active.pos.x)	* (1 - l->xalign));
 		r.pos.y = l->active.pos.y * (1 - l->yalign);
 		r.size.y = (FT_Pos)(l->active.pos.y * l->yalign
 			+ (vm->res.y - l->active.pos.y)	* (1 - l->yalign));
+#else
+		r.pos.x = l->active.pos.x - (l->xalign) * vm->res.x;
+		r.pos.y = l->active.pos.y - (l->yalign) * vm->res.y;
+		r.size.x = vm->res.x;
+		r.size.y = vm->res.y;
+#endif
 	} else {
 		r.pos.x = l->marginl << 16;
 		r.size.x = vm->res.x - ((l->marginl + l->marginr) << 16);
