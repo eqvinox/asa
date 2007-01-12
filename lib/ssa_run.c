@@ -39,6 +39,8 @@ static inline void ssar_one(FT_OutlineGlyph *g, struct ssav_unit *u,
 	FT_Outline *o;
 	FT_Raster_Params params;
 	FT_Vector orgneg;
+	FT_BBox cbox;
+
 	params.flags      	= ft_raster_flag_aa | ft_raster_flag_direct;
 	params.black_spans	= assp_spanfunc;
 	params.gray_spans	= assp_spanfunc;
@@ -52,6 +54,11 @@ static inline void ssar_one(FT_OutlineGlyph *g, struct ssav_unit *u,
 	FT_Glyph_Copy(*(FT_Glyph *)g, &transformed);
 	FT_Glyph_Transform(transformed, NULL, &orgneg);
 	FT_Glyph_Transform(transformed, &u->fx1, &org);
+
+	FT_Glyph_Get_CBox(transformed, FT_GLYPH_BBOX_PIXELS, &cbox);
+	if (cbox.xMax < p->cx0 || cbox.xMin >= p->cx1
+		|| cbox.yMax < p->cy0 || cbox.yMin >= p->cy1)
+		return;
 
 	p->elem = 0;
 	o = &((FT_OutlineGlyph)transformed)->outline;
