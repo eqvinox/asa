@@ -43,6 +43,8 @@ void ssgl_matrix(struct ssav_params *p, FT_Matrix *fx0, FT_Matrix *fx1)
 		fx1->yx = 0x00000L;
 		fx1->yy = 0x10000L;
 	}
+	fx1->xy += (FT_Fixed)(p->m.fax * 65536);
+	fx1->yx += (FT_Fixed)(p->m.fay * 65536);
 }
 
 void ssgl_prepare(struct ssav_line *l)
