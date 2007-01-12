@@ -359,6 +359,9 @@ static struct ssav_params *ssav_alloc_style(struct ssa *ssa,
 	rv->f.weight = style->fontweight;
 	rv->f.italic = !!style->italic;
 
+	rv->border = style->border;
+	rv->shadow = style->shadow;
+
 	rv->m.fscx = style->scx;
 	rv->m.fscy = style->scy;
 	rv->m.frz = style->rot;
