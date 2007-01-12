@@ -241,8 +241,8 @@ static void assa_wrap(struct ssa_vm *vm, struct assa_layer *lay,
 		r.size.y = (FT_Pos)(l->active.pos.y * l->yalign
 			+ (vm->res.y - l->active.pos.y)	* (1 - l->yalign));
 #else
-		r.pos.x = l->active.pos.x - (l->xalign) * vm->res.x;
-		r.pos.y = l->active.pos.y - (l->yalign) * vm->res.y;
+		r.pos.x = l->active.pos.x - (FT_Pos)(l->xalign * vm->res.x);
+		r.pos.y = l->active.pos.y - (FT_Pos)(l->yalign * vm->res.y);
 		r.size.x = vm->res.x;
 		r.size.y = vm->res.y;
 #endif
@@ -257,8 +257,8 @@ static void assa_wrap(struct ssa_vm *vm, struct assa_layer *lay,
 	else
 		assa_fit(l, &r);
 	if ((l->flags & SSAV_ORG) == 0) {
-		l->active.org.x = r.pos.x + r.xalign * r.size.x;
-		l->active.org.y = r.pos.y + r.yalign * r.size.y;
+		l->active.org.x = r.pos.x + (FT_Pos)(r.xalign * r.size.x);
+		l->active.org.y = r.pos.y + (FT_Pos)(r.yalign * r.size.y);
 	}
 }
 
