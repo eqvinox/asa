@@ -81,6 +81,7 @@ struct ssav_params {
 	} m;
 
 	double border;
+	double shadow;
 
 	struct {
 		colour_t colours[4];

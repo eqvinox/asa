@@ -32,7 +32,7 @@
 #define clip(x,a,b) ((x) < (a) ? a : ((x) > (b) ? (b) : (x)))
 
 static inline void ssar_one(FT_OutlineGlyph *g, struct ssav_unit *u,
-	struct assp_param *p, FT_Stroker stroker, FT_Vector org)
+	struct assp_param *p, FT_Stroker stroker, FT_Vector org, double shad)
 {
 	FT_Glyph transformed;
 	FT_Glyph stroked;
@@ -70,6 +70,18 @@ static inline void ssar_one(FT_OutlineGlyph *g, struct ssav_unit *u,
 	p->elem = 2;
 	o = &((FT_OutlineGlyph)stroked)->outline;
 	FT_Outline_Render(asaf_ftlib, o, &params);
+
+	if (abs(shad) > 0.01) {
+		FT_Vector shaddist;
+
+		shaddist.x = (FT_Pos)(shad * 65536);
+		shaddist.y = (FT_Pos)(shad * 65536);
+		FT_Glyph_Transform(transformed, NULL, &shaddist);
+
+		p->elem = 3;
+		o = &((FT_OutlineGlyph)transformed)->outline;
+		FT_Outline_Render(asaf_ftlib, o, &params);
+	}
 
 	FT_Done_Glyph(transformed);
 	FT_Done_Glyph(stroked);
@@ -122,7 +134,7 @@ void ssar_line(struct ssav_line *l, struct assp_fgroup *fg)
 				u = u->next;
 				ustop = u->next ? u->next->idxstart : l->nchars;
 			}
-			ssar_one(g, u, &p, stroker, l->active.org);
+			ssar_one(g, u, &p, stroker, l->active.org, np->shadow);
 			g++, idx++;
 		}
 		n = n->next;

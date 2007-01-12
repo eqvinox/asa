@@ -292,6 +292,7 @@ static void asar_commit_yuvp(struct assp_frame *f)
 	asar_commit_y420_x86_64(f->group, f->lines, yuvc);
 #endif
 
+	_asar_commit(f, 3);
 	_asar_commit(f, 2);
 	_asar_commit(f, 0);
 }
