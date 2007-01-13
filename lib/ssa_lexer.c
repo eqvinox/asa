@@ -1166,6 +1166,9 @@ static void ssa_tmp_iconv(struct ssa_temp_text *tmp,
 	size_t outleft,
 		inleft = end - *now;
 
+	if (inleft == 0)
+		return;
+
 	iconv(state->ic_tcv, NULL, NULL, NULL, NULL);
 
 	do {
