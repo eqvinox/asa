@@ -1134,7 +1134,7 @@ static iconv_t ssa_enc2iconv(struct ssa_state *state, long int encoding)
 struct ssa_temp_text {
 	struct ssa_node *node;		/**< node we're writing into */
 	ptrdiff_t allocated;		/**< allocated bytes */
-	ptrdiff_t pos;			/**< writing position */
+	ptrdiff_t pos;			/**< writing position, in bytes */
 };
 
 /** make sure tmp is valid and has space for at least 2 characters */
@@ -1149,7 +1149,7 @@ static void ssa_tmp_enchant(struct ssa_temp_text *tmp,
 		**prev = tmp->node;
 		*prev = &tmp->node->next;
 	}
-	if (tmp->pos + 8 >= tmp->allocated)
+	if (tmp->pos + 2 * (int)sizeof(ssaout_t) >= tmp->allocated)
 		tmp->node->v.text.s = xrealloc(tmp->node->v.text.s,
 			(tmp->allocated += 128) * sizeof(ssaout_t));
 }
@@ -1189,7 +1189,7 @@ static void ssa_tmp_add(struct ssa_temp_text *tmp,
 	struct ssa_node ***prev, ssaout_t ch)
 {
 	ssa_tmp_enchant(tmp, prev);
-	tmp->node->v.text.s[tmp->pos] = ch;
+	tmp->node->v.text.s[tmp->pos / sizeof(ssaout_t)] = ch;
 	tmp->pos += sizeof(ssaout_t);
 }
 
