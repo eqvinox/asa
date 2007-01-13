@@ -293,14 +293,18 @@ void assa_end(struct ssa_vm *vm)
 
 void assa_setup(struct ssa_vm *vm, unsigned width, unsigned height)
 {
+	vm->scale.xy = 0x00000;
+	vm->scale.yx = 0x00000;
 	if (vm->playresx != 0.0 && vm->playresy != 0.0) {
 		vm->res.x = (int)(vm->playresx * 65536.);
 		vm->res.y = (int)(vm->playresy * 65536.);
-		/* should probably create scaling matrix here */
+		vm->scale.xx = (FT_Pos)(width * 65536. / vm->playresx);
+		vm->scale.yy = (FT_Pos)(height * 65536. / vm->playresy);
 	} else {
 		vm->res.x = width << 16;
 		vm->res.y = height << 16;
-		/* should set scaling matrix to identity here */
+		vm->scale.xx = 0x10000;
+		vm->scale.yy = 0x10000;
 	}
 	vm->redoflags = SSAR_COLO | SSAR_REND | SSAR_WRAP;
 }

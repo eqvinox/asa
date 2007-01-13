@@ -188,6 +188,8 @@ struct ssa_vm {
 /* positioner */
 	double playresx, playresy;
 	FT_Vector res;
+	FT_Matrix scale;
+	long scalebas;
 };
 
 extern struct ssa_frag *ssap_frag_init(struct ssa_vm *vm);

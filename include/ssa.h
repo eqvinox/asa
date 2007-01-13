@@ -341,6 +341,7 @@ struct ssa {
 
 	long int
 		wrapstyle,
+		scalebas,
 		playdepth;
 	double
 		playresx,

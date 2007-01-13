@@ -31,8 +31,9 @@
 
 #define clip(x,a,b) ((x) < (a) ? a : ((x) > (b) ? (b) : (x)))
 
-static inline void ssar_one(FT_OutlineGlyph *g, struct ssav_unit *u,
-	struct assp_param *p, FT_Stroker stroker, FT_Vector org, double shad)
+static inline void ssar_one(struct ssa_vm *vm, FT_OutlineGlyph *g,
+	struct ssav_unit *u, struct assp_param *p, FT_Stroker stroker,
+	FT_Vector org, double shad)
 {
 	FT_Glyph transformed;
 	FT_Glyph stroked;
@@ -54,7 +55,10 @@ static inline void ssar_one(FT_OutlineGlyph *g, struct ssav_unit *u,
 	FT_Glyph_Copy(*(FT_Glyph *)g, &transformed);
 	FT_Glyph_Transform(transformed, NULL, &orgneg);
 	FT_Glyph_Transform(transformed, &u->fx1, &org);
+	FT_Glyph_Transform(transformed, &vm->scale, NULL);
 
+	/* XXX XXX XXX: if border or shadow are in-view, but char isn't,
+	 * this BREAKS */
 	FT_Glyph_Get_CBox(transformed, FT_GLYPH_BBOX_PIXELS, &cbox);
 	if (cbox.xMax < p->cx0 || cbox.xMin >= p->cx1
 		|| cbox.yMax < p->cy0 || cbox.yMin >= p->cy1) {
@@ -78,6 +82,8 @@ static inline void ssar_one(FT_OutlineGlyph *g, struct ssav_unit *u,
 
 		shaddist.x = (FT_Pos)(shad * 65536);
 		shaddist.y = (FT_Pos)(shad * 65536);
+		if (vm->scalebas)
+			FT_Vector_Transform(&shaddist, &vm->scale);
 		FT_Glyph_Transform(transformed, NULL, &shaddist);
 
 		p->elem = 3;
@@ -89,7 +95,7 @@ static inline void ssar_one(FT_OutlineGlyph *g, struct ssav_unit *u,
 	FT_Done_Glyph(stroked);
 }
 
-void ssar_line(struct ssav_line *l, struct assp_fgroup *fg)
+void ssar_line(struct ssa_vm *vm, struct ssav_line *l, struct assp_fgroup *fg)
 {
 	struct ssav_node *n = l->node_first;
 	struct ssav_unit *u = l->unit_first;
@@ -102,6 +108,7 @@ void ssar_line(struct ssav_line *l, struct assp_fgroup *fg)
 		struct assp_param p;
 		FT_OutlineGlyph *g, *gend;
 		struct ssav_params *np = n->params;
+		FT_Pos bordersize;
 
 		if (np->finalized)
 			np = np->finalized;
@@ -115,10 +122,17 @@ void ssar_line(struct ssav_line *l, struct assp_fgroup *fg)
 		assp_framenew(ng, fg);
 
 		p.f = ng->frame;
-		p.cx0 = clip(l->active.clip.xMin >> 16, 0, (int)ng->frame->group->w);
-		p.cy0 = clip(l->active.clip.yMin >> 16, 0, (int)ng->frame->group->h);
-		p.cx1 = clip(l->active.clip.xMax >> 16, 0, (int)ng->frame->group->w);
-		p.cy1 = clip(l->active.clip.yMax >> 16, 0, (int)ng->frame->group->h);
+		FT_Vector cpos;
+		cpos.x = l->active.clip.xMin;
+		cpos.y = l->active.clip.yMin;
+		FT_Vector_Transform(&cpos, &vm->scale);
+		p.cx0 = clip(cpos.x >> 16, 0, (int)ng->frame->group->w);
+		p.cy0 = clip(cpos.y >> 16, 0, (int)ng->frame->group->h);
+		cpos.x = l->active.clip.xMax;
+		cpos.y = l->active.clip.yMax;
+		FT_Vector_Transform(&cpos, &vm->scale);
+		p.cx1 = clip(cpos.x >> 16, 0, (int)ng->frame->group->w);
+		p.cy1 = clip(cpos.y >> 16, 0, (int)ng->frame->group->h);
 		p.xo = p.yo = 0;
 
 		g = n->glyphs;
@@ -129,14 +143,21 @@ void ssar_line(struct ssav_line *l, struct assp_fgroup *fg)
 			return;
 		}
 
-		FT_Stroker_Set(stroker, (int)(np->border * 64),
-			FT_STROKER_LINECAP_ROUND, FT_STROKER_LINEJOIN_ROUND, 0);
+		bordersize = (FT_Pos)(np->border * 64);
+		if (vm->scalebas) {
+			FT_Vector border = {bordersize, bordersize};
+			FT_Vector_Transform(&border, &vm->scale);
+			/* this is the vsfilter way, don't bug me >_> */
+			bordersize = (border.x + border.y) >> 1;
+		}
+		FT_Stroker_Set(stroker, bordersize, FT_STROKER_LINECAP_ROUND,
+			FT_STROKER_LINEJOIN_ROUND, 0);
 		while (g < gend) {
 			if (idx == ustop) {
 				u = u->next;
 				ustop = u->next ? u->next->idxstart : l->nchars;
 			}
-			ssar_one(g, u, &p, stroker, l->active.org, np->shadow);
+			ssar_one(vm, g, u, &p, stroker, l->active.org, np->shadow);
 			g++, idx++;
 		}
 		n = n->next;
@@ -186,7 +207,7 @@ void ssar_run(struct ssa_vm *vm, double ftime, struct assp_fgroup *fg)
 		fl = ssar_eval(vm, l, ftime, basefl);
 		fl = assa_realloc(vm, l, fl);
 		if (fl & SSAR_REND)
-			ssar_line(l, fg);
+			ssar_line(vm, l, fg);
 		ssar_commit(l);
 	}
 	assa_end(vm);

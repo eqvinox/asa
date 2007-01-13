@@ -187,6 +187,7 @@ static unsigned ssa_genstr(struct ssa_state *state, par_t param, void *elem);
 static unsigned ssa_genint(struct ssa_state *state, par_t param, void *elem);
 static unsigned ssa_twoint(struct ssa_state *state, par_t param, void *elem);
 static unsigned ssa_genfp (struct ssa_state *state, par_t param, void *elem);
+static unsigned ssa_genbool(struct ssa_state *state, par_t param, void *elem);
 
 static unsigned ssa_setctx(struct ssa_state *state, par_t param, void *elem);
 static unsigned ssa_setver(struct ssa_state *state, par_t param, void *elem);
@@ -255,7 +256,7 @@ static struct ssa_parsetext_ctx ptkeys[] = {
 	{"timer:",		ssa_genfp,	{e(timer)},		info},
 	/* actually WrapStyle only exists in ASS but we aren't picky */
 	{"wrapstyle:",		ssa_genint,	{e(wrapstyle)},		info},
-	{"scaledborderandshadow:", NULL,	{0},			info},
+	{"scaledborderandshadow:", ssa_genbool,	{e(scalebas)},		info},
 	{"lastwav:",		NULL,		{0},			info},
 	{"wav:",		NULL,		{0},			info},
 	{NULL,			NULL,		{0},			0}
@@ -869,6 +870,26 @@ static unsigned ssa_genfp (struct ssa_state *state, par_t param, void *elem)
 	}
 	*((double *)apply_offset(elem, param.offset)) = result;
 
+	return 1;
+}
+
+/** bool (yes/no) into long at offset.
+ * @see ssa_genstr
+ */
+static unsigned ssa_genbool(struct ssa_state *state, par_t param, void *elem)
+{
+	const ssasrc_t *after;
+	if ((after = ssa_compare(state, state->param, state->pend,
+		"yes", NULL)))
+		*(long int *)apply_offset(elem, param.offset) = 1;
+	else if ((after = ssa_compare(state, state->param, state->pend,
+		"no", NULL)))
+		*(long int *)apply_offset(elem, param.offset) = 0;
+	else {
+		ssa_add_error(state, state->param, SSAEC_EXC_BOOL);
+		return 0;
+	}
+	state->param = after;
 	return 1;
 }
 

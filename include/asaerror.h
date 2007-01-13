@@ -35,6 +35,7 @@ enum ssa_errc {
 	SSAEC_EXC_NUMORSIGN,		/**< expecting number or sign */
 	SSAEC_EXC_NUM,			/**< expecting number */
 	SSAEC_EXC_COLOUR,		/**< expecting colour code */
+	SSAEC_EXC_BOOL,			/**< expecting boolean value */
 	SSAEC_EXC_DCOL,			/**< expected ':' */
 	SSAEC_EXC_AMPERSAND,		/**< expected '&' */
 	SSAEC_EXC_BRACE,		/**< expected '(' */
