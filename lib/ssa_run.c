@@ -34,20 +34,25 @@
 
 static inline void ssar_one(struct ssa_vm *vm, FT_OutlineGlyph *g,
 	struct ssav_unit *u, struct assp_param *p, FT_Stroker stroker,
-	FT_Vector org, double shad, FT_Matrix *fx1, int tgt)
+	FT_Vector org, double shad, FT_Pos bord, FT_Matrix *fx1, int tgt)
 {
 	FT_Glyph transformed;
-	FT_Glyph stroked;
 	FT_Outline *o;
 	FT_Raster_Params params;
 	FT_Vector orgneg;
 	FT_BBox cbox;
+	FT_Vector shaddist;
 
 	params.flags      	= ft_raster_flag_aa | ft_raster_flag_direct;
 	params.black_spans	= assp_spanfunc;
 	params.gray_spans	= assp_spanfunc;
 	params.user		= p;
 	params.target		= NULL;
+
+	shaddist.x = (FT_Pos)(shad * 64);
+	shaddist.y = (FT_Pos)(shad * 64);
+	if (vm->scalebas)
+		FT_Vector_Transform(&shaddist, &vm->scale);
 
 	org.x >>= 10;
 	org.y >>= 10;
@@ -58,9 +63,12 @@ static inline void ssar_one(struct ssa_vm *vm, FT_OutlineGlyph *g,
 	FT_Glyph_Transform(transformed, fx1, &org);
 	FT_Glyph_Transform(transformed, &vm->scale, NULL);
 
-	/* XXX XXX XXX: if border or shadow are in-view, but char isn't,
-	 * this BREAKS */
+	bord = (bord + 63) >> 6;
 	FT_Glyph_Get_CBox(transformed, FT_GLYPH_BBOX_PIXELS, &cbox);
+	cbox.xMin -= bord - (shaddist.x < 0 ? shaddist.x : 0);
+	cbox.xMax += bord + (shaddist.x > 0 ? shaddist.x : 0);
+	cbox.yMin -= bord - (shaddist.y < 0 ? shaddist.y : 0);
+	cbox.yMax += bord + (shaddist.y > 0 ? shaddist.y : 0);
 	if (cbox.xMax < p->cx0 || cbox.xMin >= p->cx1
 		|| cbox.yMax < p->cy0 || cbox.yMin >= p->cy1) {
 		FT_Done_Glyph(transformed);
@@ -77,24 +85,23 @@ static inline void ssar_one(struct ssa_vm *vm, FT_OutlineGlyph *g,
 	 * both, but that produces evil artifacts with \bord0.
 	 * => TEMP HACK.
 	 */
-	stroked = transformed;
-	FT_Glyph_Stroke(&stroked, stroker, 0);
+	if (bord) {
+		FT_Glyph stroked;
 
-	p->elem = 2;
-	o = &((FT_OutlineGlyph)stroked)->outline;
-	FT_Outline_Render(asaf_ftlib, o, &params);
+		stroked = transformed;
+		FT_Glyph_Stroke(&stroked, stroker, 0);
 
-	if (fabs(shad) > 0.01) {
+		p->elem = 2;
+		o = &((FT_OutlineGlyph)stroked)->outline;
+		FT_Outline_Render(asaf_ftlib, o, &params);
+		FT_Done_Glyph(stroked);
+	}
+
+	if (shaddist.x || shaddist.y) {
 		FT_Glyph shadowed;
-		FT_Vector shaddist;
 
 		shadowed = transformed;
 		FT_Glyph_StrokeBorder(&shadowed, stroker, 0, 0);
-
-		shaddist.x = (FT_Pos)(shad * 64);
-		shaddist.y = (FT_Pos)(shad * 64);
-		if (vm->scalebas)
-			FT_Vector_Transform(&shaddist, &vm->scale);
 		FT_Glyph_Transform(shadowed, NULL, &shaddist);
 
 		p->elem = 3;
@@ -104,7 +111,6 @@ static inline void ssar_one(struct ssa_vm *vm, FT_OutlineGlyph *g,
 	}
 
 	FT_Done_Glyph(transformed);
-	FT_Done_Glyph(stroked);
 }
 
 void ssar_line(struct ssa_vm *vm, struct ssav_line *l, struct assp_fgroup *fg,
@@ -184,7 +190,7 @@ void ssar_line(struct ssa_vm *vm, struct ssav_line *l, struct assp_fgroup *fg,
 				ustop = u->next ? u->next->idxstart : l->nchars;
 			}
 			ssar_one(vm, g, u, &p, stroker, l->active.org,
-				np->shadow, &n->fx1, tgt);
+				np->shadow, bordersize, &n->fx1, tgt);
 			g++, idx++;
 		}
 		n = n->next;
