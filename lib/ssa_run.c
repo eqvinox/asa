@@ -77,7 +77,7 @@ static inline void ssar_one(struct ssa_vm *vm, FT_OutlineGlyph *g,
 	o = &((FT_OutlineGlyph)stroked)->outline;
 	FT_Outline_Render(asaf_ftlib, o, &params);
 
-	if (abs(shad) > 0.01) {
+	if (fabs(shad) > 0.01) {
 		FT_Vector shaddist;
 
 		shaddist.x = (FT_Pos)(shad * 65536);
@@ -110,6 +110,7 @@ void ssar_line(struct ssa_vm *vm, struct ssav_line *l, struct assp_fgroup *fg)
 		FT_OutlineGlyph *g, *gend;
 		struct ssav_params *np = n->params;
 		FT_Pos bordersize;
+		FT_Vector cpos;
 
 		if (np->finalized)
 			np = np->finalized;
@@ -126,7 +127,6 @@ void ssar_line(struct ssa_vm *vm, struct ssav_line *l, struct assp_fgroup *fg)
 		}
 
 		p.f = ng->frame;
-		FT_Vector cpos;
 		cpos.x = l->active.clip.xMin;
 		cpos.y = l->active.clip.yMin;
 		FT_Vector_Transform(&cpos, &vm->scale);
