@@ -142,7 +142,6 @@ static void assa_fit_q12(struct fitlines *fls, struct ssav_unit *u,
 		fl->endat = u;
 		fls->used++;
 	};
-	return ret;
 }
 
 /** fitting pass #2: fit a linked list of fitlines into a rectangle.
