@@ -72,6 +72,8 @@ static void ssav_ignore(ifp);
 
 static void ssav_nl(ifp);
 static void ssav_text(ifp);
+static void ssav_fontint(ifp);
+static void ssav_fontname(ifp);
 static void ssav_fontsize(ifp);
 static void ssav_reset(ifp);
 
@@ -116,14 +118,14 @@ static struct ssa_ipnode iplist[SSAN_MAX] = {
 	{ssav_text,	NULL,		0},		/* Sl SSAN_TEXT */
 	{ssav_nl,	NULL,		0},		/* Sl SSAN_NEWLINE */
 	{ssav_nl,	NULL,		0},		/* Sl SSAN_NEWLINEH */
-	{NULL,		NULL,		0},		/* !l SSAN_BOLD */
-	{NULL,		NULL,		0},		/* ?l SSAN_ITALICS */
+	{ssav_fontint,	NULL,		e(f.weight)},	/* !l SSAN_BOLD */
+	{ssav_fontint,	NULL,		e(f.italic)},	/* ?l SSAN_ITALICS */
 	{NULL,		NULL,		0},		/* ?l SSAN_UNDERLINE */
 	{NULL,		NULL,		0},		/* ?l SSAN_STRIKEOUT */
 	{ssav_double,	ssava_double,	e(border)},	/* al SSAN_BORDER */
 	{ssav_double,	ssava_double,	e(shadow)},	/* al SSAN_SHADOW */
 	{NULL,		NULL,		0},		/* ?? SSAN_BLUREDGES */
-	{NULL,		NULL,		0},		/* ?l SSAN_FONT */
+	{ssav_fontname,	NULL,		0},		/* ?l SSAN_FONT */
 	{ssav_fontsize,	NULL,		0},		/* ?l SSAN_FONTSIZE */
 
 	{ssav_double,	ssava_double,	e(m.fscx)},	/* al SSAN_FSCX */
@@ -446,6 +448,23 @@ static void ssav_fontsize(struct ssav_prepare_ctx *ctx,
 	asaf_srelease(ctx->pset->fsiz);
 	ctx->pset->f.size = n->v.dval;
 	ctx->pset->fsiz = asaf_reqsize(ctx->pset->font, ctx->pset->f.size);
+}
+
+static void ssav_fontint(struct ssav_prepare_ctx *ctx,
+				struct ssa_node *n, ptrdiff_t param)
+{
+	if (*(long int *)apply_offset(ctx->pset, param) == n->v.lval)
+		return;
+	ctx->pset = ssav_alloc_clone(ctx->pset);
+	*(long int *)apply_offset(ctx->pset, param) = n->v.lval;
+	ssav_set_font(ctx->pset, NULL, ctx->pset->f.size);
+}
+
+static void ssav_fontname(struct ssav_prepare_ctx *ctx,
+				struct ssa_node *n, ptrdiff_t param)
+{
+	ctx->pset = ssav_alloc_clone(ctx->pset);
+	ssav_set_font(ctx->pset, &n->v.text, ctx->pset->f.size);
 }
 
 static void ssav_reset(struct ssav_prepare_ctx *ctx,
