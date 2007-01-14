@@ -158,25 +158,17 @@ static void assa_fit_arrange(struct fitlines *fls,
 	struct fitline *fl, *end;
 
 	y = r->pos.y + (FT_Pos)((double)(r->size.y - h_total) * r->yalign);
-	if (r->wrapdir < 0)
-		y += h_total;
-
 	for (fl = fls->fl, end = fl + fls->used; fl < end; fl++) {
 		struct ssav_unit *u = fl->startat;
 		x = r->pos.x + (FT_Pos)((double)(r->size.x - fl->size.x) * r->xalign);
 
-		if (r->wrapdir > 0)
-			y += fl->size.y;
-
+		y += fl->size.y;
 		while (u != fl->endat) {
 			u->final.y = y >> 10;
 			u->final.x = x >> 10;
 			x += u->size.x << 10;
 			u = u->next;
 		}
-
-		if (r->wrapdir < 0)
-			y -= fl->size.y;
 	}
 }
 
@@ -210,7 +202,6 @@ static void assa_wrap(struct ssa_vm *vm, struct assa_layer *lay,
 	*lay->curpos = newa;
 	lay->curpos = &newa->next;
 
-	r.wrapdir = -1;
 	r.xalign = l->xalign;
 	r.yalign = l->yalign;
 	if (l->flags & SSAV_POS) {
