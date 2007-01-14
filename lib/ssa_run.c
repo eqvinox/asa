@@ -71,6 +71,12 @@ static inline void ssar_one(struct ssa_vm *vm, FT_OutlineGlyph *g,
 	o = &((FT_OutlineGlyph)transformed)->outline;
 	FT_Outline_Render(asaf_ftlib, o, &params);
 
+	/* XXX: using FT_Glyph_Stroke (outline) for border, but
+	 * FT_Glyph_StrokeBorder (filled) for shadow.
+	 * actually FT_Glyph_StrokeBorder should be used for
+	 * both, but that produces evil artifacts with \bord0.
+	 * => TEMP HACK.
+	 */
 	stroked = transformed;
 	FT_Glyph_Stroke(&stroked, stroker, 0);
 
@@ -79,17 +85,22 @@ static inline void ssar_one(struct ssa_vm *vm, FT_OutlineGlyph *g,
 	FT_Outline_Render(asaf_ftlib, o, &params);
 
 	if (fabs(shad) > 0.01) {
+		FT_Glyph shadowed;
 		FT_Vector shaddist;
 
-		shaddist.x = (FT_Pos)(shad * 65536);
-		shaddist.y = (FT_Pos)(shad * 65536);
+		shadowed = transformed;
+		FT_Glyph_StrokeBorder(&shadowed, stroker, 0, 0);
+
+		shaddist.x = (FT_Pos)(shad * 64);
+		shaddist.y = (FT_Pos)(shad * 64);
 		if (vm->scalebas)
 			FT_Vector_Transform(&shaddist, &vm->scale);
-		FT_Glyph_Transform(transformed, NULL, &shaddist);
+		FT_Glyph_Transform(shadowed, NULL, &shaddist);
 
 		p->elem = 3;
-		o = &((FT_OutlineGlyph)transformed)->outline;
+		o = &((FT_OutlineGlyph)shadowed)->outline;
 		FT_Outline_Render(asaf_ftlib, o, &params);
+		FT_Done_Glyph(shadowed);
 	}
 
 	FT_Done_Glyph(transformed);
