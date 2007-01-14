@@ -42,8 +42,8 @@ ASAAviSynth::ASAAviSynth(PClip _child, const char *file,
 	IScriptEnvironment *env)
 	: GenericVideoFilter(_child)
 {
-	if (!vi.IsYV12())
-		env->ThrowError("asa supports YV12 only");
+	if (!vi.IsYV12() && !vi.IsRGB24() && !vi.IsRGB32())
+		env->ThrowError("asa only supports YV12, RGB24 and RGB32");
 
 	asa = asa_open(file, (enum asa_oflags)0);
 	if (!asa)
@@ -59,15 +59,29 @@ PVideoFrame __stdcall ASAAviSynth::GetFrame(int n, IScriptEnvironment *env)
 
 	env->MakeWritable(&avsframe);
 
-	frame.csp = ASACSP_YUV_PLANAR;
-	frame.bmp.yuv_planar.y.d = avsframe->GetWritePtr();
-	frame.bmp.yuv_planar.y.stride = avsframe->GetPitch();
-	frame.bmp.yuv_planar.u.d = avsframe->GetWritePtr(PLANAR_U);
-	frame.bmp.yuv_planar.u.stride = avsframe->GetPitch(PLANAR_U);
-	frame.bmp.yuv_planar.v.d = avsframe->GetWritePtr(PLANAR_V);
-	frame.bmp.yuv_planar.v.stride = avsframe->GetPitch(PLANAR_V);
-	frame.bmp.yuv_planar.chroma_x_red = 1;
-	frame.bmp.yuv_planar.chroma_y_red = 1;
+	if (vi.IsYV12()) {
+		frame.csp = ASACSP_YUV_PLANAR;
+		frame.bmp.yuv_planar.y.d = avsframe->GetWritePtr();
+		frame.bmp.yuv_planar.y.stride = avsframe->GetPitch();
+		frame.bmp.yuv_planar.u.d = avsframe->GetWritePtr(PLANAR_U);
+		frame.bmp.yuv_planar.u.stride = avsframe->GetPitch(PLANAR_U);
+		frame.bmp.yuv_planar.v.d = avsframe->GetWritePtr(PLANAR_V);
+		frame.bmp.yuv_planar.v.stride = avsframe->GetPitch(PLANAR_V);
+		frame.bmp.yuv_planar.chroma_x_red = 1;
+		frame.bmp.yuv_planar.chroma_y_red = 1;
+	} else if (vi.IsRGB32()) {
+		frame.csp = ASACSP_RGB;
+		frame.bmp.rgb.fmt = ASACSPR_BGRx;
+		frame.bmp.rgb.d.d = avsframe->GetWritePtr()
+			+ (vi.height - 1) * avsframe->GetPitch();
+		frame.bmp.rgb.d.stride = -avsframe->GetPitch();
+	} else if (vi.IsRGB24()) {
+		frame.csp = ASACSP_RGB;
+		frame.bmp.rgb.fmt = ASACSPR_BGR;
+		frame.bmp.rgb.d.d = avsframe->GetWritePtr()
+			+ (vi.height - 1) * avsframe->GetPitch();
+		frame.bmp.rgb.d.stride = -avsframe->GetPitch();
+	}
 
 	asa_render(asa, n * spf, &frame);
 	return avsframe;
