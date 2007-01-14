@@ -209,7 +209,7 @@ static void asar_commit_rgb(struct assp_frame *f)
 		break;
 #define orderx(v,w,x,y) blend = 1; order(v,w,x,y)
 #define order3(v,w,x) blend = 1; nbytes = 3; order(v,w,x,a & 0)
-#define x a & 0
+#define x a | 0xff
 #define ai a * -1 + 255
 	switch (dst->bmp.rgb.fmt) {
 	case ASACSPR_RGBA: order(r,g,b,ai)
