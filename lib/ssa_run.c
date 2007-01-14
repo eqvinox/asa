@@ -25,6 +25,7 @@
 #include "ssavm.h"
 #include "ssarun.h"
 
+#include <math.h>
 #include "freetype/ftstroke.h"
 
 #define HACKING 1
