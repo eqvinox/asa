@@ -109,39 +109,39 @@ struct fitline {
  * @param h_total (out) total height of everything
  * @return newly allocated (temp) list of lines
  */
-static struct fitline *assa_fit_split(struct ssav_unit *u, FT_Pos width,
-	FT_Pos *h_total)
+static struct fitline *assa_fit_q12(struct ssav_unit *u, FT_Pos width,
+	FT_Pos *h_total, long wrap)
 {
-	FT_Pos w_remain = -1;
+	FT_Pos w_remain = INT_MAX;
 	struct fitline *fl = NULL,
 		*ret = fl, **upd = &ret;
 
 	while (u) {
-		if (u->size.x > w_remain) {
-			if (fl) {
-				*h_total += fl->size.y;
-				fl->endat = u;
-			}
+		fl = malloc(sizeof(struct fitline));
+		fl->next = *upd;
+		*upd = fl;
 
-			fl = malloc(sizeof(struct fitline));
-			fl->next = *upd;
-			*upd = fl;
+		fl->startat = u;
+		fl->size.x = fl->size.y = 0;
 
-			fl->size.x = fl->size.y = 0;
-			fl->startat = u;
+		if (wrap == 1)
 			w_remain = width;
+		while (u && u->type == SSAVU_TEXT) {
+			if (wrap == 1)
+				w_remain -= u->size.x << 10;
+			fl->size.x += u->size.x << 10;
+			if ((u->height << 10) > fl->size.y)
+				fl->size.y = u->height << 10;
+			u = u->next;
 		}
-
-		w_remain -= u->size.x << 10;
-		fl->size.x += u->size.x << 10;
-		if ((u->height << 10) > fl->size.y)
-			fl->size.y = u->height << 10;
-
-		u = u->next;
-	}
-	fl->endat = NULL;
-	*h_total += fl->size.y;
-
+		if (u && u->type == SSAVU_NEWLINE) {
+			if ((u->height << 10) > fl->size.y)
+				fl->size.y = u->height << 10;
+			u = u->next;
+		}
+		*h_total += fl->size.y;
+		fl->endat = u;
+	};
 	return ret;
 }
 
@@ -185,30 +185,11 @@ static void assa_fit(struct ssav_line *l, struct assa_rect *r)
 	FT_Pos h_total = 0;
 	struct fitline *fl, *del;
 
-	fl = assa_fit_split(l->unit_first, r->size.x, &h_total);
+	fl = assa_fit_q12(l->unit_first, r->size.x, &h_total, l->wrap);
 	assa_fit_arrange(fl, r, h_total);
 
 	for (del = fl; del; del = fl)
 		fl = del->next, free(del);
-}
-
-static void assa_simplace(struct ssav_line *l, struct assa_rect *r)
-{
-	struct ssav_unit *u = l->unit_first;
-	struct fitline fl;
-	fl.next = NULL;
-	fl.startat = u;
-	fl.endat = NULL;
-	fl.size.x = 0;
-	fl.size.y = 0;
-	while (u) {
-		fl.size.x += u->size.x << 10;
-		if (u->height > fl.size.y)
-			fl.size.y = u->height;
-		u = u->next;
-	}
-	fl.size.y <<= 10;
-	assa_fit_arrange(&fl, r, fl.size.y);
 }
 
 static void assa_wrap(struct ssa_vm *vm, struct assa_layer *lay,
@@ -229,7 +210,7 @@ static void assa_wrap(struct ssa_vm *vm, struct assa_layer *lay,
 	*lay->curpos = newa;
 	lay->curpos = &newa->next;
 
-	r.wrapdir = l->yalign  < 0.25 ? 1 : -1;
+	r.wrapdir = -1;
 	r.xalign = l->xalign;
 	r.yalign = l->yalign;
 	if (l->flags & SSAV_POS) {
@@ -252,10 +233,7 @@ static void assa_wrap(struct ssa_vm *vm, struct assa_layer *lay,
 		r.pos.y = l->margint << 16;
 		r.size.y = vm->res.y - ((l->margint + l->marginb) << 16);
 	}
-	if (l->wrap == 2)
-		assa_simplace(l, &r);
-	else
-		assa_fit(l, &r);
+	assa_fit(l, &r);
 	if ((l->flags & SSAV_ORG) == 0) {
 		l->active.org.x = r.pos.x + (FT_Pos)(r.xalign * r.size.x);
 		l->active.org.y = r.pos.y + (FT_Pos)(r.yalign * r.size.y);

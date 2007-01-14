@@ -47,9 +47,50 @@ void ssgl_matrix(struct ssav_params *p, FT_Matrix *fx0, FT_Matrix *fx1)
 	fx1->yx += (FT_Fixed)(p->m.fay * 65536);
 }
 
+static void ssgl_prep_glyphs(struct ssav_node *n)
+{
+	FT_OutlineGlyph *g, *end;
+	if (n->glyphs) {
+		g = n->glyphs;
+		end = g + n->nchars;
+		while (g < end) {
+			if (*g)
+				FT_Done_Glyph(&g[0]->root);
+			g++;
+		}
+	} else
+		g = n->glyphs = xmalloc(sizeof(FT_OutlineGlyph)
+			* n->nchars);
+}
+
+static void ssgl_load_glyph(FT_Face fnt, unsigned idx,
+	FT_Vector *pos, FT_Matrix *mat, double fsp, FT_OutlineGlyph *dst)
+{
+	FT_Glyph tmp;
+	FT_Vector tmppos;
+
+	FT_Load_Glyph(fnt, idx, FT_LOAD_DEFAULT);
+
+	*dst = NULL;
+	if (fnt->glyph->format != FT_GLYPH_FORMAT_OUTLINE) {
+		fprintf(stderr,	"non-outline glyph format %d\n",
+			fnt->glyph->format);
+		return;
+	}
+
+	tmppos = *pos;
+	FT_Get_Glyph(fnt->glyph, &tmp);
+	tmppos.y += fnt->size->metrics.descender;
+	FT_Glyph_Transform(tmp, mat, &tmppos);
+	pos->x += (tmp->advance.x >> 10) + (int)(fsp * 64);
+	pos->y += tmp->advance.y >> 10;
+
+	*dst = (FT_OutlineGlyph)tmp;
+}
+
 void ssgl_prepare(struct ssav_line *l)
 {
-	FT_Vector pos;
+	FT_Vector pos, hv;
 	FT_Matrix mat, fx1;
 	FT_Face fnt;
 	FT_OutlineGlyph *g, *end;
@@ -64,69 +105,66 @@ void ssgl_prepare(struct ssav_line *l)
 
 	u->height = 0;
 	idx = 0;
-	stop = u->next ? u->next->idxstart : l->nchars;
 	pos.x = pos.y = 0;
+	hv.x = 0;
 	while (u && n) {
 		p = n->params;
 		if (p->finalized)
 			p = p->finalized;
-		if (n->glyphs) {
-			g = n->glyphs;
-			end = g + n->nchars;
-			while (g < end) {
-				if (*g)
-					FT_Done_Glyph(&g[0]->root);
-				g++;
+
+		fnt = asaf_sactivate(n->params->fsiz);
+		ssgl_matrix(p, &mat, &fx1);
+		hv.y = fnt->size->metrics.height;
+		FT_Vector_Transform(&hv, &mat);
+
+		if (u->type == SSAVU_NEWLINE) {
+			if (n != u->nl_node) {
+				n = u->nl_node;
+				continue;
 			}
-		} else {
-			g = n->glyphs = xmalloc(sizeof(FT_OutlineGlyph)
-				* n->nchars);
-			end = g + n->nchars;
+			u->height = -hv.y;
+			u->fx1 = fx1;		/* not actually used */
+
+			u = u->next;
+			n = n->next;
+			pos.x = pos.y = 0;
+			continue;
 		}
 
-		fnt = asaf_sactivate(n->params->fsiz);	/* XXX: animation */
-		ssgl_matrix(p, &mat, &fx1);
+		ssgl_prep_glyphs(n);
+		g = n->glyphs;
+		end = g + n->nchars;
 		src = n->indici;
 
-		if (idx != stop && fnt->size->metrics.height > u->height)
-			u->height = fnt->size->metrics.height;
-		
+		stop = u->next ? u->next->idxstart : l->nchars;
+
+		if (idx != stop && -hv.y > u->height)
+			u->height = -hv.y;
+
 		u->fx1 = fx1;
 		while (g < end) {
+			ssgl_load_glyph(fnt, *src++, &pos, &mat, p->m.fsp, g++);
+			idx++;
 			if (idx == stop) {
 				u->size = pos;
 				u = u->next;
-				assert(u);
+				if (!u)
+					return;
+				if (u->type == SSAVU_NEWLINE)
+					break;
+
 				stop = u->next ? u->next->idxstart
 					: l->nchars;
 				pos.x = pos.y = 0;
-				u->height = fnt->size->metrics.height;
+				u->height = -hv.y;
 				u->fx1 = fx1;
 			}
-
-			FT_Load_Glyph(fnt, *src++, FT_LOAD_DEFAULT);
-			if (fnt->glyph->format != FT_GLYPH_FORMAT_OUTLINE) {
-				*g = NULL;
-				fprintf(stderr,
-					"non-outline glyph format %d\n",
-					fnt->glyph->format);
-			} else {
-				FT_Glyph tmp;
-				FT_Vector tmppos = pos;
-				FT_Get_Glyph(fnt->glyph, &tmp);
-				tmppos.y += fnt->size->metrics.descender;
-				FT_Glyph_Transform(tmp, &mat, &tmppos);
-				*g = (FT_OutlineGlyph)tmp;
-				pos.x += (tmp->advance.x >> 10) +
-					(int)(p->m.fsp * 64);
-				pos.y += tmp->advance.y >> 10;
-			}
-			g++, idx++;
 		}
 
 		n = n->next;
 	}
-	u->size = pos;
+	fprintf(stderr, "AIEEEEEEEE! ssgl_prepare: This code should never be reached!\n"
+		"Report to equinox @ irc.chatsociety.net #aegisub!\n");
 }
 
 void ssgl_dispose(struct ssav_line *l)

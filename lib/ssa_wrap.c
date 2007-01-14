@@ -48,6 +48,7 @@ static inline void ssaw_start(struct ssa_wrap_env *we)
 
 	u = xmalloc(sizeof(struct ssav_unit));
 	u->next = NULL;
+	u->type = SSAVU_TEXT;
 	/* we->cur_unit == NULL: special case of leading whitespace.
 	 * idxstart = 0 means we don't skip it.
 	 */
@@ -64,6 +65,18 @@ void ssaw_put(struct ssa_wrap_env *we, struct ssa_node *n,
 	unsigned *o;
 	ssaout_t *c;
 
+	if (vn->type == SSAVN_NEWLINE || vn->type == SSAVN_NEWLINEH) {
+		if (we->vl->wrap != 2 && vn->type == SSAVN_NEWLINE)
+			return;
+		ssaw_start(we);
+		we->cur_unit->type = SSAVU_NEWLINE;
+		we->cur_unit->nl_node = vn;
+		we->hit_space = 1;
+		return;
+	}
+
+	if (vn->type != SSAVN_TEXT)
+		return;
 	o = vn->indici;
 	c = n->v.text.s;
 	while (c < n->v.text.e) {
@@ -91,14 +104,19 @@ void ssaw_finish(struct ssa_wrap_env *we)
 	n = we->vl->input->node_first;
 	c = n->v.text.s;
 	while (u) {
-		fprintf(stderr, "> unit %d: ", uc);
+		fprintf(stderr, "> unit %d @%p: ", uc++, (void *)u);
+		if (u->type != SSAVU_TEXT) {
+			fprintf(stderr, "%s\n", u->type == SSAVU_NEWLINE ? "<\\n>" : "<?>");
+			u = u->next;
+			continue;
+		}
 		endpos = u->next ? u->next->idxstart : we->pos;
 		while (pos != endpos) {
-			if (c == n->v.text.e) {
+			if (c == n->v.text.e || n->type != SSAN_TEXT) {
 				fprintf(stderr, "<nextnode>");
 				do {
 					n = n->next;
-				} while (n && n->type != SSAN_TEXT);
+				} while (n && (n->type != SSAN_TEXT || n->v.text.s == n->v.text.e));
 				if (!n)
 					return;
 				c = n->v.text.s;
@@ -108,7 +126,6 @@ void ssaw_finish(struct ssa_wrap_env *we)
 		}
 		fprintf(stderr, "\n");
 		u = u->next;
-		uc++;
 	}
 	fprintf(stderr, "<<end\n");
 #endif

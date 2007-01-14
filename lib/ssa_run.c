@@ -99,6 +99,7 @@ void ssar_line(struct ssa_vm *vm, struct ssav_line *l, struct assp_fgroup *fg)
 {
 	struct ssav_node *n = l->node_first;
 	struct ssav_unit *u = l->unit_first;
+	struct assp_frameref *prevg = NULL;
 	int ustop = u->next ? u->next->idxstart : l->nchars, idx = 0;
 	FT_Stroker stroker;
 
@@ -118,8 +119,11 @@ void ssar_line(struct ssa_vm *vm, struct ssav_line *l, struct assp_fgroup *fg)
 			continue;
 		}
 
-		assp_framefree(ng);
-		assp_framenew(ng, fg);
+		if (ng != prevg) {
+			assp_framefree(ng);
+			assp_framenew(ng, fg);
+			prevg = ng;
+		}
 
 		p.f = ng->frame;
 		FT_Vector cpos;
@@ -153,7 +157,7 @@ void ssar_line(struct ssa_vm *vm, struct ssav_line *l, struct assp_fgroup *fg)
 		FT_Stroker_Set(stroker, bordersize, FT_STROKER_LINECAP_ROUND,
 			FT_STROKER_LINEJOIN_ROUND, 0);
 		while (g < gend) {
-			if (idx == ustop) {
+			while (idx == ustop) {
 				u = u->next;
 				ustop = u->next ? u->next->idxstart : l->nchars;
 			}

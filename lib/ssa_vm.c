@@ -745,6 +745,7 @@ static void ssav_nl(struct ssav_prepare_ctx *ctx,
 	vn->params = ssav_addref(ctx->pset);
 	*ctx->nodenextp = vn;
 	ctx->nodenextp = &vn->next;
+	ssaw_put(&ctx->wrap, n, vn, ctx->pset->font);
 }
 
 static void ssav_text(struct ssav_prepare_ctx *ctx, struct ssa_node *n, ptrdiff_t param)

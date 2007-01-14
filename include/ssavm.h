@@ -112,13 +112,21 @@ struct ssav_node {
 	FT_OutlineGlyph *glyphs;
 };
 
+enum ssav_unitt {
+	SSAVU_TEXT = 0,
+	SSAVU_NEWLINE
+};
+
 struct ssav_unit {
 	struct ssav_unit *next;
+	enum ssav_unitt type;
 	unsigned idxstart;
 
 	FT_Pos height;
 	FT_Vector size, final;
 	FT_Matrix fx1;
+
+	struct ssav_node *nl_node;
 };
 
 struct ssav_lineparams {
