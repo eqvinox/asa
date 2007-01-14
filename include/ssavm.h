@@ -100,6 +100,18 @@ enum ssav_nodet {
 	SSAVN_COUNT
 };
 
+enum ssav_karaoke_type {
+	SSAVK_PLAIN = 1,
+	SSAVK_BORD,
+	SSAVK_SEQ
+};
+
+struct ssav_karaoke_unit {
+	enum ssav_karaoke_type type;
+	struct ssav_node *first, *end;
+	double start, dur;
+};
+
 struct ssav_node {
 	struct ssav_node *next;
 
@@ -111,6 +123,7 @@ struct ssav_node {
 	unsigned *indici;
 	FT_OutlineGlyph *glyphs;
 
+	struct ssav_karaoke_unit *kara;
 	FT_Matrix fx1;
 };
 
@@ -141,6 +154,8 @@ enum ssav_lineflags {
 					 * to warn when POSANIM & ~POS */
 	SSAV_ORG = 1 << 2,		/**< org */
 	SSAV_ORGANIM = 1 << 3,		/**< similar to POSANIM */
+
+	SSAV_KARAOKE = 1 << 4
 };
 
 struct ssav_line {

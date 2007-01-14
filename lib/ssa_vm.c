@@ -53,6 +53,10 @@ struct ssav_prepare_ctx {
 	struct ssav_params *pset;
 	struct assp_frameref *ng;
 	int ng_ref;
+	struct ssav_karaoke_unit *kara;
+	struct ssav_node **kara_updend;
+	int kara_ref;
+	double kara_pos;
 
 	struct ssa_wrap_env wrap;
 };
@@ -96,6 +100,7 @@ static void ssav_fade(ifp);
 static void ssav_fad(ifp);
 
 static void ssav_anim(ifp);
+static void ssav_kara(ifp);
 
 struct ssa_ipnode {
 	ssav_ipfunc *func;
@@ -148,10 +153,10 @@ static struct ssa_ipnode iplist[SSAN_MAX] = {
 	{ssav_colour,	ssava_colour,	0x13},		/* al SSAN_ALPHA4 */
 	{ssav_align,	NULL,		1},		/* SG SSAN_ALIGN */
 	{ssav_align,	NULL,		0},		/* SG SSAN_ALIGNNUM */
-	{NULL,		NULL,		0},		/* Sl SSAN_KARA */
-	{NULL,		NULL,		0},		/* Sl SSAN_KARAF */
-	{NULL,		NULL,		0},		/* Sl SSAN_KARAO */
-	{NULL,		NULL,		0},		/* Sl SSAN_KARAT */
+	{ssav_kara,	NULL,		SSAVK_PLAIN},	/* Sl SSAN_KARA */
+	{ssav_kara,	NULL,		SSAVK_SEQ},	/* Sl SSAN_KARAF */
+	{ssav_kara,	NULL,		SSAVK_BORD},	/* Sl SSAN_KARAO */
+	{ssav_kara,	NULL,		0},		/* Sl SSAN_KARAT */
 	{ssav_lineint,	NULL,		l(wrap)},	/* SG SSAN_WRAP */
 	{ssav_reset,	NULL,		0},		/* *l SSAN_RESET */
 
@@ -755,6 +760,29 @@ static void ssav_finalizeds(struct ssav_node *vn)
 
 /****************************************************************************/
 
+static void ssav_kara(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
+	ptrdiff_t param)
+{
+	if (!param) {
+		ctx->kara_pos = n->v.dval * 0.01;
+		return;
+	}
+	if (ctx->kara) {
+		if (!ctx->kara_ref)
+			xfree(ctx->kara);
+		else
+			ctx->kara_updend = &ctx->kara->end;
+	}
+	ctx->kara = xmalloc(sizeof(struct ssav_karaoke_unit));
+	ctx->kara->type = param;
+	ctx->kara->start = ctx->kara_pos;
+	ctx->kara_pos += (ctx->kara->dur = n->v.lval * 0.01);
+	ctx->kara_ref = 0;
+	ctx->vl->flags |= SSAV_KARAOKE;
+}
+
+/****************************************************************************/
+
 static void ssav_nl(struct ssav_prepare_ctx *ctx,
 				struct ssa_node *n, ptrdiff_t param)
 {
@@ -767,7 +795,8 @@ static void ssav_nl(struct ssav_prepare_ctx *ctx,
 	ssaw_put(&ctx->wrap, n, vn, ctx->pset->font);
 }
 
-static void ssav_text(struct ssav_prepare_ctx *ctx, struct ssa_node *n, ptrdiff_t param)
+static void ssav_text(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
+	ptrdiff_t param)
 {
 	struct ssav_node *vn;
 
@@ -785,6 +814,18 @@ static void ssav_text(struct ssav_prepare_ctx *ctx, struct ssa_node *n, ptrdiff_
 	vn->glyphs = NULL;
 	*ctx->nodenextp = vn;
 	ctx->nodenextp = &vn->next;
+
+	if (ctx->kara_updend) {
+		*ctx->kara_updend = vn;
+		ctx->kara_updend = NULL;
+	}
+	if (ctx->kara) {
+		ctx->kara_ref++;
+		vn->kara = ctx->kara;
+		if (!ctx->kara->first)
+			ctx->kara->first = vn;
+	} else
+		vn->kara = NULL;
 
 	ssaw_put(&ctx->wrap, n, vn, ctx->pset->font);
 }
@@ -830,6 +871,10 @@ static void ssav_prep_dialogue(struct ssa *ssa, struct ssa_vm *vm,
 	ctx.nodenextp = &vl->node_first;
 	ctx.ng_ref = 1;
 	ssav_ng_invalidate(&ctx);
+	ctx.kara = NULL;
+	ctx.kara_updend = NULL;
+	ctx.kara_ref = 0;
+	ctx.kara_pos = 0.0;
 
 	ssaw_prepare(&ctx.wrap, vl);
 
@@ -850,6 +895,8 @@ static void ssav_prep_dialogue(struct ssa *ssa, struct ssa_vm *vm,
 	vl = ctx.vl;
 	if (!ctx.ng_ref)
 		xfree(ctx.ng);
+	if (ctx.kara && !ctx.kara_ref)
+		xfree(ctx.kara);
 	ssav_finalizeds(vl->node_first);
 
 	ssaw_finish(&ctx.wrap);

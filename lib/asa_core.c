@@ -294,6 +294,7 @@ static void asar_commit_yuvp(struct assp_frame *f)
 
 	_asar_commit(f, 3);
 	_asar_commit(f, 2);
+	_asar_commit(f, 1);
 	_asar_commit(f, 0);
 }
 

@@ -34,7 +34,7 @@
 
 static inline void ssar_one(struct ssa_vm *vm, FT_OutlineGlyph *g,
 	struct ssav_unit *u, struct assp_param *p, FT_Stroker stroker,
-	FT_Vector org, double shad, FT_Matrix *fx1)
+	FT_Vector org, double shad, FT_Matrix *fx1, int tgt)
 {
 	FT_Glyph transformed;
 	FT_Glyph stroked;
@@ -67,7 +67,7 @@ static inline void ssar_one(struct ssa_vm *vm, FT_OutlineGlyph *g,
 		return;
 	}
 
-	p->elem = 0;
+	p->elem = tgt;
 	o = &((FT_OutlineGlyph)transformed)->outline;
 	FT_Outline_Render(asaf_ftlib, o, &params);
 
@@ -107,12 +107,14 @@ static inline void ssar_one(struct ssa_vm *vm, FT_OutlineGlyph *g,
 	FT_Done_Glyph(stroked);
 }
 
-void ssar_line(struct ssa_vm *vm, struct ssav_line *l, struct assp_fgroup *fg)
+void ssar_line(struct ssa_vm *vm, struct ssav_line *l, struct assp_fgroup *fg,
+	double ltime)
 {
 	struct ssav_node *n = l->node_first;
 	struct ssav_unit *u = l->unit_first;
 	struct assp_frameref *prevg = NULL;
 	int ustop = u->next ? u->next->idxstart : l->nchars, idx = 0;
+	int tgt;
 	FT_Stroker stroker;
 
 	FT_Stroker_New(asaf_ftlib, &stroker);
@@ -160,7 +162,15 @@ void ssar_line(struct ssa_vm *vm, struct ssav_line *l, struct assp_fgroup *fg)
 		}
 
 		bordersize = (FT_Pos)(np->border * 64);
-		if (vm->scalebas) {
+
+		if (n->kara && ltime < n->kara->start) {
+			tgt = 1;
+			if (n->kara->type == SSAVK_BORD)
+				bordersize = 0;
+		} else
+			tgt = 0;
+
+		if (bordersize && vm->scalebas) {
 			FT_Vector border = {bordersize, bordersize};
 			FT_Vector_Transform(&border, &vm->scale);
 			/* this is the vsfilter way, don't bug me >_> */
@@ -174,7 +184,7 @@ void ssar_line(struct ssa_vm *vm, struct ssav_line *l, struct assp_fgroup *fg)
 				ustop = u->next ? u->next->idxstart : l->nchars;
 			}
 			ssar_one(vm, g, u, &p, stroker, l->active.org,
-				np->shadow, &n->fx1);
+				np->shadow, &n->fx1, tgt);
 			g++, idx++;
 		}
 		n = n->next;
@@ -223,8 +233,8 @@ void ssar_run(struct ssa_vm *vm, double ftime, struct assp_fgroup *fg)
 
 		fl = ssar_eval(vm, l, ftime, basefl);
 		fl = assa_realloc(vm, l, fl);
-		if (fl & SSAR_REND)
-			ssar_line(vm, l, fg);
+		if (fl & SSAR_REND || l->flags & SSAV_KARAOKE)
+			ssar_line(vm, l, fg, ftime - l->start);
 		ssar_commit(l);
 	}
 	assa_end(vm);
