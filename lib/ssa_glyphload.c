@@ -24,27 +24,32 @@
 #include <freetype/fttrigon.h>
 #include <assert.h>
 
+static void ssgl_rotmat(FT_Matrix *m, double dangle)
+{
+	FT_Angle angle = (int)(dangle * 65536);
+	m->xx = FT_Cos(angle);
+	m->xy = FT_Sin(angle);
+	m->yx = -FT_Sin(angle);
+	m->yy = FT_Cos(angle);
+}
+
 void ssgl_matrix(struct ssav_params *p, FT_Matrix *fx0, FT_Matrix *fx1)
 {
+	FT_Matrix tmp;
+
 	fx0->xx = (int)(p->m.fscx * 655.36);
 	fx0->xy = 0x00000L;
 	fx0->yx = 0x00000L;
 	fx0->yy = (int)(-p->m.fscy * 655.36);
 
+	fx1->xx = 0x10000L;
+	fx1->xy = (FT_Fixed)(p->m.fax * 65536);
+	fx1->yx = (FT_Fixed)(p->m.fay * 65536);
+	fx1->yy = 0x10000L;
 	if (p->m.frz != 0.0) {
-		FT_Angle angle = (int)(p->m.frz * 65536);
-		fx1->xx = FT_Cos(angle);
-		fx1->xy = FT_Sin(angle);
-		fx1->yx = -FT_Sin(angle);
-		fx1->yy = FT_Cos(angle);
-	} else {
-		fx1->xx = 0x10000L;
-		fx1->xy = 0x00000L;
-		fx1->yx = 0x00000L;
-		fx1->yy = 0x10000L;
+		ssgl_rotmat(&tmp, p->m.frz);
+		FT_Matrix_Multiply(&tmp, fx1);
 	}
-	fx1->xy += (FT_Fixed)(p->m.fax * 65536);
-	fx1->yx += (FT_Fixed)(p->m.fay * 65536);
 }
 
 static void ssgl_prep_glyphs(struct ssav_node *n)
