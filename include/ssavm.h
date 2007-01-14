@@ -110,6 +110,8 @@ struct ssav_node {
 	unsigned nchars;
 	unsigned *indici;
 	FT_OutlineGlyph *glyphs;
+
+	FT_Matrix fx1;
 };
 
 enum ssav_unitt {
@@ -124,7 +126,6 @@ struct ssav_unit {
 
 	FT_Pos height;
 	FT_Vector size, final;
-	FT_Matrix fx1;
 
 	struct ssav_node *nl_node;
 };

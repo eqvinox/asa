@@ -34,7 +34,7 @@
 
 static inline void ssar_one(struct ssa_vm *vm, FT_OutlineGlyph *g,
 	struct ssav_unit *u, struct assp_param *p, FT_Stroker stroker,
-	FT_Vector org, double shad)
+	FT_Vector org, double shad, FT_Matrix *fx1)
 {
 	FT_Glyph transformed;
 	FT_Glyph stroked;
@@ -55,7 +55,7 @@ static inline void ssar_one(struct ssa_vm *vm, FT_OutlineGlyph *g,
 	orgneg.y = u->final.y - org.y;
 	FT_Glyph_Copy(*(FT_Glyph *)g, &transformed);
 	FT_Glyph_Transform(transformed, NULL, &orgneg);
-	FT_Glyph_Transform(transformed, &u->fx1, &org);
+	FT_Glyph_Transform(transformed, fx1, &org);
 	FT_Glyph_Transform(transformed, &vm->scale, NULL);
 
 	/* XXX XXX XXX: if border or shadow are in-view, but char isn't,
@@ -162,7 +162,8 @@ void ssar_line(struct ssa_vm *vm, struct ssav_line *l, struct assp_fgroup *fg)
 				u = u->next;
 				ustop = u->next ? u->next->idxstart : l->nchars;
 			}
-			ssar_one(vm, g, u, &p, stroker, l->active.org, np->shadow);
+			ssar_one(vm, g, u, &p, stroker, l->active.org,
+				np->shadow, &n->fx1);
 			g++, idx++;
 		}
 		n = n->next;

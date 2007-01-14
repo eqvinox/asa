@@ -119,6 +119,7 @@ void ssgl_prepare(struct ssav_line *l)
 
 		fnt = asaf_sactivate(n->params->fsiz);
 		ssgl_matrix(p, &mat, &fx1);
+		n->fx1 = fx1;
 		hv.y = fnt->size->metrics.height;
 		FT_Vector_Transform(&hv, &mat);
 
@@ -128,7 +129,6 @@ void ssgl_prepare(struct ssav_line *l)
 				continue;
 			}
 			u->height = -hv.y;
-			u->fx1 = fx1;		/* not actually used */
 
 			u = u->next;
 			n = n->next;
@@ -146,7 +146,6 @@ void ssgl_prepare(struct ssav_line *l)
 		if (idx != stop && -hv.y > u->height)
 			u->height = -hv.y;
 
-		u->fx1 = fx1;
 		while (g < end) {
 			ssgl_load_glyph(fnt, *src++, &pos, &mat, p->m.fsp, g++);
 			idx++;
@@ -162,7 +161,6 @@ void ssgl_prepare(struct ssav_line *l)
 					: l->nchars;
 				pos.x = pos.y = 0;
 				u->height = -hv.y;
-				u->fx1 = fx1;
 			}
 		}
 
