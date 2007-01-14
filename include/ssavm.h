@@ -85,6 +85,7 @@ struct ssav_params {
 
 	struct {
 		colour_t colours[4];
+		colour_t fade;
 	} r;
 
 	unsigned nctr;

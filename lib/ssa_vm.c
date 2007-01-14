@@ -381,6 +381,7 @@ static struct ssav_params *ssav_alloc_style(struct ssa *ssa,
 	rv->r.colours[2] = ssa->version & SSAVV_4 ?
 		style->cback : style->coutline;
 	rv->r.colours[3] = style->cback;
+	rv->r.fade.c.a = 0x00;
 
 	rv->nref = 1;
 	return rv;
@@ -525,7 +526,7 @@ static void ssav_setfade(struct ssav_prepare_ctx *ctx, alpha_t alpha,
 	double start, double end)
 {
 	struct ssav_controller ctr;
-	int c;
+
 	ctr.t1 = start;
 	ctr.length_rez = 1. / (end - start);
 	ctr.accel = 1.0;
@@ -533,22 +534,18 @@ static void ssav_setfade(struct ssav_prepare_ctx *ctx, alpha_t alpha,
 	ctr.nextval.colour.mask.c.a = 0xff;
 	ctr.nextval.colour.val.l = 0;
 	ctr.nextval.colour.val.c.a = alpha;
-	for (c = 0; c < 4; c++) {
-		ctr.type = SSAVC_COLOUR;
-		ctr.offset = e(r.colours[c]);
-		ssav_anim_insert(ctx, &ctr);
-	}
+	ctr.type = SSAVC_COLOUR;
+	ctr.offset = e(r.fade);
+	ssav_anim_insert(ctx, &ctr);
 }
 
 static void ssav_fade(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
 	ptrdiff_t param)
 {
-	int c;
-	ctx->pset = ssav_alloc_clone_clear(ctx->pset, e(r.colours[0]),
-		4 * sizeof(colour_t));
+	ctx->pset = ssav_alloc_clone_clear(ctx->pset, e(r.fade),
+		sizeof(colour_t));
 	ssav_ng_invalidate(ctx);
-	for (c = 0; c < 4; c++)
-		ctx->pset->r.colours[param].c.a = n->v.fade.a1;
+	ctx->pset->r.fade.c.a = n->v.fade.a1;
 	ssav_setfade(ctx, n->v.fade.a2,
 		n->v.fade.start1 * 0.001, n->v.fade.end1 * 0.001);
 	ssav_setfade(ctx, n->v.fade.a3,
@@ -558,13 +555,11 @@ static void ssav_fade(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
 static void ssav_fad(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
 	ptrdiff_t param)
 {
-	int c;
 	double dur = ctx->vl->end - ctx->vl->start;
-	ctx->pset = ssav_alloc_clone_clear(ctx->pset, e(r.colours[0]),
-		4 * sizeof(colour_t));
+	ctx->pset = ssav_alloc_clone_clear(ctx->pset, e(r.fade),
+		sizeof(colour_t));
 	ssav_ng_invalidate(ctx);
-	for (c = 0; c < 4; c++)
-		ctx->pset->r.colours[param].c.a = 0xff;
+	ctx->pset->r.fade.c.a = n->v.fade.a1;
 	ssav_setfade(ctx, 0x00, 0.0, n->v.fad.in * 0.001);
 	ssav_setfade(ctx, 0xff, dur - (n->v.fad.out * 0.001), dur);
 }

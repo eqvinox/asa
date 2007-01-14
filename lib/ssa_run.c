@@ -196,6 +196,7 @@ static void ssar_commit(struct ssav_line *l)
 {
 	struct assp_frameref *prev = NULL;
 	struct ssav_node *n = l->node_first;
+	int c;
 
 	while (n) {
 		if (n->type == SSAVN_TEXT && n->group != prev
@@ -209,6 +210,13 @@ static void ssar_commit(struct ssav_line *l)
 			prev->frame->colours[1] = p->r.colours[1];
 			prev->frame->colours[2] = p->r.colours[2];
 			prev->frame->colours[3] = p->r.colours[3];
+			for (c = 0; c < 4; c++) {
+				unsigned a = prev->frame->colours[c].c.a;
+				a = 256 - a;
+				a *= 255 - p->r.fade.c.a;
+				prev->frame->colours[c].c.a = (unsigned char)
+					255 - (a >> 8);
+			}
 			asar_commit(prev->frame);
 		}
 		n = n->next;
