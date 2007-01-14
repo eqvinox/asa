@@ -92,11 +92,15 @@ struct assa_rect {
  * horizontal alignment is then calculated afterwards.
  */
 struct fitline {
-	struct fitline *next;			/**< next line */
 	FT_Vector size;				/**< tot line w/h */
 	struct ssav_unit
 		*startat,			/**< first unit */
 		*endat;				/**< first nonunit */
+};
+
+struct fitlines {
+	unsigned alloc, used;
+	struct fitline *fl;
 };
 
 /** fitting pass #1: split into lines and sum up their size.
@@ -105,18 +109,17 @@ struct fitline {
  * @param h_total (out) total height of everything
  * @return newly allocated (temp) list of lines
  */
-static struct fitline *assa_fit_q12(struct ssav_unit *u, FT_Pos width,
-	FT_Pos *h_total, long wrap)
+static void assa_fit_q12(struct fitlines *fls, struct ssav_unit *u,
+	FT_Pos width, FT_Pos *h_total, long wrap)
 {
 	FT_Pos w_remain = INT_MAX;
-	struct fitline *fl = NULL,
-		*ret = fl, **upd = &ret;
+	struct fitline *fl = fls->fl;
 
 	while (u) {
-		fl = malloc(sizeof(struct fitline));
-		fl->next = *upd;
-		*upd = fl;
-
+		if (fls->used == fls->alloc)
+			fls->fl = xrealloc(fls->fl, (fls->alloc += 5)
+				* sizeof(struct fitline));
+		fl = fls->fl + fls->used;
 		fl->startat = u;
 		fl->size.x = fl->size.y = 0;
 
@@ -137,6 +140,7 @@ static struct fitline *assa_fit_q12(struct ssav_unit *u, FT_Pos width,
 		}
 		*h_total += fl->size.y;
 		fl->endat = u;
+		fls->used++;
 	};
 	return ret;
 }
@@ -147,16 +151,17 @@ static struct fitline *assa_fit_q12(struct ssav_unit *u, FT_Pos width,
  * @param r the rectangle to use (including alignment info)
  * @param h_total total height of all the lines
  */
-static void assa_fit_arrange(struct fitline *fl,
+static void assa_fit_arrange(struct fitlines *fls,
 	struct assa_rect *r, FT_Pos h_total)
 {
 	FT_Pos y, x;
+	struct fitline *fl, *end;
 
 	y = r->pos.y + (FT_Pos)((double)(r->size.y - h_total) * r->yalign);
 	if (r->wrapdir < 0)
 		y += h_total;
 
-	while (fl) {
+	for (fl = fls->fl, end = fl + fls->used; fl < end; fl++) {
 		struct ssav_unit *u = fl->startat;
 		x = r->pos.x + (FT_Pos)((double)(r->size.x - fl->size.x) * r->xalign);
 
@@ -172,20 +177,22 @@ static void assa_fit_arrange(struct fitline *fl,
 
 		if (r->wrapdir < 0)
 			y -= fl->size.y;
-		fl = fl->next;
 	}
 }
 
 static void assa_fit(struct ssav_line *l, struct assa_rect *r)
 {
 	FT_Pos h_total = 0;
-	struct fitline *fl, *del;
+	struct fitlines fls;
+	fls.alloc = 5;
+	fls.used = 0;
+	fls.fl = (struct fitline *)xmalloc(fls.alloc
+		* sizeof(struct fitline));
 
-	fl = assa_fit_q12(l->unit_first, r->size.x, &h_total, l->wrap);
-	assa_fit_arrange(fl, r, h_total);
+	assa_fit_q12(&fls, l->unit_first, r->size.x, &h_total, l->wrap);
+	assa_fit_arrange(&fls, r, h_total);
 
-	for (del = fl; del; del = fl)
-		fl = del->next, free(del);
+	xfree(fls.fl);
 }
 
 static void assa_wrap(struct ssa_vm *vm, struct assa_layer *lay,
