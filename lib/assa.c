@@ -74,10 +74,6 @@ static void assa_trash(struct assa_layer *lay)
 	*lay->curpos = NULL;
 	while (fptr) {
 		fnext = fptr->next;
-#if SSA_DEBUG
-		fprintf(stderr, "disposing of line %d\n",
-			fptr->line->input->no);
-#endif
 		ssgl_dispose(fptr->line);
 		xfree(fptr);
 		fptr = fnext;
@@ -200,9 +196,6 @@ static void assa_wrap(struct ssa_vm *vm, struct assa_layer *lay,
 
 	newa = xmalloc(sizeof(*newa));
 
-#if SSA_DEBUG
-	fprintf(stderr, "rewrapping line %d\n", l->input->no);
-#endif
 	ssgl_prepare(l);
 
 	newa->next = NULL;

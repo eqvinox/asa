@@ -770,52 +770,6 @@ static void ssav_text(struct ssav_prepare_ctx *ctx, struct ssa_node *n, ptrdiff_
 	ssaw_put(&ctx->wrap, n, vn, ctx->pset->font);
 }
 
-/* XXX#XXX#XXX#XXX#XXX#XXX#XXX#XXX#XXX#XXX#XXX#XXX *\
-|* XXX  D   E   P   R   E   C   A   T   E   D  XXX *|
-\* XXX#XXX#XXX#XXX#XXX#XXX#XXX#XXX#XXX#XXX#XXX#XXX */
-
-#if 0
-static void ssap_fixa(struct ssav_prepare_ctx *ctx, struct ssa_node *n)
-{
-	n->type = SSAN_ALIGNNUM;
-	n->v.lval = ssa_a2an(n->v.lval);
-}
-
-static void ssap_font(struct ssav_prepare_ctx *ctx, struct ssa_node *n, ptrdiff_t param)
-{
-	struct ssa_style *reset_to;
-
-	switch (SSAN(n->type)) {
-	case SSAN_BOLD:
-		if (ssa_lv2weight(n->v.lval) == ctx->fontweight)
-			return;
-		ctx->fontweight = ssa_lv2weight(n->v.lval);
-		break;
-	case SSAN_ITALICS:
-		if (n->v.lval == ctx->italic)
-			return;
-		ctx->italic = n->v.lval;
-		break;
-	case SSAN_FONT:
-		if (!ssa_strcmp(&n->v.text, ctx->fontname))
-			return;
-		ctx->fontname = &n->v.text;
-		break;
-	case SSAN_RESET:
-		reset_to = n->v.style ? n->v.style : ctx->l->style;
-		ctx->fontname = &reset_to->fontname;
-		ctx->italic = reset_to->italic;
-		ctx->fontweight = ssa_lv2weight(reset_to->fontweight);
-	}
-	asaf_frelease(ctx->font);
-	ctx->font = ssa_font(ctx->fontname, ctx->italic, ctx->fontweight);
-	if (!ctx->font)
-		fprintf(stderr, "WARNING: node font load failed\n");
-	return;
-}
-
-#endif
-
 #define override(attr) vl->attr = l->attr ? l->attr : l->style->attr
 
 static void ssav_prep_dialogue(struct ssa *ssa, struct ssa_vm *vm,
