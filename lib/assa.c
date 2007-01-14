@@ -96,6 +96,7 @@ struct fitline {
 	struct ssav_unit
 		*startat,			/**< first unit */
 		*endat;				/**< first nonunit */
+	int full_flag;
 };
 
 struct fitlines {
@@ -144,6 +145,147 @@ static void assa_fit_q12(struct fitlines *fls, struct ssav_unit *u,
 	};
 }
 
+/** unit valid for q0/q3.
+ * q0 and q3 are processed block-wise, split along \N
+ */
+#define uv (u && u->type == SSAVU_TEXT)
+
+/** get neccessary lines.
+ * counts how much lines are needed to fit u into width.
+ * @param u first unit, function walks until NULL / non-TEXT
+ * @param width wrapping width
+ * @param totlen sum of all size.x values, computed along the way
+ * @return number of lines needed
+ */
+static unsigned assa_count_lines(struct ssav_unit *u, FT_Pos width,
+	FT_Pos *totlen)
+{
+	FT_Pos w_remain;
+	unsigned rv = 0;
+	*totlen = 0;
+	while (uv) {
+		rv++;
+		if ((u->size.x << 10) >= width) {
+			u = u->next;
+			*totlen += width;
+			continue;
+		}
+		w_remain = width;
+		while (uv && (u->size.x << 10) < w_remain) {
+			w_remain -= (u->size.x << 10);
+			*totlen += u->size.x << 10;
+			u = u->next;
+		}
+	}
+	return rv;
+}
+
+/** process one block of units for q0.
+ * @param fls destination line storage
+ * @param u first unit, function walks until NULL / non-TEXT
+ * @param width wrapping width
+ * @param h_total (out) total height of everything
+ * @return first unit not processed (!u || u->type == SSAVU_NEWLINE)
+ */
+static struct ssav_unit *assa_fit_q0_i(struct fitlines *fls,
+	struct ssav_unit *u, FT_Pos width, FT_Pos *h_total)
+{
+	FT_Pos totlen, avg;
+	unsigned nlines;
+	struct fitline *first, *fl, *end;
+
+	nlines = assa_count_lines(u, width, &totlen);
+	if (nlines == 0)
+		return u;
+
+	if (fls->alloc < nlines + fls->used)
+		fls->fl = xrealloc(fls->fl, (fls->alloc = nlines + fls->used)
+			* sizeof(struct fitline));
+	first = fls->fl + fls->used;
+	fls->used = nlines + fls->used;
+	end = first + nlines;
+	for (fl = first; fl < end; fl++)
+		fl->size.x = fl->size.y = fl->full_flag = 0;
+
+	avg = INT_MAX;
+	for (fl = first; uv && fl < end; fl++) {
+		if (avg > totlen / (end - fl))
+			avg = totlen / (end - fl);
+		fl->size.x = u->size.x << 10;
+		totlen -= fl->size.x;
+		fl->startat = u;
+		u = fl->endat = u->next;
+		while (uv && fl->size.x + (u->size.x << 10) <= avg) {
+			fl->size.x += u->size.x << 10;
+			totlen -= u->size.x << 10;
+			u = u->next;
+			fl->endat = u;
+		}
+		avg = fl->size.x;
+	}
+
+	fl = --end;
+	while (uv) {
+		FT_Pos thislen = fl->endat->size.x << 10,
+			maxlen = (fl == first || (fl - 1)->full_flag)
+				? width : (fl - 1)->size.x;
+		if (fl->size.x + thislen <= maxlen) {
+			fl->size.x += thislen;
+			fl->endat = fl->endat->next;
+			if (fl != end) {
+				fl++;
+				fl->size.x -= thislen;
+				fl->startat = fl->startat->next;
+			} else
+				u = u->next;
+		} else if (fl == first || (fl - 1)->full_flag) {
+			fl->full_flag = 1;
+			fl++;
+		} else
+			fl--;
+	}
+	for (fl = first; fl <= end; fl++) {
+		for (u = fl->startat; u != fl->endat; u = u->next)
+			if (fl->size.y < (u->height << 10))
+				fl->size.y = u->height << 10;
+		*h_total += fl->size.y;
+	}
+	return u;
+}
+
+/** perform block splitting and handle newlines in q0 and q3.
+ * @param fls destination line storage
+ * @param u first unit, function walks until NULL / non-TEXT
+ * @param width wrapping width
+ * @param h_total (out) total height of everything
+ * @param wrap wrapping mode (0 or 3)
+ */
+static void assa_fit_q0(struct fitlines *fls,
+	struct ssav_unit *u, FT_Pos width, FT_Pos *h_total, long wrap)
+{
+	struct fitline *fl;
+	while (u) {
+		while (u->type == SSAVU_NEWLINE) {
+			if (fls->used == fls->alloc)
+				fls->fl = xrealloc(fls->fl, (fls->alloc += 5)
+					* sizeof(struct fitline));
+			fl = fls->fl + fls->used++;
+			fl->size.x = 0;
+			*h_total += (fl->size.y = u->height << 10);
+			u = fl->endat = (fl->startat = u)->next;
+		}
+		u = assa_fit_q0_i(fls, u, width, h_total);
+		if (u && fls->used) {
+			fl = fls->fl + fls->used - 1;
+			if (fl->size.y < (u->height << 10)) {
+				*h_total += (u->height << 10) - fl->size.y;
+				fl->size.y = u->height << 10;
+			}
+			u = fl->endat = u->next;
+		}
+	}
+}
+
 /** fitting pass #2: fit a linked list of fitlines into a rectangle.
  * updates ssav_unit->final.{x,y} to be the correct on-screen position
  * @param fl the list of lines
@@ -180,7 +322,10 @@ static void assa_fit(struct ssav_line *l, struct assa_rect *r)
 	fls.fl = (struct fitline *)xmalloc(fls.alloc
 		* sizeof(struct fitline));
 
-	assa_fit_q12(&fls, l->unit_first, r->size.x, &h_total, l->wrap);
+	if (l->wrap == 0 || l->wrap == 3)
+		assa_fit_q0(&fls, l->unit_first, r->size.x, &h_total, l->wrap);
+	else
+		assa_fit_q12(&fls, l->unit_first, r->size.x, &h_total, l->wrap);
 	assa_fit_arrange(&fls, r, h_total);
 
 	xfree(fls.fl);
