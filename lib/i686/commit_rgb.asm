@@ -51,8 +51,22 @@ a_stride	equ	12
 %define	expect		db	3eh
 %define	unexpect	db	2eh
 
+global prefix %+ cpuid
 global prefix %+ commit_rgbx_bgrx_SSE2
 global prefix %+ commit_xrgb_xbgr_SSE2
+
+align 16
+prefix %+ cpuid:
+	xor		eax, eax
+	cpuid
+	or		eax, eax
+	jnz		.avail
+	ret
+.avail:
+	mov		eax, 1
+	cpuid
+	mov		eax, edx
+	ret
 
 %define xmmzero	xmm3
 %macro ldxmm 2

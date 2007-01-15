@@ -51,11 +51,20 @@ static const char *asa_version_string =
 	"asa 0.1.00, " __DATE__ ", [*]";
 
 static int nref = 0;
+static unsigned cpuid;
+
+#define CPUID_SSE2 (1 << 26)
+#ifdef ASA_OPT_I686
+extern unsigned asar_cpuid();
+#else
+#define asar_cpuid() 0
+#endif
 
 f_export const char *asa_init(unsigned version)
 {
 	if (version != ASA_VERSION)
 		return NULL;
+	cpuid = asar_cpuid();
 	if (!nref++)
 		asaf_init();
 	return asa_version_string;
@@ -233,7 +242,7 @@ static void asar_commit_rgb(struct assp_frame *f)
 	}
 #undef x
 
-	if (asmfunc) {
+	if (asmfunc && (cpuid & CPUID_SSE2)) {
 		asmfunc(f->group, f->lines, cv);
 		return;
 	}
