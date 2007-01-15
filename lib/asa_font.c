@@ -39,10 +39,40 @@ HDC screenDC;
 #endif
 FT_Library asaf_ftlib;
 
-static struct avl_head *fontroot = NULL;
+#define NHASH 64
+#define HASH(x) ((x) & (NHASH - 1))
+static struct asa_font *fonthashes[NHASH];
+
+static void hash_insert(struct asa_font *af)
+{
+	af->next = fonthashes[HASH(af->hash)];
+	fonthashes[HASH(af->hash)] = af;
+}
+
+static struct asa_font *hash_get(unsigned hash)
+{
+	struct asa_font *cur = fonthashes[HASH(hash)];
+	while (cur && cur->hash != hash)
+		cur = cur->next;
+	return cur;
+}
+
+static void hash_remove(struct asa_font *af)
+{
+	struct asa_font **pnext, *cur;
+	cur = *(pnext = &fonthashes[HASH(af->hash)]);
+	while (cur && cur != af)
+		cur = *(pnext = &cur->next);
+	if (cur)
+		*pnext = cur->next;
+}
 
 void asaf_init()
 {
+	int i;
+	for (i = 0; i < NHASH; i++)
+		fonthashes[i] = NULL;
+
 #ifndef WIN32
 	fontconf = FcInitLoadConfigAndFonts();
 	if (!fontconf) {
@@ -72,14 +102,12 @@ struct asa_font *asaf_request(const char *name, int slant, int weight)
 {
 	struct asa_font *rv;
 	FT_Face face;
-	struct avl_head *pcache;
 #ifndef WIN32
 	FcPattern *final, *tmp1, *tmp2;
 	FcResult res;
 	FcChar8 *filename;
 	int fontindex;
 	unsigned hash;
-	struct avl_head *cent;
 
 	tmp1 = FcPatternBuild(NULL,
 		FC_FAMILY, FcTypeString, name,
@@ -100,10 +128,10 @@ struct asa_font *asaf_request(const char *name, int slant, int weight)
 	FcPatternDestroy(tmp2);
 	hash = FcPatternHash(final);
 
-	if ((cent = avl_find_pcache(fontroot, hash, &pcache))) {
+	if ((rv = hash_get(hash))) {
 		FcPatternDestroy(final);
 		fprintf(stderr, "Cached %08x %s\n", hash, name);
-		return (struct asa_font *)cent;
+		return rv;
 	}
 
 	if (FcPatternGetString(final, FC_FILE, 0, &filename)
@@ -142,16 +170,14 @@ struct asa_font *asaf_request(const char *name, int slant, int weight)
 	if (FT_New_Memory_Face(asaf_ftlib, buffer, size, 0, &face))
 		return NULL;
 	hash++;
-	avl_find_pcache(fontroot, hash, &pcache);
 #endif
 
 	rv = xmalloc(sizeof(struct asa_font));
-	memset(&rv->avl, 0, sizeof(rv->avl));
-	rv->avl.value = hash;
+	rv->hash = hash;
 	rv->ref = 1;
 	rv->face = face;
 
-	avl_insert_pcache(&fontroot, &rv->avl, pcache);
+	hash_insert(rv);
 
 	return rv;
 }
@@ -160,7 +186,7 @@ void asaf_frelease(struct asa_font *af)
 {
 	if (--af->ref)
 		return;
-	avl_delete(&fontroot, &af->avl);
+	hash_remove(af);
 	FT_Done_Face(af->face);
 	free(af);
 }

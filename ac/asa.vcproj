@@ -194,10 +194,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\include\avl.h"
-				>
-			</File>
-			<File
 				RelativePath="..\include\common.h"
 				>
 			</File>
@@ -251,10 +247,6 @@
 			</File>
 			<File
 				RelativePath="..\lib\assa.c"
-				>
-			</File>
-			<File
-				RelativePath="..\lib\avl.c"
 				>
 			</File>
 			<File

@@ -1,7 +1,7 @@
 /*****************************************************************************
  * asa: portable digital subtitle renderer
  *****************************************************************************
- * Copyright (C) 2004, 2005, 2006  David Lamparter
+ * Copyright (C) 2004, 2005, 2006, 2007  David Lamparter
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,12 +30,12 @@
 #include FT_GLYPH_H
 #include FT_OUTLINE_H
 #include FT_SIZES_H
-#include "avl.h"
 
 FT_Library asaf_ftlib;
 
 struct asa_font {
-	struct avl_head avl;
+	struct asa_font *next;
+	unsigned hash;
 
 	unsigned ref;
 	FT_Face face;
