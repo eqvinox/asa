@@ -13,12 +13,12 @@ BEGIN
     BEGIN
         BLOCK "04000400"
         BEGIN
-            VALUE "Comments", "contains no interfaces\0"
+            VALUE "Comments", "interfaces: AviSynth & DirectShow\0"
             VALUE "CompanyName", "David Lamparter\0"
             VALUE "FileDescription", "asa core\0"
             VALUE "FileVersion", "0,3,2,0\0"
             VALUE "InternalName", "asa\0"
-            VALUE "LegalCopyright", "(c) 2004, 2005, 2006 David Lamparter\0"
+            VALUE "LegalCopyright", "(c) 2004, 2005, 2006, 2007 David Lamparter\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "ASA.DLL\0"
             VALUE "ProductName", "asa portable subtitle renderer\0"
