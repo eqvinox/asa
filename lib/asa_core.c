@@ -394,6 +394,8 @@ static void _asar_commit(struct assp_frame *f, int lay)
 
 f_export void asa_close(asa_inst *i)
 {
+	if (i->framegroup)
+		assp_fgroupfree(i->framegroup);
 	/* XXX */
 	free(i);
 }
