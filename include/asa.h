@@ -103,7 +103,7 @@ struct asa_frame {
 };
 
 enum asa_oflags {
-	ASAF_HAYWIRE_UNICODEENC = 1 << 0,
+	ASAF_NONE = 0,
 };
 
 /** opaque renderer instance */

@@ -45,7 +45,7 @@ ASAAviSynth::ASAAviSynth(PClip _child, const char *file,
 	if (!vi.IsYV12() && !vi.IsRGB24() && !vi.IsRGB32())
 		env->ThrowError("asa only supports YV12, RGB24 and RGB32");
 
-	asa = asa_open(file, (enum asa_oflags)0);
+	asa = asa_open(file, ASAF_NONE);
 	if (!asa)
 		env->ThrowError("Failed to open script \"%s\"", file);
 	asa_setsize(asa, vi.width, vi.height);

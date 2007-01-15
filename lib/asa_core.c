@@ -134,7 +134,6 @@ f_export asa_inst *asa_open_mem(const char *mem, size_t size,
 	asa_inst *rv;
 
 	memset(&lexout, 0, sizeof(lexout));
-	lexout.ignoreenc = !(flags & ASAF_HAYWIRE_UNICODEENC);
 	if ((lexrv = ssa_lex(&lexout, mem, size))) {
 		errno = (lexrv == 1) ? EINVAL : EILSEQ;
 		return NULL;

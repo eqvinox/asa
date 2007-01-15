@@ -335,8 +335,6 @@ struct ssa {
 	struct ssa_line *line_first, **line_last;
 	struct ssa_style *style_first, **style_last;
 
-	int ignoreenc;
-
 	enum ssa_version version;
 
 	long int

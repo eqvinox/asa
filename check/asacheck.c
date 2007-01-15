@@ -212,7 +212,6 @@ int main(int argc, char **argv)
 #ifdef ASA_BUILD_RENDERER
 	asaf_init();
 #endif
-	output.ignoreenc = 1;
 	getrusage(RUSAGE_SELF, &bef);
 	ssa_lex(&output, data, st.st_size);
 	getrusage(RUSAGE_SELF, &aft);

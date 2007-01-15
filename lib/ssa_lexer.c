@@ -93,6 +93,8 @@ struct ssa_state {
 	unsigned lineno;		/**< line number, 1 based */
 	enum ssa_context ctx;		/**< current context */
 	
+	unsigned unicode;		/**< is file unicode?.
+					 * disables \fe */
 	const char *ic_srccs;		/**< internal charset.
 					 * everything typed ssasrc_t is
 					 * in the charset specified by this.
@@ -1086,7 +1088,7 @@ static unsigned ssa_parseoverr(struct ssa_state *s, struct ssa_node ***prev)
 static iconv_t ssa_enc2iconv(struct ssa_state *state, long int encoding)
 {
 	const char *cs = NULL;
-	if (state->output->ignoreenc)
+	if (state->unicode)
 		cs = state->ic_srccs;
 	else switch (encoding) {
 /* XXX
@@ -1954,7 +1956,6 @@ int ssa_lex(struct ssa *output, const void *data, size_t datasize)
 	const char *csrc = NULL, *cend = NULL;
 	char *freeme = NULL;
 	size_t csrcsize = datasize;
-	int ignoreenc = output->ignoreenc;
 	char *oldlocale_ctype, *oldlocale_numeric;
 
 	if (datasize < 4)
@@ -1969,11 +1970,11 @@ int ssa_lex(struct ssa *output, const void *data, size_t datasize)
 	s.ctx = SSACTX_INIT;
 
 	memset(output, 0, sizeof(struct ssa));
-	output->ignoreenc = ignoreenc;
 	output->line_last = &output->line_first;
 	output->style_last = &output->style_first;
 
 	s.ic_srccs = "UTF-8";
+	s.unicode = 1;
 
 	if (dc[0] == 0xff && dc[1] == 0xfe && dc[2] == 0x00 && dc[3] == 0x00)
 		srccs = "UCS-4LE";
@@ -1989,6 +1990,7 @@ int ssa_lex(struct ssa *output, const void *data, size_t datasize)
 	} else {
 		csrc = (const char *)data;
 		cend = csrc + datasize;
+		s.unicode = 0;
 		s.ic_srccs = "MS-ANSI";	/* "DEFAULT" */
 	}
 

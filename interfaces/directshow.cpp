@@ -82,7 +82,7 @@ CUnknown * WINAPI ASADShow::CreateInstance(LPUNKNOWN lpunk, HRESULT *phr)
 ASADShow::ASADShow(LPUNKNOWN punk,HRESULT *phr)
 	: CTransInPlaceFilter(TEXT("ASADShow"), punk, CLSID_ASADShow, phr)
 {
-	asa = asa_open("C:\\asa_dshow.ass", (enum asa_oflags)0);
+	asa = asa_open("C:\\asa_dshow.ass", ASAF_NONE);
 	if (!asa)
 		throw 1;
 }

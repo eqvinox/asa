@@ -158,7 +158,7 @@ static void gas_info_set(struct ssa *ssa)
 	setinfo(_("Update details:"), upd_details);
 }
 
-static gboolean gas_load(const gchar *curname, gboolean uopt)
+static gboolean gas_load(const gchar *curname)
 {
 	GtkWidget *dialog;
 	gladewidget(filechooser);
@@ -188,7 +188,6 @@ static gboolean gas_load(const gchar *curname, gboolean uopt)
 	};
 
 	memset(&output, 0, sizeof(output));
-	output.ignoreenc = uopt;
 
 	getrusage(RUSAGE_SELF, &bef);
 	if ((rv = ssa_lex(&output, data, st.st_size))) {
@@ -245,12 +244,12 @@ static gboolean gas_load(const gchar *curname, gboolean uopt)
 	gtk_widget_hide(load);
 #endif
 
-gboolean gas_open_do(const gchar *curname, gboolean uopt)
+gboolean gas_open_do(const gchar *curname)
 {
 	gladewidget(mainw);
 	gladewidget(filechooser);
 
-	if (!gas_load(curname, uopt))
+	if (!gas_load(curname))
 		return FALSE;
 
 	something_open = 1;
@@ -265,15 +264,11 @@ gboolean gas_open_do(const gchar *curname, gboolean uopt)
 void gas_open_ok(GtkButton *button, gpointer user_data)
 {
 	gladewidget(filechooser);
-	gladewidget(opt_unicodehaywire);
 	gchar *curname;
-	gboolean uopt;
 
 	curname = gtk_file_chooser_get_filename(
 		GTK_FILE_CHOOSER(filechooser));
-	uopt = !gtk_toggle_button_get_active(
-		GTK_TOGGLE_BUTTON(opt_unicodehaywire));
-	gas_open_do(curname, uopt);
+	gas_open_do(curname);
 	g_free(curname);
 }
 
@@ -334,12 +329,8 @@ static void gas_fc_init()
 	gtk_file_chooser_add_filter(fc, ff);
 }
 
-static gboolean unicodefe = FALSE;
-
 static GOptionEntry entries[] =
 {
-  { "unicode-fe", 'U', 0, G_OPTION_ARG_NONE, &unicodefe,
-  	N_("Interpret (screw up) \\fe in Unicode files"), NULL },
   { NULL, 0, 0, 0, NULL, NULL, NULL }
 };
 
@@ -361,11 +352,7 @@ int main(int argc, char **argv, char **envp)
 		"warnnext", "warnprev");
 	gas_info_init();
 	gas_fc_init();
-	if (unicodefe) {
-		gladewidget(opt_unicodehaywire);
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(opt_unicodehaywire), TRUE);
-	}
-	if (argc != 2 || !gas_open_do(argv[1], unicodefe)) {
+	if (argc != 2 || !gas_open_do(argv[1])) {
 		gladewidget(filechooser);
 		gtk_widget_show(filechooser);
 	}
