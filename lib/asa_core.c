@@ -186,8 +186,11 @@ extern void asar_commit_y420_x86_64(struct assp_fgroup *g, cellline **lines, cel
 #ifdef ASA_OPT_I686
 extern void asar_commit_rgbx_bgrx_SSE2(struct assp_fgroup *g,
 	cellline **lines, unsigned char colours[4][4]);
+extern void asar_commit_xrgb_xbgr_SSE2(struct assp_fgroup *g,
+	cellline **lines, unsigned char colours[4][4]);
 #else
 #define asar_commit_rgbx_bgrx_SSE2 NULL
+#define asar_commit_xrgb_xbgr_SSE2 NULL
 #endif
 
 void asar_commit(struct assp_frame *f)
@@ -234,8 +237,8 @@ static void asar_commit_rgb(struct assp_frame *f)
 	case ASACSPR_ABGR: order(ai,b,g,r)
 	case ASACSPR_RGBx: asmfunc = asar_commit_rgbx_bgrx_SSE2; orderx(r,g,b,a)
 	case ASACSPR_BGRx: asmfunc = asar_commit_rgbx_bgrx_SSE2; orderx(b,g,r,a)
-	case ASACSPR_xRGB: orderx(x,r,g,b)
-	case ASACSPR_xBGR: orderx(x,b,g,r)
+	case ASACSPR_xRGB: asmfunc = asar_commit_xrgb_xbgr_SSE2; orderx(a,r,g,b)
+	case ASACSPR_xBGR: asmfunc = asar_commit_xrgb_xbgr_SSE2; orderx(a,b,g,r)
 	case ASACSPR_RGB: order3(r,g,b)
 	case ASACSPR_BGR: order3(b,g,r)
 	case ASACSPR_COUNT: ;
