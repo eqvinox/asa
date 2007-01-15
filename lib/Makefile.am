@@ -1,11 +1,18 @@
 AM_CPPFLAGS = -D__USER__="\"`whoami` at `hostname`\"" -I$(top_srcdir)/include
 
-SUBDIRS = amd64
+SUBDIRS = amd64 i686
 if BUILD_AMD64
 ASM = amd64/commit.o
 endif
+if BUILD_I686
+# ASM = ...
+endif
+CLEANFILES = $(ASM)
+
 amd64/commit.o: $(srcdir)/amd64/commit.asm
 	$(YASM) -f elf -g stabs -a x86 -m amd64 -o $@ $^
+i686/%.o: $(srcdir)/i686/%.asm
+	$(NASM) -f elf -o $@ $^
 
 lib_LTLIBRARIES = libasa.la
 libasa_la_SOURCES = \

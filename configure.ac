@@ -57,6 +57,23 @@ AC_ARG_ENABLE([gtk],
 				AC_DEFINE([ASA_OPT_AMD64], 1, [optimize asa for AMD64])
 			fi
 		;;
+		i686-*-*)
+			NASM=""
+			AC_CHECK_TOOL(YASM, yasm, "")
+			if test -z "$YASM"
+			then	AC_CHECK_TOOL(NASM, nasm, "")
+				if test -z "$NASM"
+				then	AC_MSG_WARN([neither yasm nor nasm found - not using i686 optimizations])
+				fi
+			else	NASM="$YASM -g stabs"
+			fi
+
+			if test "$NASM"
+			then	asa_optimize="i686"
+				asa_opt_disp="SSE2"
+				AC_DEFINE([ASA_OPT_I686], 1, [optimize asa for i686])
+			fi
+		;;
 	esac
 	fi
 
@@ -170,6 +187,7 @@ if test "$asa_optimize" == "NONE"
 then	AC_DEFINE([ASA_OPT_NONE], 1, [no optimization for asa])
 fi
 AM_CONDITIONAL([BUILD_AMD64], [test "$asa_optimize" == "AMD64"])
+AM_CONDITIONAL([BUILD_I686], [test "$asa_optimize" == "i686"])
 
 echo " "
 echo " configuration summary: "
@@ -186,6 +204,7 @@ AC_OUTPUT([
 	include/Makefile
 	lib/Makefile
 	lib/amd64/Makefile
+	lib/i686/Makefile
 	interfaces/Makefile
 	gtk/Makefile
 	check/Makefile
