@@ -395,11 +395,16 @@ enum ssar_redoflags assa_realloc(struct ssa_vm *vm,
 
 void assa_end(struct ssa_vm *vm)
 {
-	struct assa_layer *lay = vm->firstlayer;
+	struct assa_layer **lay = &vm->firstlayer, *tofree;
 
-	while (lay) {
-		assa_trash(lay);
-		lay = lay->next;
+	while (*lay) {
+		assa_trash(*lay);
+		if (!(*lay)->allocs) {
+			tofree = *lay;
+			*lay = tofree->next;
+			xfree(tofree);
+		} else
+			lay = &(*lay)->next;
 	}
 	vm->redoflags = 0;
 }
