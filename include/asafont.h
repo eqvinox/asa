@@ -61,5 +61,6 @@ void asaf_srelease(struct asa_fontinst *as);
 FT_Face asaf_sactivate(struct asa_fontinst *af);
 
 void asaf_init();
+void asaf_done();
 
 #endif /* _ASAFONT_H */

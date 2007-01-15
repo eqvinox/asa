@@ -91,6 +91,22 @@ void asaf_init()
 #endif
 }
 
+void asaf_done()
+{
+	int i;
+	for (i = 0; i < NHASH; i++)
+		fonthashes[i] = NULL;
+
+	FT_Done_FreeType(asaf_ftlib);
+#ifndef WIN32
+	if (aux)
+		FcPatternDestroy(aux);
+	FcFini();
+#else
+	DeleteDC(screenDC);
+#endif
+}
+
 static inline int asaf_lv2weight(long int lv)
 {
 	return (lv == 0) ? 100

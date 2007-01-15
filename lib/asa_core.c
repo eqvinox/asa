@@ -400,6 +400,7 @@ f_export void asa_close(asa_inst *i)
 
 f_export void asa_done()
 {
+	asaf_done();
 }
 
 
