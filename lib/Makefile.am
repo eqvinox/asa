@@ -5,7 +5,7 @@ if BUILD_AMD64
 ASM = amd64/commit.o
 endif
 if BUILD_I686
-# ASM = ...
+ASM = i686/commit_rgb.o
 endif
 CLEANFILES = $(ASM)
 

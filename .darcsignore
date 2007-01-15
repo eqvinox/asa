@@ -40,7 +40,7 @@
 ^ac/ltmain.sh$
 ^ac/missing$
 ^ac/Debug(/|$)
-^ac/Release(/|$)
+^ac/Release( asm)?(/|$)
 ^ac/.*\.(ncb|user|suo)$
 ^ac/asa\.(RES|res)$
 ^ac/directshow_(i\.c|h\.h)$

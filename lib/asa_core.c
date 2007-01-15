@@ -174,6 +174,12 @@ static void _asar_commit(struct assp_frame *f, int lay);
 #ifdef ASA_OPT_AMD64
 extern void asar_commit_y420_x86_64(struct assp_fgroup *g, cellline **lines, cell colours[3]);
 #endif
+#ifdef ASA_OPT_I686
+extern void asar_commit_rgbx_bgrx_SSE2(struct assp_fgroup *g,
+	cellline **lines, unsigned char colours[4][4]);
+#else
+#define asar_commit_rgbx_bgrx_SSE2 NULL
+#endif
 
 void asar_commit(struct assp_frame *f)
 {
@@ -198,25 +204,27 @@ static void asar_commit_rgb(struct assp_frame *f)
 	unsigned line;
 	int blend = 0, nbytes = 4;
 	unsigned char *d;
+	void (*asmfunc)(struct assp_fgroup *g, cellline **lines,
+		unsigned char colours[4][4]);
 
 #define order(v,w,x,y) \
 		for (c = 0; c < 4; c++) \
-			cv[c][0] = f->colours[c].c.v, \
-			cv[c][1] = f->colours[c].c.w, \
-			cv[c][2] = f->colours[c].c.x, \
-			cv[c][3] = f->colours[c].c.y; \
+			cv[0][c] = f->colours[c].c.v, \
+			cv[1][c] = f->colours[c].c.w, \
+			cv[2][c] = f->colours[c].c.x, \
+			cv[3][c] = f->colours[c].c.y; \
 		break;
 #define orderx(v,w,x,y) blend = 1; order(v,w,x,y)
 #define order3(v,w,x) blend = 1; nbytes = 3; order(v,w,x,a & 0)
-#define x a | 0xff
+#define x a
 #define ai a * -1 + 255
 	switch (dst->bmp.rgb.fmt) {
 	case ASACSPR_RGBA: order(r,g,b,ai)
 	case ASACSPR_BGRA: order(b,g,r,ai)
 	case ASACSPR_ARGB: order(ai,r,g,b)
 	case ASACSPR_ABGR: order(ai,b,g,r)
-	case ASACSPR_RGBx: orderx(r,g,b,x)
-	case ASACSPR_BGRx: orderx(b,g,r,x)
+	case ASACSPR_RGBx: asmfunc = asar_commit_rgbx_bgrx_SSE2; orderx(r,g,b,a)
+	case ASACSPR_BGRx: asmfunc = asar_commit_rgbx_bgrx_SSE2; orderx(b,g,r,a)
 	case ASACSPR_xRGB: orderx(x,r,g,b)
 	case ASACSPR_xBGR: orderx(x,b,g,r)
 	case ASACSPR_RGB: order3(r,g,b)
@@ -225,6 +233,10 @@ static void asar_commit_rgb(struct assp_frame *f)
 	}
 #undef x
 
+	if (asmfunc) {
+		asmfunc(f->group, f->lines, cv);
+		return;
+	}
 	d = dst->bmp.rgb.d.d;
 	line = 0;
 #define common1 \
@@ -239,7 +251,7 @@ static void asar_commit_rgb(struct assp_frame *f)
 				for (c = 0; c < nbytes; c++) { \
 					unsigned short value = dp[c] * (256 - raccum); \
 					for (lay = 0; lay < 4; lay++) \
-						value += cl.e[lay] * cv[lay][c]; \
+						value += cl.e[lay] * cv[c][lay]; \
 					dp[c] = value >> 8; \
 				} \
 				dp += nbytes; \
