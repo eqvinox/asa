@@ -102,6 +102,7 @@ struct asa_font *asaf_request(const char *name, int slant, int weight)
 {
 	struct asa_font *rv;
 	FT_Face face;
+	void *buffer = NULL;
 #ifndef WIN32
 	FcPattern *final, *tmp1, *tmp2;
 	FcResult res;
@@ -155,27 +156,43 @@ struct asa_font *asaf_request(const char *name, int slant, int weight)
 #else
 	HFONT font;
 	DWORD size;
-	void *buffer;
-	static unsigned hash = 0;
+	unsigned hash = 0, *ptr, *end;
 
 	font = CreateFont(16, 0, 0, 0, asaf_lv2weight(weight) * 2, slant, 0, 0, 0, 0, 0, 0, 0, name);
+	if (!font)
+		return NULL;
+
 	SelectObject(screenDC, font);
 	size = GetFontData(screenDC, 0, 0, NULL, 0);
-	if (size == GDI_ERROR)
+	if (size == GDI_ERROR || !(buffer = xmalloc(size))) {
+		DeleteObject(font);
 		return NULL;
-	buffer = xmalloc(size);
-	if (!buffer)
-		return NULL;
+	}
 	GetFontData(screenDC, 0, 0, buffer, size);
-	if (FT_New_Memory_Face(asaf_ftlib, buffer, size, 0, &face))
+
+	ptr = (unsigned *)buffer;	/* poor man's hash */
+	end = ptr + (size >> 2);
+	for (; ptr < end; ptr++)
+		hash ^= *ptr;
+
+	if ((rv = hash_get(hash))) {
+		xfree(buffer);
+		DeleteObject(font);
+		return rv;
+	}
+	if (FT_New_Memory_Face(asaf_ftlib, buffer, size, 0, &face)) {
+		DeleteObject(font);
+		xfree(buffer);
 		return NULL;
-	hash++;
+	}
+	DeleteObject(font);
 #endif
 
 	rv = xmalloc(sizeof(struct asa_font));
 	rv->hash = hash;
 	rv->ref = 1;
 	rv->face = face;
+	rv->data = buffer;
 
 	hash_insert(rv);
 
@@ -187,6 +204,8 @@ void asaf_frelease(struct asa_font *af)
 	if (--af->ref)
 		return;
 	hash_remove(af);
+	if (af->data)
+		xfree(af->data);
 	FT_Done_Face(af->face);
 	free(af);
 }

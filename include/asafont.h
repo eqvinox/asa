@@ -39,6 +39,7 @@ struct asa_font {
 
 	unsigned ref;
 	FT_Face face;
+	void *data;
 };
 
 struct asa_fontinst {
