@@ -2118,6 +2118,7 @@ void ssa_free(struct ssa *output)
 {
 	struct ssa_style *style, *snext;
 	struct ssa_line *line, *lnext;
+	struct ssa_error *err, *errnext;
 	struct ssa_parsetext_ctx *pt;
 
 	for (line = output->line_first; line; line = lnext) {
@@ -2140,6 +2141,12 @@ void ssa_free(struct ssa *output)
 		if (pt->func == ssa_genstr)
 			ssa_freestr((ssa_string *)apply_offset(output,
 				pt->param.offset));
+
+	for (err = output->errlist; err; err = errnext) {
+		xfree(err->textline);
+		errnext = err->next;
+		xfree(err);
+	}
 }
 
 #define nstr(x) #x
