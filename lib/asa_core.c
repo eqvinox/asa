@@ -396,6 +396,7 @@ f_export void asa_close(asa_inst *i)
 {
 	if (i->framegroup)
 		assp_fgroupfree(i->framegroup);
+	ssar_flush(&i->vm);
 	/* XXX */
 	free(i);
 }

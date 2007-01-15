@@ -254,3 +254,9 @@ void ssar_run(struct ssa_vm *vm, double ftime, struct assp_fgroup *fg)
 	assa_end(vm);
 }
 
+void ssar_flush(struct ssa_vm *vm)
+{
+	assa_start(vm);
+	assa_end(vm);
+}
+

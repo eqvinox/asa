@@ -223,7 +223,5 @@ extern struct ssa_frag *ssap_frag_add(struct ssa_vm *v,
 
 extern void ssav_create(struct ssa_vm *vm, struct ssa *ssa);
 
-extern void ssar_run(struct ssa_vm *vm, double ftime, struct assp_fgroup *fg);
-
 #endif /* _SSAVM_H */
 

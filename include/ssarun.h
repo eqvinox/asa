@@ -56,4 +56,7 @@ extern void assa_end(struct ssa_vm *vm);
 void ssgl_prepare(struct ssav_line *l);
 void ssgl_dispose(struct ssav_line *l);
 
+extern void ssar_run(struct ssa_vm *vm, double ftime, struct assp_fgroup *fg);
+extern void ssar_flush(struct ssa_vm *vm);
+
 #endif /* _SSARUN_H */
