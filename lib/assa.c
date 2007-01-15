@@ -74,6 +74,7 @@ static void assa_trash(struct assa_layer *lay)
 	*lay->curpos = NULL;
 	while (fptr) {
 		fnext = fptr->next;
+		ssar_dispose(fptr->line);
 		ssgl_dispose(fptr->line);
 		xfree(fptr);
 		fptr = fnext;

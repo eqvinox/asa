@@ -229,6 +229,14 @@ static void ssar_commit(struct ssav_line *l)
 	}
 }
 
+void ssar_dispose(struct ssav_line *l)
+{
+	struct ssav_node *n;
+
+	for (n = l->node_first; n; n = n->next)
+		assp_framefree(n->group);
+}
+
 void ssar_run(struct ssa_vm *vm, double ftime, struct assp_fgroup *fg)
 {
 	unsigned ln;
