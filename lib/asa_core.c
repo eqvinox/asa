@@ -205,7 +205,7 @@ static void asar_commit_rgb(struct assp_frame *f)
 	int blend = 0, nbytes = 4;
 	unsigned char *d;
 	void (*asmfunc)(struct assp_fgroup *g, cellline **lines,
-		unsigned char colours[4][4]);
+		unsigned char colours[4][4]) = NULL;
 
 #define order(v,w,x,y) \
 		for (c = 0; c < 4; c++) \
