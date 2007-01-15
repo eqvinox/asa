@@ -74,7 +74,7 @@ static void ssgl_load_glyph(FT_Face fnt, unsigned idx,
 	FT_Glyph tmp;
 	FT_Vector tmppos;
 
-	FT_Load_Glyph(fnt, idx, FT_LOAD_DEFAULT);
+	FT_Load_Glyph(fnt, idx, FT_LOAD_NO_HINTING);
 
 	*dst = NULL;
 	if (fnt->glyph->format != FT_GLYPH_FORMAT_OUTLINE) {
