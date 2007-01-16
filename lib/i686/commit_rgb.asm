@@ -57,15 +57,18 @@ global prefix %+ commit_xrgb_xbgr_SSE2
 
 align 16
 prefix %+ cpuid:
+	push		ebx
 	xor		eax, eax
 	cpuid
 	or		eax, eax
 	jnz		.avail
+	pop		ebx
 	ret
 .avail:
 	mov		eax, 1
 	cpuid
 	mov		eax, edx
+	pop		ebx
 	ret
 
 %define xmmzero	xmm3
