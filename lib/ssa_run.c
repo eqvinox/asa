@@ -80,8 +80,9 @@ static inline void ssar_one(struct ssa_vm *vm, FT_OutlineGlyph *g,
 	FT_Outline_Render(asaf_ftlib, o, &params);
 
 	if (bord) {
+		int side = (fx1->xx < 0) ^ (fx1->xy < 0) ^ (fx1->yx < 0) ^ (fx1->yy < 0);
 		FT_Glyph_StrokeBorder(&transformed, stroker,
-			0, 1);
+			side, 1);
 
 		p->elem = 2;
 		o = &((FT_OutlineGlyph)transformed)->outline;
