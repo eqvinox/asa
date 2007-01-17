@@ -26,6 +26,7 @@
 #include FT_GLYPH_H
 #include FT_OUTLINE_H
 #include FT_SIZES_H
+#include FT_TRUETYPE_TABLES_H
 
 #ifdef WIN32
 #include <windows.h>
@@ -229,14 +230,65 @@ void asaf_frelease(struct asa_font *af)
 struct asa_fontinst *asaf_reqsize(struct asa_font *af, double size)
 {
 	struct asa_fontinst *rv = xmalloc(sizeof(struct asa_fontinst));
+	FT_Size_RequestRec req;
+	TT_HoriHeader *hori;
+	TT_OS2 *os2;
+	float scale = 1.0;
+#ifdef FONTSIZE_DEBUG
+	FT_Size_Metrics *m = &af->face->size->metrics;
+
+	fprintf(stderr, "%08x metric dump:\n", af->hash);
+#endif
+
 	asaf_faddref(af);
 	rv->ref = 1;
 	rv->font = af;
 
 	FT_New_Size(af->face, &rv->size);
 	FT_Activate_Size(rv->size);
-	FT_Set_Char_Size(af->face, (FT_F26Dot6)(size * 64),
-			(FT_F26Dot6)(size * 64), 0, 0);
+
+	os2 = (TT_OS2 *)FT_Get_Sfnt_Table(af->face, ft_sfnt_os2);
+	hori = (TT_HoriHeader *)FT_Get_Sfnt_Table(af->face, ft_sfnt_hhea);
+	if (os2 && hori) {
+		int horisum = hori->Ascender - hori->Descender;
+		unsigned winsum = os2->usWinAscent + os2->usWinDescent;
+		float mscale = (double)horisum / (double)winsum;
+#ifdef FONTSIZE_DEBUG
+		int typosum = os2->sTypoAscender - os2->sTypoDescender
+			+ os2->sTypoLineGap;
+
+		fprintf(stderr,
+			"HHEA values:\n"
+			"\tascender %4d descender %4d [linegap %4d] = %d\n"
+			"OS2  values:\n"
+			" Typo:\tascender %4d descender %4d "
+				"linegap %4d = [%d]\n"
+			" Win:\tascender %4u descender %4u = %u\n",
+			hori->Ascender, hori->Descender,
+				hori->Line_Gap, horisum,
+			os2->sTypoAscender, os2->sTypoDescender,
+				os2->sTypoLineGap, typosum,
+			os2->usWinAscent, os2->usWinDescent, winsum);
+		fprintf(stderr, "  --->\tscaling by %4.4f\n", mscale);
+#endif
+		scale = mscale;
+	}
+
+	req.type = FT_SIZE_REQUEST_TYPE_REAL_DIM;
+	req.width = 0;
+	req.height = (FT_F26Dot6)(size * 64 * scale);
+	req.horiResolution = 0;
+	req.vertResolution = 0;
+	FT_Request_Size(af->face, &req);
+
+#ifdef FONTSIZE_DEBUG
+	fprintf(stderr, "Size_Metrics:\n\tppem\t%dx%d\n\tscale\t%4.2fx%4.2f\n"
+		"\tascender %4.2f\n\tdescender %4.2f\n\theight\t%4.2f\n\tmax_advance %4.2f\n",
+		m->x_ppem, m->y_ppem,
+		m->x_scale / 64., m->y_scale / 64.,
+		m->ascender / 64., m->descender / 64.,
+		m->height / 64., m->max_advance / 64.);
+#endif
 
 	return rv;
 }
