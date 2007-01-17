@@ -24,7 +24,11 @@ bits 32
 %define PIC
 %define prefix _asar_
 %else
+%ifdef NO_PIC
+%define PIC
+%else
 %define PIC + ebx wrt ..gotoff
+%endif
 %define prefix asar_
 %endif
 
