@@ -120,7 +120,7 @@ void ssgl_prepare(struct ssav_line *l)
 		fnt = asaf_sactivate(n->params->fsiz);
 		ssgl_matrix(p, &mat, &fx1);
 		n->fx1 = fx1;
-		hv.y = fnt->size->metrics.height;
+		hv.y = (FT_Pos)(n->params->f.size * 64);
 		FT_Vector_Transform(&hv, &mat);
 
 		if (u->type == SSAVU_NEWLINE) {
