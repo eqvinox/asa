@@ -21,7 +21,7 @@
 #ifndef _ASAFONT_H
 #define _ASAFONT_H
 
-#ifndef WIN32
+#ifndef NO_FONTCONFIG
 #include <fontconfig/fontconfig.h>
 #include <fontconfig/fcfreetype.h>
 #endif

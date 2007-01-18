@@ -28,14 +28,19 @@
 #include FT_SIZES_H
 #include FT_TRUETYPE_TABLES_H
 
-#ifdef WIN32
-#include <windows.h>
+#ifndef NO_FONTCONFIG
+#if defined(WIN32) && !defined(__GNUC__)
+#pragma comment(lib, "freetype")
+#pragma comment(lib, "libfontconfig")
+#pragma comment(lib, "libexpat")
 #endif
-
-#ifndef WIN32
 FcConfig *fontconf;
 FcPattern *aux;
 #else
+#ifndef WIN32
+#error fontconfig can be disabled only on win32
+#endif
+#include <windows.h>
 #pragma comment(lib, "freetype")
 #pragma comment(lib, "gdi32")
 HDC screenDC;
@@ -76,7 +81,7 @@ void asaf_init()
 	for (i = 0; i < NHASH; i++)
 		fonthashes[i] = NULL;
 
-#ifndef WIN32
+#ifndef NO_FONTCONFIG
 	fontconf = FcInitLoadConfigAndFonts();
 	if (!fontconf) {
 		fprintf(stderr, "Fontconfig initialization failed\n");
@@ -89,7 +94,7 @@ void asaf_init()
 		fprintf(stderr, "FreeType initialization failed\n");
 		return;
 	}
-#ifndef WIN32
+#ifndef NO_FONTCONFIG
 	aux = FcPatternCreate();
 #endif
 }
@@ -101,7 +106,7 @@ void asaf_done()
 		fonthashes[i] = NULL;
 
 	FT_Done_FreeType(asaf_ftlib);
-#ifndef WIN32
+#ifndef NO_FONTCONFIG
 	if (aux)
 		FcPatternDestroy(aux);
 	FcFini();
@@ -122,7 +127,7 @@ struct asa_font *asaf_request(const char *name, int slant, int weight)
 	struct asa_font *rv;
 	FT_Face face;
 	void *buffer = NULL;
-#ifndef WIN32
+#ifndef NO_FONTCONFIG
 	FcPattern *final, *tmp1, *tmp2;
 	FcResult res;
 	FcChar8 *filename;
