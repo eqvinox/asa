@@ -56,11 +56,11 @@
 #pragma warning( disable : 4706)
 #endif
 
-#define ssa_isspace	isspace		/**< @see ssasrc_t */
-#define ssa_isalpha	isalpha		/**< @see ssasrc_t */
-#define ssa_isdigit	isdigit		/**< @see ssasrc_t */
-#define ssa_isxdigit	isxdigit	/**< @see ssasrc_t */
-#define ssa_toupper	toupper		/**< @see ssasrc_t */
+#define ssa_isspace(x)	isspace((unsigned char)x)	/**< @see ssasrc_t */
+#define ssa_isalpha(x)	isalpha((unsigned char)x)	/**< @see ssasrc_t */
+#define ssa_isdigit(x)	isdigit((unsigned char)x)	/**< @see ssasrc_t */
+#define ssa_isxdigit(x)	isxdigit((unsigned char)x)	/**< @see ssasrc_t */
+#define ssa_toupper(x)	toupper((unsigned char)x)	/**< @see ssasrc_t */
 
 #define ssatod		strtod		/**< @see ssasrc_t */
 #define ssatol		strtol		/**< @see ssasrc_t */ 
