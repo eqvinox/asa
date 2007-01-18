@@ -252,7 +252,7 @@ struct asa_fontinst *asaf_reqsize(struct asa_font *af, double size)
 	if (os2 && hori) {
 		int horisum = hori->Ascender - hori->Descender;
 		unsigned winsum = os2->usWinAscent + os2->usWinDescent;
-		float mscale = (double)horisum / (double)winsum;
+		float mscale = (float)horisum / (float)winsum;
 #ifdef FONTSIZE_DEBUG
 		int typosum = os2->sTypoAscender - os2->sTypoDescender
 			+ os2->sTypoLineGap;
