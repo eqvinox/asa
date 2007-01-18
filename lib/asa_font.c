@@ -146,6 +146,9 @@ struct asa_font *asaf_request(const char *name, int slant, int weight)
 	FcPatternDestroy(tmp1);
 	final = FcFontMatch(fontconf, tmp2, &res);
 	FcPatternDestroy(tmp2);
+	if (!final)
+		return NULL;
+
 	hash = FcPatternHash(final);
 
 	if ((rv = hash_get(hash))) {
