@@ -36,6 +36,8 @@
 FcConfig *fontconf;
 FcPattern *aux;
 #else
+#pragma comment(lib, "freetype")
+#pragma comment(lib, "gdi32")
 HDC screenDC;
 #endif
 FT_Library asaf_ftlib;

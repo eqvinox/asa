@@ -26,6 +26,10 @@
 #include "common.h"
 #include "asa.h"
 
+#pragma comment(lib, "strmiids")
+#pragma comment(lib, "strmbase")
+#pragma comment(lib, "winmm")
+
 class ASADShow : public CTransInPlaceFilter
 {
 public:
