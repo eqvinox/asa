@@ -147,10 +147,11 @@ static struct ssa_ipnode iplist[SSAN_MAX] = {
 	{ssav_colour,	ssava_colour,	0x1},		/* al SSAN_COLOUR2 */
 	{ssav_colour,	ssava_colour,	0x2},		/* al SSAN_COLOUR3 */
 	{ssav_colour,	ssava_colour,	0x3},		/* al SSAN_COLOUR4 */
-	{ssav_colour,	ssava_colour,	0x10},		/* al SSAN_ALPHA */
+	{ssav_colour,	ssava_colour,	0x10},		/* al SSAN_ALPHA1 */
 	{ssav_colour,	ssava_colour,	0x11},		/* al SSAN_ALPHA2 */
 	{ssav_colour,	ssava_colour,	0x12},		/* al SSAN_ALPHA3 */
 	{ssav_colour,	ssava_colour,	0x13},		/* al SSAN_ALPHA4 */
+	{ssav_colour,	ssava_colour,	0x14},		/* al SSAN_ALPHA */
 	{ssav_align,	NULL,		1},		/* SG SSAN_ALIGN */
 	{ssav_align,	NULL,		0},		/* SG SSAN_ALIGNNUM */
 	{ssav_kara,	NULL,		SSAVK_PLAIN},	/* Sl SSAN_KARA */
@@ -494,7 +495,7 @@ static inline void ssav_splitcolour(struct ssa_node *n, ptrdiff_t *param,
 		*value = n->v.colour;
 		mask->c.r = mask->c.g = mask->c.b = 0xFF;
 	}
-	*param &= 3;
+	*param &= 7;
 }
 
 static void ssav_colour(struct ssav_prepare_ctx *ctx, struct ssa_node *n,

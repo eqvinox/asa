@@ -209,31 +209,32 @@ enum ssa_nodetype {
 	SSAN_COLOUR2,		/**< 23 - C 2c [ASS] */
 	SSAN_COLOUR3,		/**< 24 - C 3c [ASS] */
 	SSAN_COLOUR4,		/**< 25 - C 4c [ASS] */
-	SSAN_ALPHA,		/**< 26 - A alpha - 1a[ASS] */
+	SSAN_ALPHA1,		/**< 26 - A 1a [ASS] */
 	SSAN_ALPHA2,		/**< 27 - A 2a [ASS] */
 	SSAN_ALPHA3,		/**< 28 - A 3a [ASS] */
 	SSAN_ALPHA4,		/**< 29 - A 4a [ASS] */
-	SSAN_ALIGN,		/**< 30 - I a */
-	SSAN_ALIGNNUM,		/**< 31 - I an */
-	SSAN_KARA,		/**< 32 - I k */
-	SSAN_KARAF,		/**< 33 - I K or kf [ASS] */
-	SSAN_KARAO,		/**< 34 - I ko [ASS] */
-	SSAN_KARAT,		/**< 35 - I kt [ASS] */
-	SSAN_WRAP,		/**< 36 - I q [ASS] */
-	SSAN_RESET,		/**< 37 - * rSTYLE - STYLE only in [ASS] */
+	SSAN_ALPHA,		/**< 30 - A alpha */
+	SSAN_ALIGN,		/**< 31 - I a */
+	SSAN_ALIGNNUM,		/**< 32 - I an */
+	SSAN_KARA,		/**< 33 - I k */
+	SSAN_KARAF,		/**< 34 - I K or kf [ASS] */
+	SSAN_KARAO,		/**< 35 - I ko [ASS] */
+	SSAN_KARAT,		/**< 36 - I kt [ASS] */
+	SSAN_WRAP,		/**< 37 - I q [ASS] */
+	SSAN_RESET,		/**< 38 - * rSTYLE - STYLE only in [ASS] */
 
-	SSAN_T,			/**< 38 - * t [ASS] */
-	SSAN_MOVE,		/**< 39 - * move [ASS] */
-	SSAN_POS,		/**< 40 - * pos [ASS] */
-	SSAN_ORG,		/**< 41 - * org [ASS] */
-	SSAN_FADE,		/**< 42 - * fade [ASS] */
-	SSAN_FAD,		/**< 43 - * fad [ASS] */
-	SSAN_CLIPRECT,		/**< 44 - * clip(rect) [ASS] */
-	SSAN_CLIPDRAW,		/**< 45 - * clip(draw) [ASS] */
-	SSAN_PAINT,		/**< 46 - * p [ASS] */
-	SSAN_PBO,		/**< 47 - I pbo [ASS] */
+	SSAN_T,			/**< 39 - * t [ASS] */
+	SSAN_MOVE,		/**< 40 - * move [ASS] */
+	SSAN_POS,		/**< 41 - * pos [ASS] */
+	SSAN_ORG,		/**< 42 - * org [ASS] */
+	SSAN_FADE,		/**< 43 - * fade [ASS] */
+	SSAN_FAD,		/**< 44 - * fad [ASS] */
+	SSAN_CLIPRECT,		/**< 45 - * clip(rect) [ASS] */
+	SSAN_CLIPDRAW,		/**< 46 - * clip(draw) [ASS] */
+	SSAN_PAINT,		/**< 47 - * p [ASS] */
+	SSAN_PBO,		/**< 48 - I pbo [ASS] */
 
-	SSAN_MAX,		/**< 48 */
+	SSAN_MAX,		/**< 49 */
 };
 #define SSANR		0x80	/**< 00 - empty parameter / revert */
 #define SSAN(x)		((x) & ~SSANR)

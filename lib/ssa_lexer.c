@@ -413,7 +413,7 @@ static struct ssa_parsetext_tag pteffect[] = {
 /** core: keyword table for style overrides */
 static struct ssa_parsetext_tag ptoverr[] = {
 	/* longer matches MUST appear before shorter ones (see fad/fade) */
-	{"1a",			e_alpha,	SSANR |	SSAN_ALPHA},
+	{"1a",			e_alpha,	SSANR |	SSAN_ALPHA1},
 	{"1c",			e_colour,	SSANR |	SSAN_COLOUR},
 	{"2a",			e_alpha,	SSANR |	SSAN_ALPHA2},
 	{"2c",			e_colour,	SSANR |	SSAN_COLOUR2},
