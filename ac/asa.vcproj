@@ -284,6 +284,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\include\blitter.h"
+				>
+			</File>
+			<File
 				RelativePath="..\include\common.h"
 				>
 			</File>
@@ -332,6 +336,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\lib\asa_errtexts.c"
+				>
+			</File>
+			<File
 				RelativePath="..\lib\asa_font.c"
 				>
 			</File>
@@ -348,7 +356,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\lib\asa_errtexts.c"
+				RelativePath="..\lib\spanproc.c"
+				>
+			</File>
+			<File
+				RelativePath="..\lib\optimise.c"
 				>
 			</File>
 			<File

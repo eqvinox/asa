@@ -26,6 +26,7 @@ libasa_la_SOURCES = \
 	asa_errtexts.c \
 	asa_font.c \
 	assa.c \
+	optimise.c \
 	spanproc.c \
 	ssa_anim.c \
 	ssa_frag.c \
