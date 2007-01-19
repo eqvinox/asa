@@ -1,5 +1,7 @@
 noinst_HEADERS = \
 	acconf_win32.h \
+	asa.h \
+	asaerror.h \
 	asafont.h \
 	blitter.h \
 	common.h \
@@ -9,4 +11,4 @@ noinst_HEADERS = \
 	ssavm.h \
 	ssawrap.h
 
-pkginclude_HEADERS = asa.h asaerror.h
+pkginclude_HEADERS =

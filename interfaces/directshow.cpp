@@ -23,6 +23,7 @@
 #include <streams.h>
 #include "directshow_h.h"
 
+#define ASA_DEPRECATED
 #include "common.h"
 #include "asa.h"
 

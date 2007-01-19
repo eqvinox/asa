@@ -23,6 +23,8 @@
 
 #include <stddef.h>
 
+#ifdef ASA_DEPRECATED
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -125,6 +127,8 @@ f_export extern void asa_done();
 #ifdef __cplusplus
 }
 #endif
+
+#endif /* ASA_DEPRECATED */
 
 #endif /* _ASA_H */
 

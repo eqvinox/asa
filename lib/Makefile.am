@@ -1,4 +1,6 @@
-AM_CPPFLAGS = -D__USER__="\"`whoami` at `hostname`\"" -I$(top_srcdir)/include
+AM_CPPFLAGS = -D__USER__="\"`whoami` at `hostname`\"" \
+	-I$(top_srcdir)/include \
+	-I$(top_srcdir)/csri/include
 
 SUBDIRS = amd64 i686
 if BUILD_AMD64
@@ -26,6 +28,7 @@ libasa_la_SOURCES = \
 	asa_errtexts.c \
 	asa_font.c \
 	assa.c \
+	csri.c \
 	optimise.c \
 	spanproc.c \
 	ssa_anim.c \

@@ -18,6 +18,11 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  ****************************************************************************/
 
+/*
+ *   F I L E   T O   B E   D E L E T E D   S O O N
+ */
+#define ASA_DEPRECATED
+
 #include "common.h"
 
 #ifdef HAVE_UNISTD_H

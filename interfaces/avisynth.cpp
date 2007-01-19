@@ -22,6 +22,7 @@
 #include "avisynth.h"
 #include <string.h>
 
+#define ASA_DEPRECATED
 #include "common.h"
 
 #include "asa.h"
