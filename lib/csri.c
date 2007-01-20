@@ -47,7 +47,6 @@ typedef struct csri_asa_rend csri_rend;
 typedef struct csri_asa_inst csri_inst;
 
 #include <csri/csri.h>
-#include <csri/loader.h>
 
 #define ASA_DEPRECATED
 #include "asa.h"
@@ -164,7 +163,7 @@ void csri_close(csri_inst *inst)
 		asaf_done();
 }
 
-int csri_query_fmt(csri_inst *inst, const struct csri_fmt *fmt)
+int csri_request_fmt(csri_inst *inst, const struct csri_fmt *fmt)
 {
 	if (inst->framegroup)
 		assp_fgroupfree(inst->framegroup);
