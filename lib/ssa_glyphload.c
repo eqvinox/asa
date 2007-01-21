@@ -23,7 +23,9 @@
 
 #include <freetype/fttrigon.h>
 #include <assert.h>
+#include <math.h>
 
+#if 0
 static void ssgl_rotmat(FT_Matrix *m, double dangle)
 {
 	FT_Angle angle = (int)(dangle * 65536);
@@ -32,23 +34,92 @@ static void ssgl_rotmat(FT_Matrix *m, double dangle)
 	m->yx = -FT_Sin(angle);
 	m->yy = FT_Cos(angle);
 }
+#endif
 
-void ssgl_matrix(struct ssav_params *p, FT_Matrix *fx0, FT_Matrix *fx1)
+void ssgl_matrix(struct ssav_params *p, FT_Matrix *fx0)
 {
-	FT_Matrix tmp;
-
 	fx0->xx = (int)(p->m.fscx * 655.36);
 	fx0->xy = 0x00000L;
 	fx0->yx = 0x00000L;
 	fx0->yy = (int)(-p->m.fscy * 655.36);
+}
 
-	fx1->xx = 0x10000L;
-	fx1->xy = (FT_Fixed)(p->m.fax * 65536);
-	fx1->yx = (FT_Fixed)(p->m.fay * 65536);
-	fx1->yy = 0x10000L;
+
+/* Return identity matrix
+   By ArchMage ZeratuL */
+void ssgl_identity_matrix3d(float *matrix) {
+	int i=0;
+	for (i=0;i<16;i++) {
+		if ((i % 5) == 0) matrix[i]=1.0f;
+		else matrix[i]=0.0f;
+	}
+}
+
+/* Multiply 3d matrices
+   Returns result on matrix a
+   Code by ArchMage ZeratuL */
+void ssgl_multiply_matrix3d(float *_a,float *_b) {
+	float *a,*b,*dst;
+	float t[16];
+	int i,x,y;
+	a = _a;
+	b = _b;
+	dst = _a;
+	memcpy(t,a,sizeof(float)*16);
+	for (i=0;i<16;i++) {
+		x = i/4;
+		y = i-x*4;
+		x *= 4;
+		dst[i] = t[y]*b[x] + t[y+4]*b[x+1] + t[y+8]*b[x+2] + t[y+12]*b[x+3];
+	}
+}
+
+/* Generate 3D matrix
+   Code by ArchMage ZeratuL */
+void ssgl_matrix3d(struct ssav_params *p, float *m) {
+	float sax,cax,say,cay,saz,caz;
+	float t = 0.017453292519943f;
+	float mat[16];
+	float matrix2[16] = { 2500, 0, 0,    0,
+	                      0, 2500, 0,    0,
+	                      0,    0, 1,    1,
+	                      0,    0, 2500, 2500 };
+
+	// Load identity
+	ssgl_identity_matrix3d(m);
+
+	// Perpsective matrix
+	ssgl_multiply_matrix3d(m,matrix2);
+
+	// frx & fry matrix
+	if (p->m.frx != 0.0 || p->m.fry != 0.0) {
+		sax = (float)sin(p->m.frx * t);
+		say = (float)sin(p->m.fry * t);
+		cax = (float)cos(p->m.frx * t);
+		cay = (float)cos(p->m.fry * t);
+		mat[0] = cay;      mat[4] = sax*say;       mat[8]  = -cax*say;     mat[12] = 0.0f;
+		mat[1] = 0.0f;     mat[5] = cax;           mat[9]  = sax;          mat[13] = 0.0f;
+		mat[2] = say*8.0f; mat[6] = -sax*cay*8.0f; mat[10] = cax*cay*8.0f; mat[14] = 0.0f;
+		mat[3] = 0.0f;     mat[7] = 0.0f;          mat[11] = 0.0f;         mat[15] = 1.0f;
+		ssgl_multiply_matrix3d(m,mat);
+	}
+
+	// frz matrix
 	if (p->m.frz != 0.0) {
-		ssgl_rotmat(&tmp, p->m.frz);
-		FT_Matrix_Multiply(&tmp, fx1);
+		saz = (float)sin(p->m.frz * t);
+		caz = (float)cos(p->m.frz * t);
+		ssgl_identity_matrix3d(mat);
+		mat[0] = caz;  mat[4] = saz;
+		mat[1] = -saz; mat[5] = caz;
+		ssgl_multiply_matrix3d(m,mat);
+	}
+
+	// \fax / \fay matrix
+	if (p->m.fax != 0.0 || p->m.fay != 0.0) {
+		ssgl_identity_matrix3d(mat);
+		mat[4] = (float)p->m.fax;
+		mat[1] = (float)p->m.fay;
+		ssgl_multiply_matrix3d(m,mat);
 	}
 }
 
@@ -96,7 +167,7 @@ static void ssgl_load_glyph(FT_Face fnt, unsigned idx,
 void ssgl_prepare(struct ssav_line *l)
 {
 	FT_Vector pos, hv;
-	FT_Matrix mat, fx1;
+	FT_Matrix mat;
 	FT_Face fnt;
 	FT_OutlineGlyph *g, *end;
 	unsigned idx, stop, *src;
@@ -118,10 +189,14 @@ void ssgl_prepare(struct ssav_line *l)
 			p = p->finalized;
 
 		fnt = asaf_sactivate(n->params->fsiz);
-		ssgl_matrix(p, &mat, &fx1);
-		n->fx1 = fx1;
+		ssgl_matrix(p, &mat);
+
+		/* generate 3d matrix */
+		ssgl_matrix3d(p, n->matrix3d);
+
 		hv.y = (FT_Pos)(n->params->f.size * 64);
 		FT_Vector_Transform(&hv, &mat);
+		//hv.y = (FT_Pos)(n->params->f.size * 64 * p->m.fscy / 100.0);
 
 		if (u->type == SSAVU_NEWLINE) {
 			if (n != u->nl_node) {

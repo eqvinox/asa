@@ -126,7 +126,7 @@ struct ssav_node {
 	FT_OutlineGlyph *glyphs;
 
 	struct ssav_karaoke_unit *kara;
-	FT_Matrix fx1;
+	float matrix3d[16];
 };
 
 enum ssav_unitt {

@@ -32,9 +32,87 @@
 
 #define clip(x,a,b) ((x) < (a) ? a : ((x) > (b) ? (b) : (x)))
 
+
+/* Fixed to float.
+   By ArchMage ZeratuL */
+static inline float fixed_to_float(signed long n) {
+	return ((float)(n))/64;
+}
+
+/* Float to fixed.
+   By ArchMage ZeratuL */
+static inline signed long float_to_fixed(float n) {
+	return (int)(n * 64);
+}
+
+/* This function takes a 4-float point and multiplies it by a 4x4 matrix.
+   Point is given in a float[4] = {x,y,z,w} format.
+   By ArchMage ZeratuL */
+static inline void ssar_3dmatrix_transform_point(float *p,float *m) {
+	float t[4];
+
+	/* Multiply */
+	t[0] = p[0]*m[0] + p[1]*m[4] +  p[2]*m[8] + p[3]*m[12];
+	t[1] = p[0]*m[1] + p[1]*m[5] +  p[2]*m[9] + p[3]*m[13];
+	t[2] = p[0]*m[2] + p[1]*m[6] + p[2]*m[10] + p[3]*m[14];
+	t[3] = p[0]*m[3] + p[1]*m[7] + p[2]*m[11] + p[3]*m[15];
+
+	/* Limit w to 0.05f, to avoid a division by 0 */
+	if (t[3] < 0) {
+		t[0] = -t[0];
+		t[1] = -t[1];
+		t[2] = -t[2];
+		t[3] = -t[3];
+	}
+	if (t[3] < 0.05f) t[3] = 0.05f;
+
+	/* Copy back (I don't think that any other method would be faster here? memcpy, maybe?) */
+	p[0] = t[0];
+	p[1] = t[1];
+	p[2] = t[2];
+	p[3] = t[3];
+}
+
+/* This function takes a freetype glyph and multiplies it by a 4x4 float matrix.
+   Matrix is given in a colmajor format, that is, first column is [0], [1], [2] and [3]
+   By ArchMage ZeratuL */
+static inline void ssar_3dmatrix_transform_glyph(FT_Glyph glyph,float *matrix) {
+	FT_Outline *outline;
+	float point[4];
+	int i;
+
+	/* Get outline */
+	outline = &((FT_OutlineGlyph) glyph)->outline;
+
+	/* Process points */
+	for (i=0;i<outline->n_points;i++) {
+		/* Convert to float */
+		point[0] = fixed_to_float(outline->points[i].x);
+		point[1] = fixed_to_float(outline->points[i].y);
+		point[2] = 0.0f;
+		point[3] = 1.0f;
+
+		/* Multiply by the matrix */
+		ssar_3dmatrix_transform_point(point,matrix);
+
+		/* Convert back to fixed */
+		outline->points[i].x = float_to_fixed(point[0]/point[3]);
+		outline->points[i].y = float_to_fixed(point[1]/point[3]);
+	}
+
+	/* Process the glyph's advance, same as above */
+	point[0] = fixed_to_float(glyph->advance.x);
+	point[1] = fixed_to_float(glyph->advance.y);
+	point[2] = 0.0f;
+	point[3] = 1.0f;
+	ssar_3dmatrix_transform_point(point,matrix);
+	glyph->advance.x = float_to_fixed(point[0]/point[3]);
+	glyph->advance.y = float_to_fixed(point[1]/point[3]);
+}
+
 static inline void ssar_one(struct ssa_vm *vm, FT_OutlineGlyph *g,
 	struct ssav_unit *u, struct assp_param *p, FT_Stroker stroker,
-	FT_Vector org, double shad, FT_Pos bord, FT_Matrix *fx1, int tgt)
+	FT_Vector org, double shad, FT_Pos bord, float *matrix3d, int tgt)
 {
 	FT_Glyph transformed;
 	FT_Outline *o;
@@ -60,7 +138,14 @@ static inline void ssar_one(struct ssa_vm *vm, FT_OutlineGlyph *g,
 	orgneg.y = u->final.y - org.y;
 	FT_Glyph_Copy(*(FT_Glyph *)g, &transformed);
 	FT_Glyph_Transform(transformed, NULL, &orgneg);
-	FT_Glyph_Transform(transformed, fx1, &org);
+
+	/* \frz, \frx, \fry, \fax, \fay */
+	ssar_3dmatrix_transform_glyph(transformed,matrix3d);
+
+	/* move */
+	FT_Glyph_Transform(transformed, NULL, &org);
+
+	/* \fscx, \fscy */
 	FT_Glyph_Transform(transformed, &vm->scale, NULL);
 
 	bord = (bord + 63) >> 6;
@@ -80,9 +165,7 @@ static inline void ssar_one(struct ssa_vm *vm, FT_OutlineGlyph *g,
 	FT_Outline_Render(asaf_ftlib, o, &params);
 
 	if (bord) {
-		int side = (fx1->xx < 0) ^ (fx1->xy < 0) ^ (fx1->yx < 0) ^ (fx1->yy < 0);
-		FT_Glyph_StrokeBorder(&transformed, stroker,
-			side, 1);
+		FT_Glyph_StrokeBorder(&transformed, stroker, 0, 1);
 
 		p->elem = 2;
 		o = &((FT_OutlineGlyph)transformed)->outline;
@@ -176,7 +259,7 @@ void ssar_line(struct ssa_vm *vm, struct ssav_line *l, struct assp_fgroup *fg,
 				ustop = u->next ? u->next->idxstart : l->nchars;
 			}
 			ssar_one(vm, g, u, &p, stroker, l->active.org,
-				np->shadow, bordersize, &n->fx1, tgt);
+				np->shadow, bordersize, n->matrix3d, tgt);
 			g++, idx++;
 		}
 		n = n->next;
