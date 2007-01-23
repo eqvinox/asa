@@ -159,8 +159,11 @@ void csri_close(csri_inst *inst)
 	ssar_flush(&inst->vm);
 	free(inst);
 
+#if 0
+	/* temporarily disabled since it seems to crash on win32 */
 	if (!--csri_asa.ref)
 		asaf_done();
+#endif
 }
 
 int csri_request_fmt(csri_inst *inst, const struct csri_fmt *fmt)
