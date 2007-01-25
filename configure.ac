@@ -93,6 +93,13 @@ AC_CHECK_LIB([png], [png_init_io])
 AM_ICONV
 LDFLAGS="$LDFLAGS $LTLIBICONV"
 
+if test -d "$srcdir/csri"
+then	AC_CONFIG_SUBDIRS([csri])
+else	AC_CHECK_HEADERS([csri/csri.h],,[
+		AC_MSG_FAILURE([neither csri subdirectory nor installed header files found.])
+	])
+fi
+
 AC_MSG_NOTICE([--- done checking special dependencies ---])
 
 AC_PROG_RANLIB
