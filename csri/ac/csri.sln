@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 9.00
 # Visual Studio 2005
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "csri", "csri.vcproj", "{06A17EA6-5225-481D-B3D4-59A665773B86}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "subhelp", "subhelp.vcproj", "{870552FE-7B73-41AB-A7D9-475440F4731C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -9,10 +9,10 @@ Global
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{06A17EA6-5225-481D-B3D4-59A665773B86}.Debug|Win32.ActiveCfg = Debug|Win32
-		{06A17EA6-5225-481D-B3D4-59A665773B86}.Debug|Win32.Build.0 = Debug|Win32
-		{06A17EA6-5225-481D-B3D4-59A665773B86}.Release|Win32.ActiveCfg = Release|Win32
-		{06A17EA6-5225-481D-B3D4-59A665773B86}.Release|Win32.Build.0 = Release|Win32
+		{870552FE-7B73-41AB-A7D9-475440F4731C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{870552FE-7B73-41AB-A7D9-475440F4731C}.Debug|Win32.Build.0 = Debug|Win32
+		{870552FE-7B73-41AB-A7D9-475440F4731C}.Release|Win32.ActiveCfg = Release|Win32
+		{870552FE-7B73-41AB-A7D9-475440F4731C}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -81,6 +81,7 @@ AC_CONFIG_FILES([csri.pc])
 AC_OUTPUT([
 	ac/Makefile
 	include/Makefile
+	subhelp/Makefile
 	Makefile
 ])
 

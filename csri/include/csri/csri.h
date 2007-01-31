@@ -29,7 +29,7 @@
  ****************************************************************************/
 
 /** \file csri.h - main CSRI (common subtitle renderer interface) include.
- * $Id: csri.h 8 2007-01-21 07:15:12Z equinox $ */
+ * $Id: csri.h 11 2007-01-31 01:19:13Z equinox $ */
 
 #ifndef _CSRI_H
 /** \cond */
@@ -43,14 +43,10 @@ extern "C" {
 #endif
 
 #ifndef CSRIAPI
-#if defined(WIN32) || defined(DOXYGEN)
 /** CSRI API attributes.
- * defaults to \c extern / \c extern \c __cdecl on Windows.
+ * defaults to \c extern.
  */
-#define CSRIAPI extern __cdecl
-#else
 #define CSRIAPI extern
-#endif
 #endif
 
 /** \defgroup base CSRI base API. */

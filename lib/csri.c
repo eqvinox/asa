@@ -20,23 +20,7 @@
 
 #include "common.h"
 
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
-#ifdef HAVE_SYS_TIME_H
-#include <sys/time.h>
-#endif
-#include <sys/types.h>
-#include <sys/stat.h>
-#ifdef HAVE_SYS_MMAN_H
-#include <sys/mman.h>
-#endif
-#include <fcntl.h>
-#include <errno.h>
-
 #ifdef WIN32
-#include <windows.h>
-
 #define CSRIAPI __declspec(dllexport)
 #else
 #define CSRIAPI
@@ -47,6 +31,7 @@ typedef struct csri_asa_rend csri_rend;
 typedef struct csri_asa_inst csri_inst;
 
 #include <csri/csri.h>
+#include <subhelp.h>
 
 #define ASA_DEPRECATED
 #include "asa.h"
@@ -68,63 +53,7 @@ static struct csri_asa_rend {
 csri_inst *csri_open_file(csri_rend *renderer,
 	const char *filename, struct csri_openflag *flags)
 {
-	csri_inst *rv = NULL;
-	void *data;
-#ifndef WIN32
-	int fd;
-	struct stat st;
-
-	fd = open(filename, O_RDONLY);
-	if (fd == -1)
-		return NULL;
-	if (fstat(fd, &st)
-		|| !(data = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE,
-			fd, 0))) {
-		close(fd);
-		return NULL;
-	}
-
-	rv = csri_open_mem(renderer, data, st.st_size, flags);
-
-	munmap(data, st.st_size);
-	close(fd);
-#else
-	HANDLE file, mapping;
-	DWORD size;
-	int namesize;
-	wchar_t *namebuf;
-
-	namesize = MultiByteToWideChar(CP_UTF8, 0, filename, -1, NULL, 0);
-	if (!namesize)
-		return NULL;
-	namesize++;
-	namebuf = xmalloc(sizeof(wchar_t) * namesize);
-	MultiByteToWideChar(CP_UTF8, 0, filename, -1, namebuf, namesize);
-
-	file = CreateFileW(namebuf, GENERIC_READ, FILE_SHARE_READ,
-		NULL, OPEN_EXISTING, 0, NULL);
-	xfree(namebuf);
-	if (file == INVALID_HANDLE_VALUE)
-		return NULL;
-	size = GetFileSize(file, NULL);
-	if (size == INVALID_FILE_SIZE || !size)
-		goto out_closefile;
-	mapping = CreateFileMappingW(file, NULL, PAGE_READONLY, 0, 0, NULL);
-	if (!mapping)
-		goto out_closefile;
-	data = MapViewOfFile(mapping, FILE_MAP_READ, 0, 0, size);
-	if (!data)
-		goto out_closemap;
-
-	rv = csri_open_mem(renderer, data, size, flags);
-
-	UnmapViewOfFile(data);
-out_closemap:
-	CloseHandle(mapping);
-out_closefile:
-	CloseHandle(file);
-#endif
-	return rv;
+	return subhelp_open_file(renderer, csri_open_mem, filename, flags);
 }
 
 csri_inst *csri_open_mem(csri_rend *renderer,

@@ -63,7 +63,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="iconv.lib"
+				AdditionalDependencies="iconv.lib ..\csri\ac\Release\subhelp.lib"
 				LinkIncremental="1"
 				ModuleDefinitionFile="asa.def"
 				GenerateDebugInformation="true"
@@ -144,7 +144,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="iconv.lib"
+				AdditionalDependencies="iconv.lib ..\csri\ac\Debug\subhelp.lib"
 				LinkIncremental="1"
 				ModuleDefinitionFile="asa.def"
 				GenerateDebugInformation="true"
@@ -224,7 +224,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="iconv.lib"
+				AdditionalDependencies="iconv.lib ..\csri\ac\Release\subhelp.lib"
 				LinkIncremental="1"
 				ModuleDefinitionFile="asa.def"
 				GenerateDebugInformation="true"
