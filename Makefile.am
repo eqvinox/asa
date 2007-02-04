@@ -4,4 +4,4 @@ EXTRA_DIST = asa.pc.in
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = asa.pc
 
-SUBDIRS = ac include lib po
+SUBDIRS = ac csri include lib po
