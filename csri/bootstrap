@@ -1,8 +1,4 @@
 #!/bin/bash -x
 
-aclocal && \
-autoheader && \
-libtoolize --automake && \
-automake --add-missing && \
-autoconf
+autoreconf -f -i -s
 
