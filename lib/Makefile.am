@@ -41,7 +41,7 @@ libasa_la_SOURCES = \
 	utf8.c
 
 
-libasa_la_LIBADD = $(ASM) $(FREETYPE_LIBS)
+libasa_la_LIBADD = $(ASM) $(FREETYPE_LIBS) ../csri/subhelp/openfile.lo
 libasa_la_LDFLAGS = -version-info 0:0:0
 libasa_la_CFLAGS = $(FREETYPE_CFLAGS)
  
