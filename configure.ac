@@ -8,11 +8,9 @@ AC_CONFIG_HEADER([include/acconf.h])
 AC_PREFIX_DEFAULT(~)
 
 # stuff that gets undefined...
-asa_gtk_ok=yes
 asa_optimize=NONE
 
 asa_opt_disp="none - renderer slower than a snail on slow-motion"
-asa_gtk_disp=no
 
 
 # Checks for programs.
@@ -27,13 +25,6 @@ AC_CHECK_HEADERS([wchar.h],,[
 	AC_MSG_FAILURE([asa needs wide character support, find a wchar.h])
 ])
 AC_MSG_NOTICE([--- checking major library dependencies ---])
-AC_ARG_ENABLE([gtk],
-	AC_HELP_STRING([--disable-gtk], [do not build the Gtk+-2.0 GUI frontends]),
-	[	if test "$enableval" == "no"
-		then	unset asa_gtk_ok
-			asa_gtk_disp="disabled by parameter"
-		fi])
-
 	AC_MSG_NOTICE([note: freetype2 versions earlier than 2.1.10 contain various bugs])
 	PKG_CHECK_MODULES([FREETYPE], freetype2 >= 9.8.3 fontconfig >= 2.2.0,, [
 		AC_MSG_FAILURE([asa needs freetype2 2.1.10])
@@ -77,13 +68,6 @@ AC_ARG_ENABLE([gtk],
 		;;
 	esac
 	fi
-
-if test -n "$asa_gtk_ok"
-then	PKG_CHECK_MODULES([GTK], gtk+-2.0 >= 2.4.0 glib-2.0 >= 2.4.0 libglade-2.0 >= 2.4.0,, [
-		AC_MSG_WARN([asa GUI frontends disabled due to lack of Gtk+-2.0])
-		unset asa_gtk_ok
-	])
-fi
 
 AC_CHECK_HEADERS([png.h])
 AC_CHECK_LIB([z], [inflate])
@@ -186,11 +170,6 @@ AC_CHECK_FUNCS([memset strdup strerror strtoul])
 #eval cfgfile="${sysconfdir}/asa.conf"
 #AC_DEFINE_UNQUOTED([CONFIG_FILE], ["${cfgfile}"], [default configuration file])
 
-if test -n "$asa_gtk_ok"
-then	AC_DEFINE([ASA_BUILD_GTKGUI], 1, [build Gtk GUIs (have Gtk+2.0)])
-	asa_gtk_disp=yes
-fi
-AM_CONDITIONAL([BUILD_GTKGUI], [test -n "$asa_gtk_ok"])
 if test "$asa_optimize" == "NONE"
 then	AC_DEFINE([ASA_OPT_NONE], 1, [no optimization for asa])
 fi
@@ -202,7 +181,6 @@ echo " configuration summary: "
 echo " "
 echo "   build renderer & ssa libs: always built"
 echo "     using optimization:      $asa_opt_disp"
-echo "   build Gtk+-2.0 GUIs:       $asa_gtk_disp"
 echo " "
 
 AC_CONFIG_FILES([asa.pc])
@@ -213,9 +191,6 @@ AC_OUTPUT([
 	lib/Makefile
 	lib/amd64/Makefile
 	lib/i686/Makefile
-	interfaces/Makefile
-	gtk/Makefile
-	check/Makefile
 	po/Makefile.in
 	Makefile
 ])
