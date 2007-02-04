@@ -1,3 +1,3 @@
-noinst_LIBRARIES = libsubhelp.a
-libsubhelp_a_SOURCES = posix/openfile.c
+noinst_LTLIBRARIES = libsubhelp.la
+libsubhelp_la_SOURCES = posix/openfile.c
 
