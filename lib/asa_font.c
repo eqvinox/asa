@@ -109,7 +109,9 @@ void asaf_done()
 #ifndef NO_FONTCONFIG
 	if (aux)
 		FcPatternDestroy(aux);
+#ifdef HAVE_FCFINI
 	FcFini();
+#endif
 #else
 	DeleteDC(screenDC);
 #endif
