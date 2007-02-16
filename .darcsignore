@@ -45,6 +45,8 @@
 ^(|csri/)ac/.*\.(ncb|user|suo)$
 ^ac/asa\.(RES|res)$
 ^ac/directshow_(i\.c|h\.h)$
+^m4(/|$)
+^ABOUT-NLS$
 #
 ^(|csri/)include/acconf.h$
 ^(|csri/)include/acconf.h.in$
@@ -65,5 +67,6 @@
 ^po/remove-potcdate.sed$
 ^po/stamp-po$
 ^po/.*\.gmo$
+^po/Makevars\.template$
 #
 
