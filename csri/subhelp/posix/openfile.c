@@ -39,7 +39,7 @@
 #include <csri/openerr.h>
 
 csri_inst *subhelp_open_file(csri_rend *renderer,
-	csri_inst *(*memopenfunc)(csri_rend *renderer, void *data,
+	csri_inst *(*memopenfunc)(csri_rend *renderer, const void *data,
 		size_t length, struct csri_openflag *flags),
 	const char *filename, struct csri_openflag *flags)
 {
