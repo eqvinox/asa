@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: asa\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2006-05-25 14:51+0200\n"
+"POT-Creation-Date: 2007-02-28 09:58+0100\n"
 "PO-Revision-Date: 2006-05-25 14:51+0200\n"
 "Last-Translator: David Lamparter <equinox@diac24.net>\n"
 "Language-Team: David Lamparter <equinox@diac24.net>\n"
@@ -16,306 +16,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: gtk/gasa.c:150
-msgid "Title:"
-msgstr "Titel:"
-
-#: gtk/gasa.c:151
-msgid "Collisions:"
-msgstr "Kollisionen:"
-
-#: gtk/gasa.c:152
-msgid "Original Script:"
-msgstr "Ursprüngliches Skript:"
-
-#: gtk/gasa.c:153
-msgid "Original Translation:"
-msgstr "Ursprüngliche Übersetzung:"
-
-#: gtk/gasa.c:154
-msgid "Original Edit:"
-msgstr "Ursprüngliche Bearbeitung:"
-
-#: gtk/gasa.c:155
-msgid "Original Timing:"
-msgstr "Ursprüngliches Timing:"
-
-#: gtk/gasa.c:156
-msgid "Synch Point:"
-msgstr "Synchronisationspunkt:"
-
-#: gtk/gasa.c:157
-msgid "Script updated by:"
-msgstr "Skript aktualisiert von:"
-
-#: gtk/gasa.c:158
-msgid "Update details:"
-msgstr "Aktualisierungsdetails:"
-
-#: gtk/gasa.c:178
-#, c-format
-msgid ""
-"Error opening %s:\n"
-"(%d) %s"
-msgstr ""
-"Fehler beim Öffnen von %s:\n"
-"(%d) %s"
-
-#: gtk/gasa.c:185
-#, c-format
-msgid ""
-"Error mmap'ing %s:\n"
-"(%d) %s"
-msgstr ""
-"Fehler beim Laden von %s:\n"
-"(%d) %s"
-
-#: gtk/gasa.c:198
-#, c-format
-msgid ""
-"Fundamental parse error in %s:\n"
-"File too short"
-msgstr ""
-"Kritischer Fehler beim Laden von %s:\n"
-"Datei zu kurz"
-
-#: gtk/gasa.c:199
-#, c-format
-msgid ""
-"Fundamental parse error in %s:\n"
-"Invalid Unicode data"
-msgstr ""
-"Kritischer Fehler beim Laden von %s:\n"
-"Ungültige Unicode-Daten"
-
-#: gtk/gasa.c:222
-#, c-format
-msgid ""
-"Script Type: %s\n"
-"Load time: %6.4fs parsing, %6.4fs processing\n"
-"%d lines, %d warnings"
-msgstr ""
-"Skripttyp: %s\n"
-"Eingelesen in %6.4fs, verarbeitet in %6.4fs\n"
-"%d Zeilen, %d Warnungen"
-
-#: gtk/gasa.c:225
-msgid "undefined / fuzzy mode"
-msgstr "undefiniert / ungenauer Modus"
-
-#: gtk/gasa.c:226
-msgid "SSA v4.0 / original"
-msgstr "SSA v4.0 / original"
-
-#: gtk/gasa.c:227
-msgid "ASS (v4.0+)"
-msgstr "ASS (v4.0+)"
-
-#: gtk/gasa.c:228
-msgid "ASS2 (v4.0++)"
-msgstr "ASS2 (v4.0++)"
-
-#: gtk/gasa.c:229
-msgid "unknown"
-msgstr "unbekannt"
-
-#: gtk/gasa.c:307
-msgid "All supported types (*.ssa, *.ass, *.ass2, *.as5)"
-msgstr "Alle unterstützten Formate (*.ssa, *.ass, *.ass2, *.as5)"
-
-#: gtk/gasa.c:314
-msgid "SSA files (*.ssa)"
-msgstr "SSA-Dateien (*.ssa)"
-
-#: gtk/gasa.c:318
-msgid "ASS files (*.ass)"
-msgstr "ASS-Dateien (*.ass)"
-
-#: gtk/gasa.c:322 gtk/gasa.c:332
-msgid "All files"
-msgstr "Alle Dateien"
-
-#: gtk/gasa.c:328
-msgid "Image files"
-msgstr "Bildateien"
-
-#: gtk/gasa.c:342
-msgid "Interpret (screw up) \\fe in Unicode files"
-msgstr "Benutze (verdrehe) \\f_e in Unicode-Dateien"
-
-#: gtk/asaerrdisp.c:54
-msgid "oddness"
-msgstr "Merkwürdigkeit"
-
-#: gtk/asaerrdisp.c:54
-msgid "normal"
-msgstr "Normal"
-
-#: gtk/asaerrdisp.c:54
-msgid "warning"
-msgstr "Warnung"
-
-#: gtk/asaerrdisp.c:54
-msgid "error"
-msgstr "Fehler"
-
-#: gtk/asaerrdisp.c:54
-msgid "critical"
-msgstr "kritisch"
-
-#: gtk/asaerrdisp.c:330
-msgid ""
-"\n"
-"(severity: "
-msgstr ""
-"\n"
-"(Stufe: "
-
-#: gtk/asaerrdisp.c:339
-msgid ""
-")\n"
-"\n"
-msgstr ""
-")\n"
-"\n"
-
-#: gtk/asaerrdisp.c:347
-msgid "no additional information availiable"
-msgstr "keine zusätzlichen Informationen verfügbar"
-
-#: gtk/asaerrdisp.c:403
-msgid "Line"
-msgstr "Zeile"
-
-#: gtk/asaerrdisp.c:413
-msgid "Column"
-msgstr "Spalte"
-
-#: gtk/asaerrdisp.c:421
-msgid "Error"
-msgstr "Fehler"
-
-#: gtk/asa.glade:9 gtk/asa.glade:1285
-msgid "asa"
-msgstr "asa"
-
-#: gtk/asa.glade:41
-msgid "_File"
-msgstr "_Datei"
-
-#: gtk/asa.glade:78
-msgid "_View"
-msgstr "_Ansicht"
-
-#: gtk/asa.glade:87
-msgid "Script _Information"
-msgstr "_Informationen"
-
-#: gtk/asa.glade:109
-msgid "_Warnings"
-msgstr "_Warnungen"
-
-#: gtk/asa.glade:131
-msgid "_Display"
-msgstr "_Anzeige"
-
-#: gtk/asa.glade:157
-msgid "_Help"
-msgstr "_Hilfe"
-
-#: gtk/asa.glade:222
-msgid "Info"
-msgstr "Info"
-
-#: gtk/asa.glade:240
-msgid "Warnings"
-msgstr "Warnungen"
-
-#: gtk/asa.glade:259
-msgid "Display"
-msgstr "Anzeige"
-
-#: gtk/asa.glade:458
-msgid "_Previous"
-msgstr "_Vorheriger"
-
-#: gtk/asa.glade:515
-msgid "_Next"
-msgstr "_Nächster"
-
-#: gtk/asa.glade:713
-msgid "Image background"
-msgstr "Bildhintergrund"
-
-#: gtk/asa.glade:755
-msgid "Datei auswählen"
-msgstr "Datei auswählen"
-
-#: gtk/asa.glade:811
-msgid "x"
-msgstr "x"
-
-#: gtk/asa.glade:856
-msgid "Keep _alpha"
-msgstr "_Alpha beibehalten"
-
-#: gtk/asa.glade:920
-msgid "_Options"
-msgstr "_Optionen"
-
-#: gtk/asa.glade:1094
-msgid "Use \\f_e even in Unicode files"
-msgstr "\\f_e in Unicode-Dateien benutzen"
-
-#: gtk/asa.glade:1118
-msgid "_Force script type:"
-msgstr "Skripttyp er_zwingen:"
-
-#: gtk/asa.glade:1144
-msgid ""
-"Automatic\n"
-"SSA (v4.00)\n"
-"ASS (v4.00+)\n"
-"ASS2 (v4.00++)"
-msgstr ""
-"Automatisch\n"
-"SSA (v4.00)\n"
-"ASS (v4.00+)\n"
-"ASS2 (v4.00++)"
-
-#: gtk/asa.glade:1172
-msgid "Load Options"
-msgstr "Ladeoptionen"
-
-#: gtk/asa.glade:1203
-msgid "Loading script"
-msgstr "Lade skript"
-
-#: gtk/asa.glade:1241
-msgid "(...)"
-msgstr "(...)"
-
-#: gtk/asa.glade:1286
-msgid "© 2004, 2005, 2006 by David Lamparter (equinox)"
-msgstr "© 2004, 2005, 2006 by David Lamparter (equinox)"
-
-#: gtk/asa.glade:1287
-msgid "portable subtitles"
-msgstr "portable subtitles"
-
-#: gtk/asa.glade:1570
-msgid "http://asa.diac24.net/"
-msgstr "http://asa.diac24.net/"
-
-#: gtk/asa.glade:1572
-msgid "translator-credits"
-msgstr "Übersetzt von David Lamparter (equinox)"
-
 #: lib/asa_errtexts.c:28
 msgid "no error"
 msgstr "kein Fehler"
 
-#: lib/asa_errtexts.c:32 lib/asa_errtexts.c:234
+#: lib/asa_errtexts.c:32 lib/asa_errtexts.c:254
 msgid "command/option not supported"
 msgstr "Befehl/Option nicht unterstützt"
 
@@ -440,34 +145,46 @@ msgid ""
 msgstr "Ein Farbcode wurde erwartet, aber unkenntliche Daten wurden gefunden."
 
 #: lib/asa_errtexts.c:78
+msgid "expecting boolean value"
+msgstr "Boolscher Wert (yes/no) erwartet"
+
+#: lib/asa_errtexts.c:79
+msgid ""
+"A boolean value, i.e. \"Yes\" or \"No\", was expected at the given position, "
+"but the value found was not recognized as either."
+msgstr ""
+"Ein boolscher Wert in Form von \"Yes\" oder \"No\" wurde erwartet, aber die "
+"Angabe konnte nicht zugeordnet werden."
+
+#: lib/asa_errtexts.c:83
 msgid "expected ':'"
 msgstr "':' erwartet"
 
-#: lib/asa_errtexts.c:79
+#: lib/asa_errtexts.c:84
 msgid "A double-colon (:) was expected to follow at this position."
 msgstr "Ein Doppelpunkt (:) wurde an dieser Stelle erwartet."
 
-#: lib/asa_errtexts.c:82
+#: lib/asa_errtexts.c:87
 msgid "expected '&'"
 msgstr "'&' erwartet"
 
-#: lib/asa_errtexts.c:83
+#: lib/asa_errtexts.c:88
 msgid "An ampersand (&) was expected to follow at this position."
 msgstr "Ein Kaufmännisches Und (&) wurde an dieser Stelle erwartet."
 
-#: lib/asa_errtexts.c:86
+#: lib/asa_errtexts.c:91
 msgid "expected '('"
 msgstr "'(' erwartet"
 
-#: lib/asa_errtexts.c:87
+#: lib/asa_errtexts.c:92
 msgid "An opening brace (\"(\") was expected to follow at this position."
 msgstr "Eine öffnende Klammer (\"(\") wurde an dieser Stelle erwartet."
 
-#: lib/asa_errtexts.c:91
+#: lib/asa_errtexts.c:96
 msgid "missing closing brace"
 msgstr "Schliessende Klammer fehlt"
 
-#: lib/asa_errtexts.c:92
+#: lib/asa_errtexts.c:97
 msgid ""
 "A brace was opened, but not closed. The parser recognized this at the given "
 "position, indicating it probably to be the last possible place to close the "
@@ -481,11 +198,11 @@ msgstr ""
 "\n"
 "Hinweis: der Fehler kann auch weiter vorne liegen."
 
-#: lib/asa_errtexts.c:98
+#: lib/asa_errtexts.c:103
 msgid "leading white space before '('"
 msgstr "Leerzeichen vor '('"
 
-#: lib/asa_errtexts.c:99
+#: lib/asa_errtexts.c:104
 msgid ""
 "White space was found before the opening brace of a style argument.\n"
 "\n"
@@ -497,11 +214,11 @@ msgstr ""
 "Während asa diesen Leerraum ignoriert, kann er zu Probemen mit anderen "
 "Renderern führen."
 
-#: lib/asa_errtexts.c:104
+#: lib/asa_errtexts.c:109
 msgid "number too long"
 msgstr "Zahl zu lang"
 
-#: lib/asa_errtexts.c:105
+#: lib/asa_errtexts.c:110
 msgid ""
 "The number at the given position was found to be too long / too large for "
 "asa to process. Please use a smaller number."
@@ -509,11 +226,11 @@ msgstr ""
 "Die Zahl an dieser Stelle ist zu lang/zu gross für asa. Bitte benutzen Sie "
 "eine kleinere Zahl."
 
-#: lib/asa_errtexts.c:109
+#: lib/asa_errtexts.c:114
 msgid "invalid number"
 msgstr "Ungültige Zahl"
 
-#: lib/asa_errtexts.c:110
+#: lib/asa_errtexts.c:115
 msgid ""
 "The data at the given position failed to be parsed as number. This usually "
 "indicates junk in the script file."
@@ -521,11 +238,11 @@ msgstr ""
 "Die gegebene Position konnte nicht als Zahl interpretiert werden. Dies "
 "deutet normalerweise auf ungültige Eingabedaten hin."
 
-#: lib/asa_errtexts.c:114
+#: lib/asa_errtexts.c:119
 msgid "truncated line"
 msgstr "Abgehackte Zeile"
 
-#: lib/asa_errtexts.c:115
+#: lib/asa_errtexts.c:120
 msgid ""
 "More fields were expected to follow at this position, but the end of the "
 "line was found.\n"
@@ -539,11 +256,11 @@ msgstr ""
 "Dies deutet unter Umständen auf fehlende Kommas weiter vorn auf dieser Zeile "
 "hin."
 
-#: lib/asa_errtexts.c:120
+#: lib/asa_errtexts.c:125
 msgid "trailing garbage in parameter"
 msgstr "Schrott hinter Parameter"
 
-#: lib/asa_errtexts.c:121
+#: lib/asa_errtexts.c:126
 msgid ""
 "Additional unrecognizable data was found after the end of parameter data. "
 "This usually means the file is erroneous."
@@ -551,11 +268,11 @@ msgstr ""
 "Zusätzliche, unkenntliche Daten wurden nachdem Ende der Parameterdaten "
 "gefunden. Dies deutet normalerweise auf einen Fehler im Skript hin."
 
-#: lib/asa_errtexts.c:125
+#: lib/asa_errtexts.c:130
 msgid "trailing garbage on line"
 msgstr "Schrott am Ende der Zeile "
 
-#: lib/asa_errtexts.c:126
+#: lib/asa_errtexts.c:131
 msgid ""
 "Additional data was found at the end of this line, but not recognized. This "
 "data might either stem from an unsupported extension or indicate extra field "
@@ -566,11 +283,11 @@ msgstr ""
 "Erweiterung stammen oder auf fehlpositionierte Feldtrenner (Kommas) weiter "
 "vorn hinweisen."
 
-#: lib/asa_errtexts.c:132
+#: lib/asa_errtexts.c:137
 msgid "trailing garbage in effect"
 msgstr "Schrott hinter Effekt"
 
-#: lib/asa_errtexts.c:133
+#: lib/asa_errtexts.c:138
 msgid ""
 "Unrecognized data was found at the end of the effect field. The effect might "
 "be invalid or an unsupported extension."
@@ -578,21 +295,21 @@ msgstr ""
 "Unkenntliche Daten wurden am ende des Effektfeldes gefunden. Der Effekt "
 "könnte ungültig oder eine nicht unterstützte Erweiterung sein."
 
-#: lib/asa_errtexts.c:137
+#: lib/asa_errtexts.c:142
 msgid "trailing garbage in brace"
 msgstr "Schrott am Ende von Klammer"
 
-#: lib/asa_errtexts.c:138
+#: lib/asa_errtexts.c:143
 msgid ""
 "Additional unrecognizable data was found in the brace at the given position."
 msgstr ""
 "Weitere, nicht zuzuordnende Daten wurden innerhalb dieser Klammer gefunden."
 
-#: lib/asa_errtexts.c:142
+#: lib/asa_errtexts.c:147
 msgid "trailing garbage in csv brace"
 msgstr "Schrott am Ende von CSV-Klammer"
 
-#: lib/asa_errtexts.c:143
+#: lib/asa_errtexts.c:148
 msgid ""
 "Additional unrecognizable data was found in the (CSV) brace at the given "
 "position."
@@ -600,11 +317,11 @@ msgstr ""
 "Weitere, nicht zuzuordnende Daten wurden innerhalb dieser CSV-Klammer "
 "gefunden."
 
-#: lib/asa_errtexts.c:147
+#: lib/asa_errtexts.c:152
 msgid "trailing garbage after time"
 msgstr "Schrott hinter Zeit"
 
-#: lib/asa_errtexts.c:148
+#: lib/asa_errtexts.c:153
 msgid ""
 "Additional unrecognizable data was found after the time code at the given "
 "position."
@@ -612,11 +329,11 @@ msgstr ""
 "Weitere, nicht zuzuordnende Daten nach der Zeitangabe an dieser Position "
 "gefunden."
 
-#: lib/asa_errtexts.c:152
+#: lib/asa_errtexts.c:157
 msgid "trailing garbage after acceleration"
 msgstr "Schrott hinter Beschleunigung"
 
-#: lib/asa_errtexts.c:153
+#: lib/asa_errtexts.c:158
 msgid ""
 "Additional unrecognizable data was found after the acceleration value at the "
 "given position."
@@ -624,11 +341,11 @@ msgstr ""
 "Weitere, nicht zuzuordnende Daten nach der Beschleunigngsangabe an dieser "
 "Position gefunden."
 
-#: lib/asa_errtexts.c:157
+#: lib/asa_errtexts.c:162
 msgid "trailing garbage in color"
 msgstr "Schrott hinter Farbe"
 
-#: lib/asa_errtexts.c:158
+#: lib/asa_errtexts.c:163
 msgid ""
 "Additional unrecognizable data was found after the color code at the given "
 "position."
@@ -636,11 +353,11 @@ msgstr ""
 "Weitere, nicht zuzuordnende Daten nach dem Farbcode an dieser Position "
 "gefunden."
 
-#: lib/asa_errtexts.c:162
+#: lib/asa_errtexts.c:167
 msgid "garbage in style override"
 msgstr "Schrott in Override"
 
-#: lib/asa_errtexts.c:163
+#: lib/asa_errtexts.c:168
 msgid ""
 "Unparseable sequences were found within a style override. ('{...}')\n"
 "\n"
@@ -660,11 +377,11 @@ msgstr ""
 "\n"
 "Andere mögliche Ursachen sind Tippfehler in Stilbefehlen / oder ähnliches."
 
-#: lib/asa_errtexts.c:171
+#: lib/asa_errtexts.c:176
 msgid "unrecognized style override"
 msgstr "Unbekannter Stilbefehl"
 
-#: lib/asa_errtexts.c:172
+#: lib/asa_errtexts.c:177
 msgid ""
 "The style override at this position is not recognized by asa. This probably "
 "indicates an unsupported extension."
@@ -672,11 +389,11 @@ msgstr ""
 "Dieser Stilbefehl ist asa unbekannt. Dies deutet auf eine nicht unterstützte "
 "Erweiterung hin."
 
-#: lib/asa_errtexts.c:176
+#: lib/asa_errtexts.c:181
 msgid "unrecognized effect"
 msgstr "Unbekannter Effekt"
 
-#: lib/asa_errtexts.c:177
+#: lib/asa_errtexts.c:182
 msgid ""
 "The effect in this line is not recognized by asa. This probably indicates an "
 "unsupported extension."
@@ -684,11 +401,11 @@ msgstr ""
 "Der auf dieser Zeile angegebene Effekt ist asa nicht bekannt. Dies deutet "
 "auf eine nicht unterstützte Erweiterung hin."
 
-#: lib/asa_errtexts.c:181
+#: lib/asa_errtexts.c:186
 msgid "unknown style"
 msgstr "Unbekannter Style"
 
-#: lib/asa_errtexts.c:182
+#: lib/asa_errtexts.c:187
 msgid ""
 "The Style: used by this line was not defined previously. Please check for "
 "typos and/or add a style definition at the beginning of the file."
@@ -697,11 +414,11 @@ msgstr ""
 "prüfen Sie auf Tippfehler und/oder fügen sie eine passende Style:-Definition "
 "am Beginn der Datei ein."
 
-#: lib/asa_errtexts.c:187
+#: lib/asa_errtexts.c:192
 msgid "problematic use of '0' style"
 msgstr "Problembehaftete Benutzung des '0'-Styles"
 
-#: lib/asa_errtexts.c:188
+#: lib/asa_errtexts.c:193
 msgid ""
 "An element is referring to a style named '0'.\n"
 "\n"
@@ -715,27 +432,27 @@ msgstr ""
 "zurückwechseln\". Obwohl asa diese Angabe unterstützt, wird sie als veraltet "
 "angesehen und sollte nicht weiter benutzt werden."
 
-#: lib/asa_errtexts.c:194
+#: lib/asa_errtexts.c:199
 msgid "invalid time"
 msgstr "Ungültige Zeit"
 
-#: lib/asa_errtexts.c:195
+#: lib/asa_errtexts.c:200
 msgid "An invalid time code was encountered."
 msgstr "Eine ungültige Zeitangabe wurde vorgefunden."
 
-#: lib/asa_errtexts.c:198
+#: lib/asa_errtexts.c:203
 msgid "invalid acceleration"
 msgstr "Ungültige Beschleunigung"
 
-#: lib/asa_errtexts.c:199
+#: lib/asa_errtexts.c:204
 msgid "An invalid acceleration value was encountered."
 msgstr "Eine ungültige Beschleunigungsangabe wurde vorgefunden."
 
-#: lib/asa_errtexts.c:202
+#: lib/asa_errtexts.c:207
 msgid "invalid animation"
 msgstr "Ungültige Animation"
 
-#: lib/asa_errtexts.c:203
+#: lib/asa_errtexts.c:208
 msgid ""
 "The given style override cannot be animated because it does not make sense "
 "or is not possible.\n"
@@ -748,17 +465,17 @@ msgstr ""
 "Dies schliesst derzeit ein: \\fn, \\r, \\fe, \\move sowie verschachteltes "
 "\\t."
 
-#: lib/asa_errtexts.c:206
+#: lib/asa_errtexts.c:211
 msgid "WARNING: use of \\fn or \\r in \\t causes the parser to bail out!"
 msgstr ""
 "WARNUNG: die Benutzung von \\fn oder \\r innerhalb von \\t führt zu "
 "inkorrekter Verarbeitung!"
 
-#: lib/asa_errtexts.c:208
+#: lib/asa_errtexts.c:213
 msgid "invalid encoding value"
 msgstr "Ungültige Zeichensatznummer"
 
-#: lib/asa_errtexts.c:209
+#: lib/asa_errtexts.c:214
 msgid ""
 "The encoding value used here is not known to asa. Either it is invalid or it "
 "needs to be added to asa."
@@ -766,11 +483,11 @@ msgstr ""
 "Die angegebene Zeichensatznummer ist asa nicht bekannt. Sie ist entweder "
 "ungültig oder muss nachgetragen werden."
 
-#: lib/asa_errtexts.c:213
+#: lib/asa_errtexts.c:218
 msgid "unusual color length"
 msgstr "Unübliche Farblänge"
 
-#: lib/asa_errtexts.c:214
+#: lib/asa_errtexts.c:219
 msgid ""
 "A color value with a seldom used length has been found.\n"
 "\n"
@@ -784,11 +501,11 @@ msgstr ""
 "einen möglichen Tippfehler / Bug. Diese Nachricht ist rein informativ und "
 "dient lediglich dem Finden möglicher logischer Fehle."
 
-#: lib/asa_errtexts.c:220
+#: lib/asa_errtexts.c:225
 msgid "alpha value lost"
 msgstr "Alphawert ignoriert"
 
-#: lib/asa_errtexts.c:221
+#: lib/asa_errtexts.c:226
 msgid ""
 "An 8-digit color value was found where a 6-digit one was expected, causing "
 "the alpha part to be dropped.\n"
@@ -803,11 +520,11 @@ msgstr ""
 "Sechsstellig sind alle \\c-Angaben sowie Style:-Farben in Original-SSA "
 "(4.00) Skripts. Benutzen Sie an diesen Stellen \\<num>a."
 
-#: lib/asa_errtexts.c:227
+#: lib/asa_errtexts.c:232
 msgid "stray BOM"
 msgstr "Freilaufender BOM"
 
-#: lib/asa_errtexts.c:228
+#: lib/asa_errtexts.c:233
 msgid ""
 "The parser encountered an Unicode BOM (byte order marker) in the middle of "
 "the file.\n"
@@ -821,15 +538,50 @@ msgstr ""
 "Obwohl asa solche BOMs ignoriert, kann dies zu Problemen mit anderen "
 "Renderern führen. Bringen sie exakt einen BOM am Anfang der Datei an."
 
-#: lib/asa_errtexts.c:235
+#: lib/asa_errtexts.c:239
+msgid "no script header"
+msgstr "Kein Skriptheader"
+
+#: lib/asa_errtexts.c:240
+msgid ""
+"Asa did not find a [Script info] header at the beginning of the file.\n"
+"\n"
+"This causes asa to enter \"raw section mode\", which means it ignores "
+"Format: lines. Raw section mode is left on hitting a valid section header."
+msgstr ""
+"Asa hat am Anfang der Datei keinen [Script info] header vorgefunden.\n"
+"\n"
+"Dadurch wird bei asa der \"raw section mode\" aktivert, d.h. Format:-"
+"Zeilen werden ignoriert. Wenn ein korrekter Sektionsheader gefunden wird, "
+"wird der raw section mode beendet."
+
+#: lib/asa_errtexts.c:246
+msgid "invalid command for current section"
+msgstr "ungültiger Befehl für aktive Sektion"
+
+#: lib/asa_errtexts.c:247
+msgid ""
+"The command encountered is not valid for the current section.\n"
+"\n"
+"This usually means you forgot a section header, or accidentally moved a line "
+"to the wrong section. Asa tries its best to execute the command nonetheless, "
+"but this might lead to further follow-up errors."
+msgstr ""
+"Der Befehl ist für die Sektion in der er vorkommt nicht gültig.\n"
+"\n"
+"Dies bedeutet normalerweise, dass der Sektionsheader vergessen wurde oder "
+"eine Zeile in die falsche Sektion gerutscht ist. Asa versucht trotzdem, den "
+"Befehl auszuführen; dies kann jedoch zu Folgefehlern führen."
+
+#: lib/asa_errtexts.c:255
 msgid "Asa is not able to correctly process this option yet."
 msgstr "Asa kann diese Option zur Zeit noch nicht korrekt verarbeiten. "
 
-#: lib/asa_errtexts.c:238
+#: lib/asa_errtexts.c:258
 msgid "font not found"
 msgstr "Schriftart nicht gefunden"
 
-#: lib/asa_errtexts.c:240
+#: lib/asa_errtexts.c:260
 msgid ""
 "The font requested by this style/override was not found.\n"
 "\n"
@@ -843,17 +595,17 @@ msgstr ""
 "Schnittstelle in Verbindung mit copyrightgeschützten oder nicht-TrueType-"
 "Schriftarten ausgelöst."
 
-#: lib/asa_errtexts.c:244
+#: lib/asa_errtexts.c:264
 msgid "The font requested by this style/override was not found."
 msgstr ""
 "Die von diesem Style / Stilbefehl angeforderte Schriftart konnte nicht "
 "lokalisiert werden."
 
-#: lib/asa_errtexts.c:248
+#: lib/asa_errtexts.c:268
 msgid "unanimatable parameter"
 msgstr "Nicht animierbarer Parameter"
 
-#: lib/asa_errtexts.c:249
+#: lib/asa_errtexts.c:269
 msgid ""
 "The script is trying to animate a parameter for which no animation "
 "controller exists. Either asa lacks the support for this or animating this "
@@ -862,3 +614,4 @@ msgstr ""
 "Das Skript versucht, einen Parameter zu animieren, für den asa über keine "
 "Animationsmethode verfügt. Entweder der Support hierfür fehlt, oder eine "
 "Animation macht bei diesem Element keinen Sinn (z.B. \\fn, \\fad)."
+
