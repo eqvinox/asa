@@ -179,9 +179,13 @@ fi
 AM_CONDITIONAL([BUILD_AMD64], [test "$asa_optimize" == "AMD64"])
 AM_CONDITIONAL([BUILD_I686], [test "$asa_optimize" == "i686"])
 
+csrilibdir="${libdir}/csri"
+AC_SUBST([csrilibdir], [$csrilibdir])
+
 echo " "
 echo " configuration summary: "
 echo " "
+echo "   library installation path: $csrilibdir"
 echo "   build renderer & ssa libs: always built"
 echo "     using optimization:      $asa_opt_disp"
 echo " "

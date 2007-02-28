@@ -11,4 +11,3 @@ noinst_HEADERS = \
 	ssavm.h \
 	ssawrap.h
 
-pkginclude_HEADERS =
