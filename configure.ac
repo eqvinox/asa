@@ -91,7 +91,6 @@ fi
 
 AC_MSG_NOTICE([--- done checking special dependencies ---])
 
-AC_PROG_RANLIB
 AC_PROG_LIBTOOL
 AC_C_CONST
 AC_C_INLINE

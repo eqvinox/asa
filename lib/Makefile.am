@@ -5,11 +5,12 @@ AM_CPPFLAGS = -D__USER__="\"`whoami` at `hostname`\"" \
 SUBDIRS = amd64 i686
 if BUILD_AMD64
 ASM = amd64/commit.o
+CLEANFILES = $(ASM)
 endif
 if BUILD_I686
 ASM = i686/commit_rgb.lo
+CLEANFILES = $(ASM) i686/commit_rgb.o
 endif
-CLEANFILES = $(ASM)
 
 amd64/commit.o: $(srcdir)/amd64/commit.asm
 	$(YASM) -f elf -g stabs -a x86 -m amd64 -o $@ $^
@@ -41,7 +42,7 @@ libasa_la_SOURCES = \
 	utf8.c
 
 
-libasa_la_LIBADD = $(ASM) ../csri/subhelp/openfile.lo
+libasa_la_LIBADD = $(ASM) ../csri/subhelp/libsubhelp_la-openfile.lo
 libasa_la_LDFLAGS = -version-info 0:0:0
 libasa_la_CFLAGS = $(FREETYPE_CFLAGS) $(FONTCONFIG_CFLAGS)
  

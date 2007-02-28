@@ -1,3 +1,3 @@
-EXTRA_DIST=compile config.guess config.sub depcomp install-sh ltmain.sh missing \
-	config.rpath mkinstalldirs \
-	csri.sln csri.vcproj
+EXTRA_DIST = \
+	csri.sln \
+	subhelp.vcproj
