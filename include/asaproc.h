@@ -24,7 +24,6 @@
 struct assp_frameref;
 
 #include "ssa.h"
-#include "asa.h"
 #include "asafont.h"
 
 typedef union _cell {

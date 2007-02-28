@@ -19,7 +19,6 @@
  ****************************************************************************/
 
 #include "common.h"
-#include "asa.h"
 #include "asaproc.h"
 #include "asafont.h"
 #include "ssavm.h"

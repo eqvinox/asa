@@ -25,7 +25,6 @@
 #include "ssawrap.h"
 #include "ssavm.h"
 #include "ssarun.h"
-#include "asa.h"
 #include "asafont.h"
 #include "asaerror.h"
 

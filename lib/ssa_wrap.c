@@ -20,7 +20,6 @@
 
 #include "common.h"
 #include "ssawrap.h"
-#include "asa.h"
 
 #include <wchar.h>
 #include <wctype.h>
