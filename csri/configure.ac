@@ -3,7 +3,6 @@ AC_INIT(csri, 0.1.0)
 AC_CONFIG_AUX_DIR(ac)
 AM_INIT_AUTOMAKE
 AC_CONFIG_HEADER([include/acconf.h])
-AC_PREFIX_DEFAULT(~)
 
 # Checks for programs.
 AC_PROG_CC

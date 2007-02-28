@@ -5,7 +5,6 @@ AM_INIT_AUTOMAKE
 AM_GNU_GETTEXT([external])
 AM_GNU_GETTEXT_VERSION([0.14.5])
 AC_CONFIG_HEADER([include/acconf.h])
-AC_PREFIX_DEFAULT(~)
 
 # stuff that gets undefined...
 asa_optimize=NONE
