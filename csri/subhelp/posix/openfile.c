@@ -38,6 +38,10 @@
 #include "subhelp.h"
 #include <csri/openerr.h>
 
+#ifdef HAVE_GCC_VISIBILITY
+#pragma GCC visibility push(internal)
+#endif
+
 csri_inst *subhelp_open_file(csri_rend *renderer,
 	csri_inst *(*memopenfunc)(csri_rend *renderer, const void *data,
 		size_t length, struct csri_openflag *flags),

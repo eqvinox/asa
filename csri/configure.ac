@@ -51,6 +51,23 @@ AC_ARG_ENABLE([werror],
 		then	AC_C_FLAG([-Werror])
 		fi])
 
+AC_MSG_CHECKING([[whether $CC supports #pragma GCC visibility]])
+AC_RUN_IFELSE(
+	[AC_LANG_SOURCE([[
+		#pragma GCC visibility push(hidden)
+		void testfunc1() { }
+		#pragma GCC visibility pop
+		#pragma GCC visibility push(default)
+		void testfunc2() { }
+
+		int main() { testfunc1(); testfunc2(); return 0; }
+	]])],
+	[
+		AC_MSG_RESULT([yes])
+		AC_DEFINE([HAVE_GCC_VISIBILITY], [1], [Compiler support for #pragma GCC visibility])
+	],
+	[AC_MSG_RESULT([no])]
+)
 
 AC_PATH_XTRA
 

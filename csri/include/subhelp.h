@@ -36,6 +36,10 @@
 
 #include <csri/csri.h>
 
+#ifdef HAVE_GCC_VISIBILITY
+#pragma GCC visibility push(internal)
+#endif
+
 /** \defgroup subhelp subtitle filter helper API. */
 /*@{*/
 
@@ -54,6 +58,10 @@ extern csri_inst *subhelp_open_file(csri_rend *renderer,
 	const char *filename, struct csri_openflag *flags);
 
 /*@}*/
+
+#ifdef HAVE_GCC_VISIBILITY
+#pragma GCC visibility pop
+#endif
 
 #endif /* _SUBHELP_H */
 
