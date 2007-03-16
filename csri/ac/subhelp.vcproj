@@ -152,6 +152,10 @@
 				RelativePath="..\subhelp\win32\openfile.c"
 				>
 			</File>
+			<File
+				RelativePath="..\subhelp\logging.c"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Headerdateien"
