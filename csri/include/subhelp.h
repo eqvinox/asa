@@ -34,7 +34,9 @@
 #ifndef _SUBHELP_H
 #define _SUBHELP_H
 
+#include <stdarg.h>
 #include <csri/csri.h>
+#include <csri/logging.h>
 
 #ifdef HAVE_GCC_VISIBILITY
 #pragma GCC visibility push(internal)
@@ -56,6 +58,54 @@ extern csri_inst *subhelp_open_file(csri_rend *renderer,
 	csri_inst *(*memopenfunc)(csri_rend *renderer, const void *data,
 		size_t length, struct csri_openflag *flags),
 	const char *filename, struct csri_openflag *flags);
+
+
+/** logging extension query function.
+ * call from csri_query_ext BEFORE checking whether the renderer.
+ * \code
+ *   void *csri_query_ext(csri_rend *rend, csri_ext_id extname) {
+ *     void *rv;
+ *     if ((rv = subhelp_query_ext_logging(extname)))
+ *       return rv;
+ *     if (!rend)
+ *       return NULL;
+ *     ...
+ * \endcode
+ * \param extname the extension name. compared to "csri.logging" by
+ *   this function.
+ * \return logging extension pointer, if the extension name matched.
+ *   NULL otherwise.
+ */
+extern void *subhelp_query_ext_logging(csri_ext_id extname);
+
+/** logging function.
+ * \param severity severity of this message, as defined by csri.logging
+ * \param msg log message, one line, without \\n at the end.
+ */
+extern void subhelp_log(enum csri_logging_severity severity,
+	const char *msg, ...)
+#ifdef __GNUC__
+	__attribute__((format(printf, 2, 3)))
+#endif
+	;
+
+/** logging function, varargs version.
+ * \param severity severity of this message, as defined by csri.logging
+ * \param msg log message, one line, without \\n at the end.
+ * \param args argument list
+ */
+extern void subhelp_vlog(enum csri_logging_severity severity,
+	const char *msg, va_list args)
+#ifdef __GNUC__
+	__attribute__((format(printf, 2, 0)))
+#endif
+	;
+
+/** logging function, fixed string version.
+ * \param severity severity of this message, as defined by csri.logging
+ * \param msg log message, one line, without \\n at the end.
+ */
+extern void subhelp_slog(enum csri_logging_severity severity, const char *msg);
 
 /*@}*/
 
