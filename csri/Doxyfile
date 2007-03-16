@@ -8,7 +8,7 @@ PREDEFINED             = DOXYGEN
 ENUM_VALUES_PER_LINE   = 1
 EXPAND_AS_DEFINED      = _CSRI_H _CSRI_HELPER_H
 
-INPUT                  = include/csri
+INPUT                  = include/csri include/subhelp.h
 FILE_PATTERNS          = *.h
 RECURSIVE              = YES
 
