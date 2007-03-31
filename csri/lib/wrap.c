@@ -19,6 +19,7 @@
  ****************************************************************************/
 
 #include "csrilib.h"
+#include "subhelp.h"
 
 #ifdef HAVE_GCC_VISIBILITY
 #pragma GCC visibility push(default)
@@ -46,7 +47,12 @@ csri_inst *csri_open_mem(csri_rend *rend,
 
 void *csri_query_ext(csri_rend *rend, csri_ext_id extname)
 {
-	struct csri_wrap_rend *wrend = csrilib_rend_lookup(rend);
+	struct csri_wrap_rend *wrend;
+	void *rv = subhelp_query_ext_logging(extname);
+	if (rv)
+		return rv;
+
+	wrend = csrilib_rend_lookup(rend);
 	if (!wrend)
 		return NULL;
 	return wrend->query_ext(rend, extname);
