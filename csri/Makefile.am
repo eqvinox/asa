@@ -4,4 +4,7 @@ EXTRA_DIST = csri.pc.in
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = csri.pc
 
-SUBDIRS = ac include subhelp
+SUBDIRS = ac \
+	include \
+	subhelp \
+	lib

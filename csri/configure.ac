@@ -97,6 +97,7 @@ AC_OUTPUT([
 	ac/Makefile
 	include/Makefile
 	subhelp/Makefile
+	lib/Makefile
 	Makefile
 ])
 
