@@ -46,6 +46,10 @@
 ^ac/directshow_(i\.c|h\.h)$
 ^m4(/|$)
 ^ABOUT-NLS$
+^asa\.anjuta$
+^\.anjuta(/|$)
+^TODO\.tasks$
+^\.tm_.*\.cache$
 #
 ^(|csri/)include/acconf\.h$
 ^(|csri/)include/acconf\.h\.in$
