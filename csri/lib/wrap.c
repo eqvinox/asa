@@ -48,8 +48,9 @@ csri_inst *csri_open_mem(csri_rend *rend,
 void *csri_query_ext(csri_rend *rend, csri_ext_id extname)
 {
 	struct csri_wrap_rend *wrend;
-	void *rv = subhelp_query_ext_logging(extname);
-	if (rv)
+	void *rv;
+
+	if (!rend && (rv = subhelp_query_ext_logging(extname)))
 		return rv;
 
 	wrend = csrilib_rend_lookup(rend);
