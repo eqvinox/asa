@@ -76,6 +76,18 @@ AC_LINK_IFELSE(
 CFLAGS="$save_cflags"
 
 AC_PATH_XTRA
+platform=""
+case $host_os in
+mingw*)	# LoadLibraryEx + GetProcAddress
+	platform="win32"
+	;;
+*)	AC_SEARCH_LIBS([dlopen], [dl], [], [
+		AC_MSG_FAILURE([dlopen not found - unsupported dynamic loader architecture / operating system])
+	])
+esac
+
+AM_CONDITIONAL([BUILD_MINGW], [test "$platform" == "win32" ])
+
 
 # Checks for header files.
 AC_HEADER_STDC
