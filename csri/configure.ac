@@ -52,7 +52,12 @@ AC_ARG_ENABLE([werror],
 		fi])
 
 AC_MSG_CHECKING([[whether $CC supports #pragma GCC visibility]])
-AC_RUN_IFELSE(
+
+# always use Werror since visibility is sensitive
+# doesn't work on anything other than gcc either way, so Werror is fine...
+save_cflags="$CFLAGS"
+CFLAGS="$CFLAGS -Werror"
+AC_LINK_IFELSE(
 	[AC_LANG_SOURCE([[
 		#pragma GCC visibility push(hidden)
 		void testfunc1() { }
@@ -68,13 +73,14 @@ AC_RUN_IFELSE(
 	],
 	[AC_MSG_RESULT([no])]
 )
+CFLAGS="$save_cflags"
 
 AC_PATH_XTRA
 
 # Checks for header files.
 AC_HEADER_STDC
 AC_HEADER_STDBOOL
-AC_CHECK_HEADERS([stdlib.h string.h sys/ioctl.h sys/time.h sys/wait.h sys/mman.h syslog.h unistd.h libgen.h getopt.h])
+AC_CHECK_HEADERS([stdlib.h string.h sys/ioctl.h sys/time.h sys/wait.h sys/mman.h unistd.h libgen.h getopt.h])
 AC_CHECK_FUNCS([getopt_long])
 #
 # Checks for typedefs, structures, and compiler characteristics.
@@ -85,7 +91,6 @@ AC_TYPE_PID_T
 AC_TYPE_SIZE_T
 AC_TYPE_SIGNAL
 AC_FUNC_MEMCMP
-AC_FUNC_MALLOC
 AC_CHECK_FUNCS([memset strdup strerror strtoul])
 
 #eval cfgfile="${sysconfdir}/asa.conf"
