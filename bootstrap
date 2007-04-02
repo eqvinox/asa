@@ -1,4 +1,11 @@
 #!/bin/bash -x
 
+echo "+++ autotool versions:"
+libtool --version | head -n 1
+autoconf --version | head -n 1
+automake --version | head -n 1
+gettext --version | head -n 1
+echo "+++"
+
 autoreconf -f -i -s
 
