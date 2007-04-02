@@ -1,0 +1,10 @@
+#!/bin/bash
+
+TS="$1"
+[ "$TS" ] || TS="`date +%Y%m%d-%H%M%S`"
+
+echo "marking as snapshot $TS"
+sed -i -e 's%\("Comments", "\).*\(\\0"\)%\1asa snapshot build '$TS'\2%' ac/asa.rc
+sed -i -e "s%#SNAP#%$TS%" lib/csri.c
+sed -i -e 's%\(AC_INIT.*\))%\1-'$TS')%' configure.ac
+
