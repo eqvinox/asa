@@ -29,7 +29,7 @@
 #include FT_TRUETYPE_TABLES_H
 
 #ifndef NO_FONTCONFIG
-#if defined(WIN32) && !defined(__GNUC__)
+#if defined(_WIN32) && !defined(__GNUC__)
 #pragma comment(lib, "freetype")
 #pragma comment(lib, "libfontconfig")
 #pragma comment(lib, "libexpat")
@@ -37,7 +37,7 @@
 FcConfig *fontconf;
 FcPattern *aux;
 #else
-#ifndef WIN32
+#ifndef _WIN32
 #error fontconfig can be disabled only on win32
 #endif
 #include <windows.h>

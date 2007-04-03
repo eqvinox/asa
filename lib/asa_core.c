@@ -38,7 +38,7 @@
 #endif
 #include <fcntl.h>
 #include <errno.h>
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>
 #endif
 
@@ -68,7 +68,7 @@ f_export const char *asa_init(unsigned version)
 	return asa_version_string;
 }
 
-#ifndef WIN32
+#ifndef _WIN32
 f_export asa_inst *asa_open(const char *filename, enum asa_oflags flags)
 {
 	int fd;

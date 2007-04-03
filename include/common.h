@@ -25,7 +25,7 @@
 #define xrealloc realloc
 #define xfree free
 
-#ifdef WIN32
+#ifndef HAVE_CONFIG_H
 #include "acconf_win32.h"
 #else
 #include "acconf.h"
@@ -69,7 +69,7 @@ static inline char *xstrdup(const char *s)
  * invisible symbols in your main program ^_^
  */
 
-#ifdef WIN32
+#ifdef _WIN32
 # define f_export 	__declspec(dllexport)
 #else
 # if 0

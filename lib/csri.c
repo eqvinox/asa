@@ -20,7 +20,7 @@
 
 #include "common.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 #define CSRIAPI __declspec(dllexport)
 #else
 #define CSRIAPI
