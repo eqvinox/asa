@@ -81,6 +81,7 @@ typedef	long			PixOffset;
   #define _RPT4(a,b,c,d,e,f) ((void)0)
   
   #define _ASSERTE(x) assert(x)
+  #define _ASSERT(x) assert(x)
   #include <assert.h>
 #endif
 
@@ -254,7 +255,11 @@ struct VideoInfo {
 
 	unsigned __int64 temp = numerator | denominator; // Just looking top bit
 	unsigned u = 0;
+#ifdef __GNUC__
+	while (temp & 0xffffffff80000000LL) { // or perhaps > 16777216*2
+#else
 	while (temp & 0xffffffff80000000) { // or perhaps > 16777216*2
+#endif
 	  temp = Int64ShrlMod32(temp, 1);
 	  u++;
 	}
