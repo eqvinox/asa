@@ -22,7 +22,6 @@
 #define _COMMON_H
 
 #define xmalloc malloc
-#define xstrdup strdup
 #define xrealloc realloc
 #define xfree free
 
@@ -30,6 +29,38 @@
 #include "acconf_win32.h"
 #else
 #include "acconf.h"
+#endif
+
+#ifdef HAVE__STRDUP
+#if !HAVE_DECL__STRDUP
+#if defined(_WIN32)
+extern char *__cdecl _strdup(const char*);
+#else
+extern char *_strdup(const char*);
+#endif
+#endif
+#define xstrdup _strdup
+
+#elif defined(HAVE_STRDUP)
+#if !HAVE_DECL_STRDUP
+#if defined(_WIN32)
+extern char *__cdecl strdup(const char*);
+#else
+extern char *_strdup(const char*);
+#endif
+#endif
+#define xstrdup strdup
+
+#else
+#include <stdlib.h>
+#include <string.h>
+static inline char *xstrdup(const char *s)
+{
+	size_t len = strlen(s) + 1;
+	char *ptr = (char *)malloc(len);
+	memcpy(ptr, s, len);
+	return ptr;
+}
 #endif
 
 /*

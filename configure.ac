@@ -167,11 +167,19 @@ AC_TYPE_PID_T
 AC_TYPE_SIZE_T
 AC_TYPE_SIGNAL
 AC_FUNC_MEMCMP
-AC_FUNC_MALLOC
-AC_CHECK_FUNCS([memset strdup strerror strtoul])
+AC_CHECK_FUNCS([memset _strdup strdup strerror strtoul])
+AC_CHECK_DECLS([_strdup])
+AC_CHECK_DECLS([strdup])
 
 #eval cfgfile="${sysconfdir}/asa.conf"
 #AC_DEFINE_UNQUOTED([CONFIG_FILE], ["${cfgfile}"], [default configuration file])
+
+platform=""
+case $host_os in
+mingw*)	platform="win32"
+	;;
+esac
+AM_CONDITIONAL([BUILD_MINGW], [test "$platform" == "win32" ])
 
 if test "$asa_optimize" == "NONE"
 then	AC_DEFINE([ASA_OPT_NONE], 1, [no optimization for asa])
