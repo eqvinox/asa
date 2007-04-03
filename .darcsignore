@@ -3,6 +3,8 @@
 #
 \.l?o$
 \.l?a$
+\.exe$
+\.dll$
 #
 \.prof$
 \.bak$
