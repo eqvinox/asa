@@ -50,7 +50,7 @@
 #include <iconv.h>
 #include <errno.h>
 
-#ifdef WIN32
+#ifdef _MSC_VER
 #pragma warning( disable : 4047)
 #pragma warning( disable : 4100)
 #pragma warning( disable : 4706)
@@ -2152,7 +2152,7 @@ void ssa_free(struct ssa *output)
 #define nstr(x) #x
 #define str(x) nstr(x)
 
-#ifdef WIN32
+#ifdef _MSC_VER
 #define VERTEXT(x) "Microsoft C build " # x
 #define __VERSION__ VERTEXT(_MSC_VER)
 #define __USER__ "unknown"
