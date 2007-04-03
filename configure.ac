@@ -206,6 +206,7 @@ AC_OUTPUT([
 	lib/Makefile
 	lib/amd64/Makefile
 	lib/i686/Makefile
+	interfaces/Makefile
 	po/Makefile.in
 	Makefile
 ])
