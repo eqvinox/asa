@@ -2149,16 +2149,3 @@ void ssa_free(struct ssa *output)
 	}
 }
 
-#define nstr(x) #x
-#define str(x) nstr(x)
-
-#ifdef _MSC_VER
-#define VERTEXT(x) "Microsoft C build " # x
-#define __VERSION__ VERTEXT(_MSC_VER)
-#define __USER__ "unknown"
-#endif
-
-/** lexer ID string */
-const char *ssa_lexer_version = "asa/" __FILE__ " b" str(__LINE__) " built "
-	__TIME__ ", " __DATE__ "\ncompiled with " __VERSION__ "\nby " __USER__;
-

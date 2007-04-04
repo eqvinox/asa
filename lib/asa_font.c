@@ -34,8 +34,8 @@
 #pragma comment(lib, "libfontconfig")
 #pragma comment(lib, "libexpat")
 #endif
-FcConfig *fontconf;
-FcPattern *aux;
+static FcConfig *fontconf;
+static FcPattern *aux;
 #else
 #ifndef _WIN32
 #error fontconfig can be disabled only on win32
@@ -43,7 +43,7 @@ FcPattern *aux;
 #include <windows.h>
 #pragma comment(lib, "freetype")
 #pragma comment(lib, "gdi32")
-HDC screenDC;
+static HDC screenDC;
 #endif
 FT_Library asaf_ftlib;
 
