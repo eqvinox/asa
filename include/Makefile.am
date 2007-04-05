@@ -3,6 +3,7 @@ noinst_HEADERS = \
 	asaerror.h \
 	asafont.h \
 	blitter.h \
+	colour.h \
 	common.h \
 	ssa.h \
 	asaproc.h \

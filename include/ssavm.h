@@ -24,12 +24,15 @@
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
 #endif
-#include "ssa.h"
 #include "ssarun.h"
 #include "asaproc.h"
+#include "asafont.h"
 
 #define SSA_DEBUG 1
 
+struct ssa;
+struct ssa_line;
+struct ssa_node;
 struct ssav_error;
 
 union ssav_ctrval {

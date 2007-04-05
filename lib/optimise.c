@@ -19,6 +19,8 @@
  ****************************************************************************/
 
 #include "common.h"
+#include <string.h>
+
 #include "blitter.h"
 #include "asaproc.h"
 #include "blitter_internal.h"

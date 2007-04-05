@@ -22,19 +22,8 @@
 #ifndef _SSA_H
 #define _SSA_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <stdlib.h>
-#ifdef HAVE_ENDIAN_H
-#include <endian.h>
-#else
-#define __LITTLE_ENDIAN	1234
-#define __BIG_ENDIAN	4321
-#define __PDP_ENDIAN	3412
-#define __BYTE_ORDER	__LITTLE_ENDIAN
-#endif
+#include "colour.h"
 
 struct ssa_error;			/* defined in asaerror.h */
 
@@ -91,29 +80,6 @@ typedef struct ssa_string {
 
 extern size_t ssa_utf8_len(ssa_string *s);
 extern void ssa_utf8_conv(char *out, ssa_string *s);
-
-typedef unsigned char alpha_t;
-typedef unsigned char colour_one_t;
-
-/** colour storage */
-typedef union {
-	struct {
-#if __BYTE_ORDER == __LITTLE_ENDIAN
-		colour_one_t b, g, r;
-		alpha_t a;
-#elif __BYTE_ORDER == __BIG_ENDIAN
-		alpha_t a;
-		colour_one_t r, g, b;
-#elif __BYTE_ORDER == __PDP_ENDIAN
-		colour_one_t r;
-		alpha_t a;
-		colour_one_t b, g;
-#else
-#error fix <endian.h>
-#endif
-	} c;
-	unsigned int l;			/**< always is 0xAARRGGBB */
-} colour_t;
 
 struct ssa_node;
 
@@ -373,9 +339,5 @@ extern int ssa_lex(struct ssa *output, const void *data, size_t datasize);
 extern void ssa_free(struct ssa *output);
 extern const char *ssa_typename(enum ssa_nodetype type);
 extern const char *ssa_lexer_version;
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* _SSA_H */

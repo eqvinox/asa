@@ -19,6 +19,7 @@
  ****************************************************************************/
 
 #include "common.h"
+#include "ssa.h"
 #include "ssawrap.h"
 
 #include <wchar.h>

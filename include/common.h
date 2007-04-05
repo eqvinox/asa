@@ -100,10 +100,6 @@ static inline char *xstrdup(const char *s)
 # define f_fptr
 #endif
 
-#ifdef HAVE_PNG_H
-#include <png.h>
-#endif
-
 #define iconv_errno errno
 
 #endif /* _COMMON_H */

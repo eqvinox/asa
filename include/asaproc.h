@@ -24,8 +24,7 @@
 struct assp_frameref;
 
 #include <csri/csri.h>
-#include "ssa.h"
-#include "asafont.h"
+#include "colour.h"
 #include "blitter.h"
 
 typedef union _cell {
@@ -75,7 +74,6 @@ extern struct assp_fgroup *assp_fgroupnew(unsigned w, unsigned h,
 extern void assp_fgroupfree(struct assp_fgroup *g);
 
 extern void assp_framenew(struct assp_frameref *ng, struct assp_fgroup *g);
-f_fptr extern void assp_spanfunc(int y, int count, const FT_Span *spans, void *user);
 extern void assp_framefree(struct assp_frameref *ng);
 
 #endif /* _ASAPROC_H */

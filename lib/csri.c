@@ -34,6 +34,7 @@ typedef struct csri_asa_inst csri_inst;
 #include <subhelp.h>
 
 #include "asaproc.h"
+#include "ssa.h"
 #include "ssavm.h"
 #include "blitter.h"
 

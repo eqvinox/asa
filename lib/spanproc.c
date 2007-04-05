@@ -21,6 +21,7 @@
 
 #include "common.h"
 #include "asaproc.h"
+#include "asafont.h"
 
 /** allocate a cellline, probably using reservoir ones.
  * \param g the framegroup to use the reservoir from

@@ -109,6 +109,8 @@ static inline void ssar_3dmatrix_transform_glyph(FT_Glyph glyph,float *matrix) {
 	glyph->advance.y = float_to_fixed(point[1]/point[3]);
 }
 
+extern void assp_spanfunc(int y, int count, const FT_Span *spans, void *user);
+
 static inline void ssar_one(struct ssa_vm *vm, FT_OutlineGlyph *g,
 	struct ssav_unit *u, struct assp_param *p, FT_Stroker stroker,
 	FT_Vector org, double shad, FT_Pos bord, float *matrix3d, int tgt)
