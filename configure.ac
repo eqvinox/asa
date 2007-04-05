@@ -127,6 +127,10 @@ AC_C_FLAG([-Wextra],[AC_C_FLAG([-W])])
 AC_C_FLAG([-Wno-unused-parameter])
 AC_C_FLAG([-Winvalid-pch])
 AC_C_FLAG([-pedantic])
+if test -n "$try_optimize"
+then	AC_C_FLAG([-funroll-loops])
+	AC_C_FLAG([-ffast-math])
+fi
 AC_C_FLAG([-std=c99],[AC_C_FLAG([-c99])])
 AC_ARG_ENABLE([werror],
 	AC_HELP_STRING([--enable-werror], [compile with -Werror (for developers)]),
