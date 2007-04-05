@@ -33,8 +33,6 @@ typedef struct csri_asa_inst csri_inst;
 #include <csri/csri.h>
 #include <subhelp.h>
 
-#define ASA_DEPRECATED
-#include "asa.h"
 #include "asaproc.h"
 #include "ssavm.h"
 #include "blitter.h"
@@ -101,36 +99,23 @@ int csri_request_fmt(csri_inst *inst, const struct csri_fmt *fmt)
 		assp_fgroupfree(inst->framegroup);
 	inst->framegroup = NULL;
 
-	if (!csri_is_rgb(fmt->pixfmt))
-		return -1;
 	if (!fmt->width || !fmt->height)
 		return -1;
 
-	inst->framegroup = assp_fgroupnew(fmt->width, fmt->height);
+	inst->framegroup = assp_fgroupnew(fmt->width, fmt->height,
+		fmt->pixfmt);
+	if (!inst->framegroup)
+		return -1;
 	assa_setup(&inst->vm, fmt->width, fmt->height);
 	return 0;
 }
 
 void csri_render(csri_inst *inst, struct csri_frame *frame, double time)
 {
-	/* well, let's just make it work for now. */
-	struct asa_frame f;
 	if (!inst->framegroup)
 		return;
 
-	f.csp = ASACSP_RGB;
-	switch (frame->pixfmt) {
-#define map2(x,y) case CSRI_F_ ## x: f.bmp.rgb.fmt = ASACSPR_ ## y; break;
-#define map(x) map2(x, x)
-	map(RGBA) map(BGRA) map(ARGB) map(ABGR) map(RGB) map(BGR)
-	map2(RGB_, RGBx) map2(_RGB, xRGB) map2(BGR_, BGRx) map2(_BGR, xBGR)
-	default: return;
-	}
-	f.bmp.rgb.d.stride = frame->strides[0];
-	f.bmp.rgb.d.d = frame->planes[0];
-
-	inst->framegroup->active = &f;
-	ssar_run(&inst->vm, time, inst->framegroup);
+	ssar_run(&inst->vm, time, inst->framegroup, frame);
 }
 
 void *csri_query_ext(csri_rend *rend, csri_ext_id extname)

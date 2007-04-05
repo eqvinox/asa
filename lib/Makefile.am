@@ -28,10 +28,10 @@ i686/%.lo: $(srcdir)/i686/%.asm
 
 csrilib_LTLIBRARIES = libasa.la
 libasa_la_SOURCES = \
-	asa_core.c \
 	asa_errtexts.c \
 	asa_font.c \
 	assa.c \
+	blitter.c \
 	csri.c \
 	optimise.c \
 	spanproc.c \

@@ -166,13 +166,18 @@ static void assp_framekill(struct assp_frameref *ng)
 	ng->frame = NULL;
 }
 
-struct assp_fgroup *assp_fgroupnew(unsigned w, unsigned h)
+struct assp_fgroup *assp_fgroupnew(unsigned w, unsigned h,
+	enum csri_pixfmt pixfmt)
 {
 	struct assp_fgroup *rv;
 	rv = malloc(sizeof(struct assp_fgroup) - sizeof(cellline *)
 		+ sizeof(cellline *) * h * 2);
 	rv->w = w;
 	rv->h = h;
+	if (asa_blit_set(rv, pixfmt)) {
+		free(rv);
+		return NULL;
+	}
 	rv->ptr = 0;
 	rv->resvsize = h * 2;
 	rv->unused = assp_cellalloc(rv);

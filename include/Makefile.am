@@ -1,6 +1,5 @@
 noinst_HEADERS = \
 	acconf_win32.h \
-	asa.h \
 	asaerror.h \
 	asafont.h \
 	blitter.h \

@@ -266,7 +266,7 @@ void ssar_line(struct ssa_vm *vm, struct ssav_line *l, struct assp_fgroup *fg,
 	FT_Stroker_Done(stroker);
 }
 
-static void ssar_commit(struct ssav_line *l)
+static void ssar_commit(struct ssav_line *l, struct csri_frame *dst)
 {
 	struct assp_frameref *prev = NULL;
 	struct ssav_node *n = l->node_first;
@@ -291,7 +291,7 @@ static void ssar_commit(struct ssav_line *l)
 				prev->frame->colours[c].c.a = (unsigned char)
 					255 - (a >> 8);
 			}
-			asar_commit(prev->frame);
+			asa_blit(prev->frame, dst);
 		}
 		n = n->next;
 	}
@@ -306,7 +306,7 @@ void ssar_dispose(struct ssav_line *l)
 			assp_framefree(n->group);
 }
 
-void ssar_run(struct ssa_vm *vm, double ftime, struct assp_fgroup *fg)
+void ssar_run(struct ssa_vm *vm, double ftime, struct assp_fgroup *fg, struct csri_frame *dst)
 {
 	unsigned ln;
 	enum ssar_redoflags fl, basefl;
@@ -326,7 +326,7 @@ void ssar_run(struct ssa_vm *vm, double ftime, struct assp_fgroup *fg)
 		fl = assa_realloc(vm, l, fl);
 		if (fl & SSAR_REND || l->flags & SSAV_KARAOKE)
 			ssar_line(vm, l, fg, ftime - l->start);
-		ssar_commit(l);
+		ssar_commit(l, dst);
 	}
 	assa_end(vm);
 }

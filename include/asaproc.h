@@ -23,8 +23,10 @@
 
 struct assp_frameref;
 
+#include <csri/csri.h>
 #include "ssa.h"
 #include "asafont.h"
+#include "blitter.h"
 
 typedef union _cell {
 	unsigned char e[4];
@@ -38,11 +40,12 @@ typedef struct _cellline {
 } cellline;
 
 struct assp_fgroup {
-	struct asa_frame *active;
-
 	unsigned w, h;
 	cellline *unused;
 	struct assp_frameref *issued;
+
+	enum csri_pixfmt pixfmt;
+	struct asa_blitter blitter;
 
 	unsigned resvsize, ptr;
 	cellline *reservoir[1];
@@ -51,6 +54,7 @@ struct assp_fgroup {
 struct assp_frame {
 	struct assp_fgroup *group;
 	colour_t colours[4];
+	unsigned char blitter[16];
 	cellline *lines[1];
 };
 
@@ -66,14 +70,13 @@ struct assp_frameref {
 	struct assp_frame *frame;
 };
 
-extern struct assp_fgroup *assp_fgroupnew(unsigned w, unsigned h);
+extern struct assp_fgroup *assp_fgroupnew(unsigned w, unsigned h,
+	enum csri_pixfmt fmt);
 extern void assp_fgroupfree(struct assp_fgroup *g);
 
 extern void assp_framenew(struct assp_frameref *ng, struct assp_fgroup *g);
 f_fptr extern void assp_spanfunc(int y, int count, const FT_Span *spans, void *user);
 extern void assp_framefree(struct assp_frameref *ng);
-
-extern void asar_commit(struct assp_frame *f);
 
 #endif /* _ASAPROC_H */
 
