@@ -115,6 +115,8 @@ AC_OUTPUT([
 	include/Makefile
 	subhelp/Makefile
 	lib/Makefile
+	frontends/Makefile
+	frontends/avisynth25/Makefile
 	Makefile
 ])
 

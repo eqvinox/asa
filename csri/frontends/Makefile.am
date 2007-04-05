@@ -1,0 +1,1 @@
+SUBDIRS=avisynth25

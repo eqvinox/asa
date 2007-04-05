@@ -7,4 +7,5 @@ pkgconfig_DATA = csri.pc
 SUBDIRS = ac \
 	include \
 	subhelp \
-	lib
+	lib \
+	frontends
