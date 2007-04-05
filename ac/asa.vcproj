@@ -272,10 +272,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\include\asa.h"
-				>
-			</File>
-			<File
 				RelativePath="..\include\asafont.h"
 				>
 			</File>
@@ -285,6 +281,10 @@
 			</File>
 			<File
 				RelativePath="..\include\blitter.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\colour.h"
 				>
 			</File>
 			<File
@@ -305,6 +305,10 @@
 			</File>
 			<File
 				RelativePath="..\include\ssawrap.h"
+				>
+			</File>
+			<File
+				RelativePath="blitter_internal.h"
 				>
 			</File>
 			<Filter
@@ -332,10 +336,6 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\lib\asa_core.c"
-				>
-			</File>
-			<File
 				RelativePath="..\lib\asa_errtexts.c"
 				>
 			</File>
@@ -345,6 +345,10 @@
 			</File>
 			<File
 				RelativePath="..\lib\assa.c"
+				>
+			</File>
+			<File
+				RelativePath="..\lib\blitter.c"
 				>
 			</File>
 			<File
