@@ -135,8 +135,8 @@ static void ssgl_prep_glyphs(struct ssav_node *n)
 			g++;
 		}
 	} else
-		g = n->glyphs = xmalloc(sizeof(FT_OutlineGlyph)
-			* n->nchars);
+		g = n->glyphs = (FT_OutlineGlyph *)xmalloc(
+			sizeof(FT_OutlineGlyph)	* n->nchars);
 }
 
 static void ssgl_load_glyph(FT_Face fnt, unsigned idx,

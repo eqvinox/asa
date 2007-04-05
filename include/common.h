@@ -22,6 +22,9 @@
 #define _COMMON_H
 
 #define xmalloc malloc
+#define xcalloc calloc
+#define xnew(type) (type *)xmalloc(sizeof(type))
+#define xnewz(type) (type *)xcalloc(sizeof(type), 1)
 #define xrealloc realloc
 #define xfree free
 

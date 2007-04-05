@@ -46,7 +46,7 @@ static inline void ssaw_start(struct ssa_wrap_env *we)
 {
 	struct ssav_unit *u;
 
-	u = xmalloc(sizeof(struct ssav_unit));
+	u = xnew(struct ssav_unit);
 	u->next = NULL;
 	u->type = SSAVU_TEXT;
 	/* we->cur_unit == NULL: special case of leading whitespace.

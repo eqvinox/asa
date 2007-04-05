@@ -73,7 +73,7 @@ csri_inst *csri_open_mem(csri_rend *renderer,
 	if ((lexrv = ssa_lex(&lexout, data, length)))
 		return NULL;
 	
-	rv = calloc(sizeof(csri_inst), 1);
+	rv = xnewz(csri_inst);
 	ssav_create(&rv->vm, &lexout);
 	ssa_free(&lexout);
 	return rv;

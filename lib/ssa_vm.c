@@ -188,8 +188,7 @@ static struct ssav_error *ssav_add_error(struct ssa_vm *vm,
 {
 	struct ssav_error *me;
 
-	me = xmalloc(sizeof(struct ssav_error));
-	memset(me, 0, sizeof(struct ssav_error));
+	me = xnewz(struct ssav_error);
 	me->errorcode = code;
 	*vm->errnext = me;
 	vm->errnext = &me->next;
@@ -217,7 +216,7 @@ static void ssav_add_error_style(enum ssav_errc code, char *ext_str,
 	size_t namesz = ssa_utf8_len(&s->name);
 	me->context = SSAVECTX_STYLE;
 	me->i.style.style = s;
-	me->i.style.stylename = xmalloc(namesz);
+	me->i.style.stylename = (char *)xmalloc(namesz);
 	ssa_utf8_conv(me->i.style.stylename, &s->name);
 }
 
@@ -279,7 +278,7 @@ static struct ssav_params *ssav_alloc_size(struct ssav_params *p,
 	struct ssav_params *rv;
 	unsigned ncopy = p->nctr < nctr ? p->nctr : nctr;
 
-	rv = xmalloc(sizeof(struct ssav_params)
+	rv = (struct ssav_params *)xmalloc(sizeof(struct ssav_params)
 		+ sizeof(struct ssav_controller) * nctr);
 	memcpy(rv, p, sizeof(*rv) + sizeof(struct ssav_controller) * ncopy);
 
@@ -313,7 +312,7 @@ static struct ssav_params *ssav_alloc_clone_clear(struct ssav_params *p,
 		} else
 			c++;
 	}
-	return xrealloc(rv, sizeof(struct ssav_params)
+	return (struct ssav_params *)xrealloc(rv, sizeof(struct ssav_params)
 		+ sizeof(struct ssav_controller) * rv->nctr);
 }
 
@@ -329,7 +328,7 @@ static enum ssav_errc ssav_set_font(struct ssav_params *pset,
 		size_t namesz = ssa_utf8_len(name);
 		if (pset->f.name)
 			xfree(pset->f.name);
-		pset->f.name = xmalloc(namesz);
+		pset->f.name = (char *)xmalloc(namesz);
 		ssa_utf8_conv(pset->f.name, name);
 	}
 
@@ -354,8 +353,7 @@ static struct ssav_params *ssav_alloc_style(struct ssa *ssa,
 	struct ssa_vm *vm, struct ssa_style *style)
 {
 	enum ssav_errc ec;
-	struct ssav_params *rv = xmalloc(sizeof(struct ssav_params));
-	memset(rv, 0, sizeof(*rv));
+	struct ssav_params *rv = xnewz(struct ssav_params);
 
 	ec = ssav_set_font(rv, &style->fontname, style->fontsize);
 	if (ec) {
@@ -392,8 +390,7 @@ static struct ssav_params *ssav_alloc_style(struct ssa *ssa,
 static void ssav_ng_invalidate(struct ssav_prepare_ctx *ctx)
 {
 	if (ctx->ng_ref) {
-		ctx->ng = xmalloc(sizeof(struct assp_frameref));
-		memset(ctx->ng, 0, sizeof(*ctx->ng));
+		ctx->ng = xnewz(struct assp_frameref);
 		ctx->ng_ref = 0;
 	}
 }
@@ -700,7 +697,8 @@ static void ssav_anim_lineinsert(struct ssav_prepare_ctx *ctx,
 	if (ctr->type == SSAVC_NONE)
 		return;
 
-	ctx->vl = xrealloc(ctx->vl, sizeof(struct ssav_line) +
+	ctx->vl = (struct ssav_line *)xrealloc(ctx->vl,
+		sizeof(struct ssav_line) +
 		sizeof(struct ssav_controller) * (ctx->vl->nctr + 1));
 	memcpy(&ctx->vl->ctrs[ctx->vl->nctr++], ctr, sizeof(*ctr));
 	if (reset_nodep)
@@ -744,8 +742,7 @@ static void ssav_finalizeds(struct ssav_node *vn)
 {
 	while (vn) {
 		if (vn->params->nctr && !vn->params->finalized) {
-			vn->params->finalized = malloc(
-				sizeof(struct ssav_params));
+			vn->params->finalized = xnew(struct ssav_params);
 			memcpy(vn->params->finalized, vn->params,
 				sizeof(*vn->params->finalized));
 		}
@@ -768,7 +765,7 @@ static void ssav_kara(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
 		else
 			ctx->kara_updend = &ctx->kara->end;
 	}
-	ctx->kara = xmalloc(sizeof(struct ssav_karaoke_unit));
+	ctx->kara = xnew(struct ssav_karaoke_unit);
 	ctx->kara->type = param;
 	ctx->kara->start = ctx->kara_pos;
 	ctx->kara_pos += (ctx->kara->dur = n->v.lval * 0.01);
@@ -781,8 +778,7 @@ static void ssav_kara(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
 static void ssav_nl(struct ssav_prepare_ctx *ctx,
 				struct ssa_node *n, ptrdiff_t param)
 {
-	struct ssav_node *vn = xmalloc(sizeof(struct ssav_node));
-	memset(vn, 0, sizeof(*vn));
+	struct ssav_node *vn = xnewz(struct ssav_node);
 	vn->type = n->type == SSAN_NEWLINEH ? SSAVN_NEWLINEH : SSAVN_NEWLINE;
 	vn->params = ssav_addref(ctx->pset);
 	*ctx->nodenextp = vn;
@@ -798,14 +794,15 @@ static void ssav_text(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
 	if (!ctx->pset->font || (n->v.text.s == n->v.text.e))
 		return;
 
-	vn = xmalloc(sizeof(struct ssav_node));
+	vn = xnew(struct ssav_node);
 	vn->next = NULL;
 	vn->type = SSAVN_TEXT;
 	vn->params = ssav_addref(ctx->pset);
 	vn->group = ctx->ng;
 	ctx->ng_ref++;
 	vn->nchars = (unsigned)(n->v.text.e - n->v.text.s);
-	vn->indici = xmalloc(sizeof(unsigned) * (n->v.text.e - n->v.text.s));
+	vn->indici = (unsigned *)xmalloc(
+		sizeof(unsigned) * (n->v.text.e - n->v.text.s));
 	vn->glyphs = NULL;
 	*ctx->nodenextp = vn;
 	ctx->nodenextp = &vn->next;
@@ -837,7 +834,7 @@ static void ssav_prep_dialogue(struct ssa *ssa, struct ssa_vm *vm,
 	if (!l->style->vmptr)
 		return;
 
-	vl = xmalloc(sizeof(struct ssav_line));
+	vl = xnew(struct ssav_line);
 	vl->start = l->start;
 	vl->end = l->end;
 	vl->ass_layer = l->ass_layer;

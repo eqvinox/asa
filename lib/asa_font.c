@@ -217,7 +217,7 @@ struct asa_font *asaf_request(const char *name, int slant, int weight)
 	DeleteObject(font);
 #endif
 
-	rv = xmalloc(sizeof(struct asa_font));
+	rv = xnew(struct asa_font);
 	rv->hash = hash;
 	rv->ref = 1;
 	rv->face = face;
@@ -241,7 +241,7 @@ void asaf_frelease(struct asa_font *af)
 
 struct asa_fontinst *asaf_reqsize(struct asa_font *af, double size)
 {
-	struct asa_fontinst *rv = xmalloc(sizeof(struct asa_fontinst));
+	struct asa_fontinst *rv = xnew(struct asa_fontinst);
 	FT_Size_RequestRec req;
 	TT_HoriHeader *hori;
 	TT_OS2 *os2;

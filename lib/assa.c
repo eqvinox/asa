@@ -53,7 +53,7 @@ static struct assa_layer *assa_getlayer(struct ssa_vm *vm, long int layer)
 	if (*prev && (*prev)->layer == layer)
 		return *prev;
 
-	newl = xmalloc(sizeof(*newl));
+	newl = xnew(struct assa_layer);
 	newl->layer = layer;
 	newl->next = *prev;
 	newl->allocs = NULL;
@@ -119,8 +119,8 @@ static void assa_fit_q12(struct fitlines *fls, struct ssav_unit *u,
 
 	while (u) {
 		if (fls->used == fls->alloc)
-			fls->fl = xrealloc(fls->fl, (fls->alloc += 5)
-				* sizeof(struct fitline));
+			fls->fl = (struct fitline *)xrealloc(fls->fl,
+				(fls->alloc += 5) * sizeof(struct fitline));
 		fl = fls->fl + fls->used;
 		fl->startat = u;
 		fl->size.x = fl->size.y = 0;
@@ -200,7 +200,8 @@ static struct ssav_unit *assa_fit_q0_i(struct fitlines *fls,
 		return u;
 
 	if (fls->alloc < nlines + fls->used)
-		fls->fl = xrealloc(fls->fl, (fls->alloc = nlines + fls->used)
+		fls->fl = (struct fitline *)xrealloc(fls->fl,
+			(fls->alloc = nlines + fls->used)
 			* sizeof(struct fitline));
 	first = fls->fl + fls->used;
 	fls->used = nlines + fls->used;
@@ -268,7 +269,8 @@ static void assa_fit_q0(struct fitlines *fls,
 	while (u) {
 		while (u->type == SSAVU_NEWLINE) {
 			if (fls->used == fls->alloc)
-				fls->fl = xrealloc(fls->fl, (fls->alloc += 5)
+				fls->fl = (struct fitline *)xrealloc(fls->fl,
+					(fls->alloc += 5)
 					* sizeof(struct fitline));
 			fl = fls->fl + fls->used++;
 			fl->size.x = 0;
@@ -338,7 +340,7 @@ static void assa_wrap(struct ssa_vm *vm, struct assa_layer *lay,
 	struct assa_alloc *newa;
 	struct assa_rect r;
 
-	newa = xmalloc(sizeof(*newa));
+	newa = xnew(struct assa_alloc);
 
 	ssgl_prepare(l);
 

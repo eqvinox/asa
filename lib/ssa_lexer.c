@@ -502,7 +502,7 @@ static void ssa_add_error_ext(struct ssa_state *state,
 	while (*prev)
 		prev = &(*prev)->next;
 	
-	me = xmalloc(sizeof(struct ssa_error));
+	me = xnew(struct ssa_error);
 	me->next = NULL;
 	me->lineno = state->lineno;
 	me->column = (unsigned)(location - state->line);
@@ -637,7 +637,7 @@ static const ssasrc_t *ssa_chr(const ssasrc_t *now, const ssasrc_t *end,
 static void ssa_strdup(ssa_string *dst, ssa_string *src)
 {
 	size_t size = (char *)src->e - (char *)src->s + sizeof(ssaout_t);
-	dst->s = xmalloc(size);
+	dst->s = (ssaout_t *)xmalloc(size);
 	memcpy(dst->s, src->s, size);
 	dst->e = dst->s + (src->e - src->s);
 }
@@ -727,7 +727,7 @@ static void ssa_src2str(struct ssa_state *state,
 	do {
 		outsize += (inleft + 1) * sizeof(wchar_t);
 		outleft += (inleft + 1) * sizeof(wchar_t);
-		outbuf = xrealloc(outbuf, outsize);
+		outbuf = (char *)xrealloc(outbuf, outsize);
 		outnow = outbuf + outnowd;
 
 		iconv_errno = 0;
@@ -743,7 +743,7 @@ static void ssa_src2str(struct ssa_state *state,
 		return;
 	}
 	/* 4 zero bytes at end for safety */
-	outbuf = xrealloc(outbuf, outnowd + 4);
+	outbuf = (char *)xrealloc(outbuf, outnowd + 4);
 	*(unsigned *)(outbuf + outnowd) = 0;
 
 	str->s = (ssaout_t *)outbuf;
@@ -985,8 +985,7 @@ static inline unsigned ssa_parse_xsv(struct ssa_state *s,
  */
 static unsigned ssa_style(struct ssa_state *state, par_t param, void *elem)
 {
-	struct ssa_style *style = xmalloc(sizeof(struct ssa_style));
-	memset(style, 0, sizeof(struct ssa_style));
+	struct ssa_style *style = xnewz(struct ssa_style);
 	*state->output->style_last = style;
 	state->output->style_last = &style->next;
 	/* TODO: init with sane defaults */
@@ -1014,8 +1013,7 @@ static inline unsigned ssa_do_call_overr(struct ssa_parsetext_tag *p,
 	const ssasrc_t *save_pend, *slash, *bracket;
 
 	if (p->func) {
-		node = xmalloc(sizeof(struct ssa_node));
-		memset(node, 0, sizeof(struct ssa_node));
+		node = xnewz(struct ssa_node);
 		node->type = p->type & ~SSANR;
 		**prev = node;
 		*prev = &node->next;
@@ -1144,7 +1142,7 @@ static void ssa_tmp_enchant(struct ssa_temp_text *tmp,
 	struct ssa_node ***prev)
 {
 	if (!tmp->node) {
-		tmp->node = xmalloc(sizeof(struct ssa_node));
+		tmp->node = xnew(struct ssa_node);
 		tmp->node->next = NULL;
 		tmp->node->type = SSAN_TEXT;
 		tmp->node->v.text.s = NULL;
@@ -1152,7 +1150,8 @@ static void ssa_tmp_enchant(struct ssa_temp_text *tmp,
 		*prev = &tmp->node->next;
 	}
 	if (tmp->pos + 2 * (int)sizeof(ssaout_t) >= tmp->allocated)
-		tmp->node->v.text.s = xrealloc(tmp->node->v.text.s,
+		tmp->node->v.text.s = (ssaout_t *)xrealloc(
+			tmp->node->v.text.s,
 			(tmp->allocated += 128) * sizeof(ssaout_t));
 }
 
@@ -1205,8 +1204,8 @@ static inline void ssa_tmp_close(struct ssa_temp_text *tmp)
 {
 	if (!tmp->node)
 		return;
-	tmp->node->v.text.s = xrealloc(tmp->node->v.text.s, tmp->pos
-		+ sizeof(ssaout_t));
+	tmp->node->v.text.s = (ssaout_t *)xrealloc(tmp->node->v.text.s,
+		tmp->pos + sizeof(ssaout_t));
 	tmp->node->v.text.e = (ssaout_t *)((char *)tmp->node->v.text.s
 		+ tmp->pos);
 	*tmp->node->v.text.e = '\0';
@@ -1217,7 +1216,7 @@ static inline void ssa_tmp_close(struct ssa_temp_text *tmp)
 /** insert newline node */
 static inline void ssa_add_newline(unsigned code, struct ssa_node ***prev)
 {
-	struct ssa_node *node = xmalloc(sizeof(struct ssa_node));
+	struct ssa_node *node = xnew(struct ssa_node);
 	node->next = NULL;
 	node->type = code;
 	**prev = node;
@@ -1391,10 +1390,9 @@ static unsigned ssa_effect(struct ssa_state *state, par_t param, void *elem)
  */
 static unsigned ssa_std(struct ssa_state *state, par_t param, void *elem)
 {
-	struct ssa_line *line = xmalloc(sizeof(struct ssa_line));
+	struct ssa_line *line = xnewz(struct ssa_line);
 	par_t genstr_param;
 
-	memset(line, 0, sizeof(struct ssa_line));
 	line->type = param.lparam;
 	line->no = state->lineno;
 	*state->output->line_last = line;
@@ -1625,7 +1623,7 @@ static unsigned ssa_styleex(struct ssa_state *state, par_t param, void *elem)
 		ssa_add_error(state, state->param, SSAEC_UNKNSTYLE);
 		return 0;
 	}
-	style = xmalloc(sizeof(struct ssa_style));
+	style = xnew(struct ssa_style);
 	memcpy(style, basestyle, sizeof(struct ssa_style));
 	ssa_src2str(state, commas[0], commas[1], &style->name);
 	ssa_strdup(&style->fontname, &basestyle->fontname);
@@ -2006,7 +2004,7 @@ int ssa_lex(struct ssa *output, const void *data, size_t datasize)
 			csrcsize += 1024;
 			outleft += 1024;
 
-			freeme = xrealloc(freeme, csrcsize);
+			freeme = (char *)xrealloc(freeme, csrcsize);
 			endpos = freeme + outnowd;
 
 			iconv_errno = 0;

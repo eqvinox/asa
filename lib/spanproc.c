@@ -114,8 +114,8 @@ void assp_framenew(struct assp_frameref *ng, struct assp_fgroup *g)
 	struct assp_frame *rv;
 	unsigned c;
 
-	rv = malloc(sizeof(struct assp_frame) - sizeof(cellline *)
-		+ g->h * sizeof(cellline *));
+	rv = (struct assp_frame *)xmalloc(sizeof(struct assp_frame)
+		+ (g->h - 1) * sizeof(cellline *));
 	rv->group = g;
 	for (c = 0; c < g->h; c++)
 		rv->lines[c] = g->unused;
@@ -171,8 +171,8 @@ struct assp_fgroup *assp_fgroupnew(unsigned w, unsigned h,
 	enum csri_pixfmt pixfmt)
 {
 	struct assp_fgroup *rv;
-	rv = malloc(sizeof(struct assp_fgroup) - sizeof(cellline *)
-		+ sizeof(cellline *) * h * 2);
+	rv = (struct assp_fgroup *)xmalloc(sizeof(struct assp_fgroup)
+		+ (h * 2 - 1) * sizeof(cellline *));
 	rv->w = w;
 	rv->h = h;
 	if (asa_blit_set(rv, pixfmt)) {
