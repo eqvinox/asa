@@ -21,7 +21,9 @@
 #ifndef _CSRILIB_H
 #define _CSRILIB_H
 
+#ifdef HAVE_CONFIG_H
 #include "acconf.h"
+#endif
 
 #ifdef HAVE_GCC_VISIBILITY
 #pragma GCC visibility push(default)
