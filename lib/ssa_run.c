@@ -166,7 +166,16 @@ static inline void ssar_one(struct ssa_vm *vm, FT_OutlineGlyph *g,
 	FT_Outline_Render(asaf_ftlib, o, &params);
 
 	if (bord) {
+		FT_Vector borderbugfix;
+		borderbugfix.x = -cbox.xMin << 10;
+		borderbugfix.y = -cbox.yMin << 10;
+		FT_Glyph_Transform(transformed, NULL, &borderbugfix);
+
 		FT_Glyph_StrokeBorder(&transformed, stroker, 0, 1);
+
+		borderbugfix.x *= -1;
+		borderbugfix.y *= -1;
+		FT_Glyph_Transform(transformed, NULL, &borderbugfix);
 
 		p->elem = 2;
 		o = &((FT_OutlineGlyph)transformed)->outline;
