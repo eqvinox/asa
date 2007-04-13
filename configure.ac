@@ -25,10 +25,10 @@ AC_CHECK_HEADERS([wchar.h],,[
 ])
 AC_MSG_NOTICE([--- checking major library dependencies ---])
 PKG_CHECK_MODULES([FREETYPE], freetype2 >= 9.10.3,, [
-	AC_MSG_FAILURE([asa needs freetype2 2.2.1])
+	AC_MSG_FAILURE([asa needs freetype2 2.2.1 or newer. Also check your pkg-config installation.])
 ])
 PKG_CHECK_MODULES([FONTCONFIG], fontconfig >= 2.2.0,, [
-	AC_MSG_FAILURE([asa needs fontconfig 2.2])
+	AC_MSG_FAILURE([asa needs fontconfig 2.2 or newer. Also check your pkg-config installation.])
 ])
 
 LDFLAGS="$LDFLAGS $FREETYPE_LIBS $FONTCONFIG_LIBS"
