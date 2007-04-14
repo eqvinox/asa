@@ -110,11 +110,22 @@ AC_TYPE_SIGNAL
 AC_FUNC_MEMCMP
 AC_CHECK_FUNCS([memset strdup strerror strtoul])
 
-#eval cfgfile="${sysconfdir}/asa.conf"
-#AC_DEFINE_UNQUOTED([CONFIG_FILE], ["${cfgfile}"], [default configuration file])
+csri_path="\${libdir}/csri:~/.csri/lib"
+AC_ARG_WITH(csri-libpath,
+	AC_HELP_STRING([--with-csri-libpath=PATH1:PATH2],
+		[Look for CSRI renderers in the specified directories. Separate directory names with colons. Tildes are expanded at run-time. [[$libdir/csri:~/.csri/lib]]]),
+[
+    if test "$withval" != "yes" -a "$withval" != "" -a "$withval" != "no"
+    then csri_path="$withval"
+    fi
+])
+AC_SUBST([csri_path], ["$csri_path"])
 
 AC_CONFIG_FILES([csri.pc])
 
+echo ""
+echo "using search path: ${csri_path}"
+echo ""
 AC_OUTPUT([
 	ac/Makefile
 	include/Makefile

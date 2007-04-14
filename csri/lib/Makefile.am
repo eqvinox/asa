@@ -2,6 +2,7 @@ if BUILD_MINGW
 PLATF = win32
 else
 PLATF = posix
+AM_CPPFLAGS = -DCSRI_PATH="\"$(csri_path)\""
 endif
 lib_LTLIBRARIES = libcsri.la
 noinst_HEADERS = csrilib.h posix/csrilib_os.h win32/csrilib_os.h

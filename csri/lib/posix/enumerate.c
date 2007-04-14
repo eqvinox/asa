@@ -34,11 +34,7 @@
 #include "../csrilib.h"
 #include "subhelp.h"
 
-static const char *csrilib_paths[] = {
-	"/usr/lib/csri",
-	"~/lib/csri",
-	NULL
-};
+static const char csri_path[] = CSRI_PATH;
 
 static void csrilib_enum_dir(const char *dir);
 
@@ -174,7 +170,22 @@ static void csrilib_expand_enum_dir(const char *dir)
 
 void csrilib_os_init()
 {
-	for (const char **path = csrilib_paths; *path; path++)
-		csrilib_expand_enum_dir(*path);
+	char buf[4096];
+	char *envpath = getenv("CSRI_PATH");
+	char *pos, *next = buf;
+
+	if (envpath)
+		snprintf(buf, sizeof(buf), "%s:%s", csri_path, envpath);
+	else {
+		strncpy(buf, csri_path, sizeof(buf));
+		buf[sizeof(buf) - 1] = '\0';
+	}
+	do {
+		pos = next;
+		next = strchr(pos, ':');
+		if (next)
+			*next++ = '\0';
+		csrilib_expand_enum_dir(pos);
+	} while (next);
 }
 
