@@ -35,6 +35,7 @@
 ^asa\.pc$
 ^csri/csri\.pc$
 ^csri/frontends/cmdline/csri$
+^csri/csri\.vcproj$
 #
 ^(|csri/)ac/compile$
 ^(|csri/)ac/config\.
