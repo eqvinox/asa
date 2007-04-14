@@ -53,8 +53,8 @@ extern enum ssar_redoflags assa_realloc(struct ssa_vm *vm,
 	struct ssav_line *l, enum ssar_redoflags prev);
 extern void assa_end(struct ssa_vm *vm);
 
-void ssgl_prepare(struct ssav_line *l);
-void ssgl_dispose(struct ssav_line *l);
+extern void ssgl_prepare(struct ssav_line *l);
+extern void ssgl_dispose(struct ssav_line *l);
 
 extern void ssar_dispose(struct ssav_line *l);
 
