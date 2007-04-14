@@ -149,14 +149,14 @@ void png_store(struct csri_frame *frame, const char *filename,
 
 #else
 struct csri_frame *png_load(const char *filename,
-	uint32_t *width, uint32_t *height)
+ 	uint32_t *width, uint32_t *height, int keepalpha)
 {
 	fprintf(stderr, "PNG support not compiled in.\n");
 	return NULL;
 }
 
 void png_store(struct csri_frame *frame, const char *filename,
-	uint32_t width, uint32_t height)
+ 	uint32_t width, uint32_t height, int keepalpha)
 {
 	fprintf(stderr, "PNG support not compiled in.\n");
 	return;
