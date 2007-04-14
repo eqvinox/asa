@@ -73,10 +73,11 @@ AC_CHECK_FUNCS([FcFini])
 	esac
 	fi
 
-AC_CHECK_HEADERS([png.h])
-AC_CHECK_LIB([z], [inflate])
 AC_CHECK_LIB([m], [pow])
-AC_CHECK_LIB([png], [png_init_io])
+
+#AC_CHECK_HEADERS([png.h])
+#AC_CHECK_LIB([z], [inflate])
+#AC_CHECK_LIB([png], [png_init_io])
 
 AM_ICONV
 LDFLAGS="$LDFLAGS $LTLIBICONV"
