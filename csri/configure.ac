@@ -14,6 +14,11 @@ AC_C_VOLATILE
 
 AC_PROG_INSTALL
 
+AC_CHECK_HEADERS([png.h])
+AC_CHECK_LIB([z], [inflate])
+AC_CHECK_LIB([m], [pow])
+AC_CHECK_LIB([png], [png_init_io])
+
 AC_MSG_CHECKING([[whether preprocessor supports #pragma once]])
 AC_PREPROC_IFELSE(
 	[AC_LANG_PROGRAM([[#pragma once]])],
@@ -117,6 +122,7 @@ AC_OUTPUT([
 	lib/Makefile
 	frontends/Makefile
 	frontends/avisynth25/Makefile
+	frontends/cmdline/Makefile
 	Makefile
 ])
 

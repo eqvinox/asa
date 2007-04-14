@@ -34,6 +34,7 @@
 ^(|csri/)aclocal\.m4$
 ^asa\.pc$
 ^csri/csri\.pc$
+^csri/frontends/cmdline/csri$
 #
 ^(|csri/)ac/compile$
 ^(|csri/)ac/config\.

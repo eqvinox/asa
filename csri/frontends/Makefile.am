@@ -1,1 +1,4 @@
-SUBDIRS=avisynth25
+SUBDIRS = \
+	avisynth25 \
+	cmdline
+
