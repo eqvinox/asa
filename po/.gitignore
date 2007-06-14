@@ -1,0 +1,6 @@
+*
+!.gitignore
+!LINGUAS
+!Makevars
+!POTFILES.in
+!*.po
