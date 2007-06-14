@@ -76,7 +76,8 @@ out_err:
 		if (!strcmp(err->name, CSRI_EXT_OPENERR))
 			break;
 	if (err) {
-		struct csri_openerr_flag *errd = err->data.otherval;
+		struct csri_openerr_flag *errd = (struct csri_openerr_flag *)
+			err->data.otherval;
 		errd->flags = CSRI_OPENERR_FILLED | CSRI_OPENERR_ERRNO;
 		errd->posixerrno = errno;
 	}

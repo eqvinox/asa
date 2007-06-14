@@ -78,13 +78,13 @@ void subhelp_vlog(enum csri_logging_severity severity,
 	size_t size = 256;
 	int n;
 
-	buffer = malloc(256);
+	buffer = (char *)malloc(256);
 	while (buffer) {
 		n = vsnprintf(buffer, size, msg, args);
 		if (n >= 0 && (unsigned)n < size)
 			break;
 		size = n > 0 ? (unsigned)n + 1 : size * 2;
-		buffer = realloc(buffer, size);
+		buffer = (char *)realloc(buffer, size);
 	}
 	final = buffer ? buffer : "<out of memory in logging function>";
 	subhelp_slog(severity, final);

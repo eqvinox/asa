@@ -51,7 +51,8 @@ struct csri_wrap_inst *csrilib_inst_lookup(csri_inst *inst)
 csri_inst *csrilib_inst_initadd(struct csri_wrap_rend *wrend,
 	csri_inst *inst)
 {
-	struct csri_wrap_inst *winst = malloc(sizeof(struct csri_wrap_inst)),
+	struct csri_wrap_inst *winst = (struct csri_wrap_inst *)
+		malloc(sizeof(struct csri_wrap_inst)),
 		**pnext;
 	if (!winst) {
 		wrend->close(inst);

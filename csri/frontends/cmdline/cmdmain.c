@@ -259,7 +259,8 @@ int main(int argc, char **argv)
 	if (argc < 2)
 		return do_usage(stderr);
 
-	logext = csri_query_ext(NULL, CSRI_EXT_LOGGING);
+	logext = (struct csri_logging_ext *)csri_query_ext(NULL,
+		CSRI_EXT_LOGGING);
 	if (logext && logext->set_logcallback)
 		logext->set_logcallback(logfunc, NULL);
 	else

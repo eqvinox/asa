@@ -50,7 +50,7 @@ struct csri_frame *png_load(const char *filename,
 	unsigned char *imgdata;
 	FILE *fp;
 
-	frame = malloc(sizeof(struct csri_frame));
+	frame = (struct csri_frame *)malloc(sizeof(struct csri_frame));
 	if (!frame)
 		return NULL;
 	memset(frame, 0, sizeof(*frame));
@@ -85,9 +85,9 @@ struct csri_frame *png_load(const char *filename,
 	else
 		png_set_invert_alpha(png_ptr);
 
-	rows = malloc(sizeof(png_bytep) * *height);
+	rows = (png_bytep *)malloc(sizeof(png_bytep) * *height);
 	assert(rows);
-	imgdata = malloc(4 * *height * *width);
+	imgdata = (unsigned char *)malloc(4 * *height * *width);
 	assert(imgdata);
 	for (uint32_t y = 0; y < *height; y++)
 		rows[y] = imgdata + 4 * *width * y;
@@ -117,7 +117,7 @@ void png_store(struct csri_frame *frame, const char *filename,
 		return;
 	}
 
-	rows = malloc(sizeof(png_bytep) * height);
+	rows = (png_bytep *)malloc(sizeof(png_bytep) * height);
 	assert(rows);
 	for (uint32_t y = 0; y < height; y++) {
 		rows[y] = frame->planes[0] + frame->strides[0] * y;
@@ -165,8 +165,9 @@ void png_store(struct csri_frame *frame, const char *filename,
 
 struct csri_frame *frame_alloc(uint32_t width, uint32_t height, int keepalpha)
 {
-	unsigned char *d = malloc(width * height * 4);
-	struct csri_frame *frame = malloc(sizeof(struct csri_frame));
+	unsigned char *d = (unsigned char *)malloc(width * height * 4);
+	struct csri_frame *frame = (struct csri_frame *)malloc(
+		sizeof(struct csri_frame));
 	if (!frame || !d)
 		return NULL;
 	memset(frame, 0, sizeof(*frame));

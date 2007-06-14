@@ -48,7 +48,8 @@ static const char *get_errstr()
 static void csrilib_add(csri_rend *rend,
 	const struct csri_wrap_rend *tmp, struct csri_info *info)
 {
-	struct csri_wrap_rend *wrend = malloc(sizeof(struct csri_wrap_rend));
+	struct csri_wrap_rend *wrend = (struct csri_wrap_rend *)
+		malloc(sizeof(struct csri_wrap_rend));
 	if (!wrend)
 		return;
 	memcpy(wrend, tmp, sizeof(struct csri_wrap_rend));
@@ -84,12 +85,11 @@ static void csrilib_do_load(const wchar_t *filename)
 /* okay, this is uber-ugly. either I end up casting from void *
  * to a fptr (which yields a cast warning), or I do a *(void **)&tmp.x
  * (which yields a strict-aliasing warning).
- * I'm open for suggestions, as long as it compiles on gcc
- * -std=c99 -pedantic -Wall -Wextra -Werror -Wno-unused-parameter
- *							- equinox
+ * casting via char* works because char* can alias anything.
  */
 #define _dl_map_function(x, dst) do { \
-	union { FARPROC ptr; } *ptr = (void *)&dst; \
+	char *t1 = (char *)&dst; \
+	union x { FARPROC ptr; } *ptr = (union x *)t1; \
 	ptr->ptr = GetProcAddress(dlhandle, "csri_" # x);\
 	if (!ptr->ptr) goto out_dlfail; } while (0)
 #define dl_map_function(x) _dl_map_function(x, tmp.x)
