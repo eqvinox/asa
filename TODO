@@ -1,8 +1,6 @@
 The asa TODO:
 
 A] csri:
-	0]	add csri_renderer_by_extension
-	1]	specify csri.format.{ssa,ass,...}
 	2]	specify csri.fourcc.*
 	3]	specify csri.mime.*
 	4]	specify csri.demux
