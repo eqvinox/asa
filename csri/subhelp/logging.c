@@ -55,11 +55,11 @@ static struct csri_logging_ext logext = {
 #pragma GCC visibility push(internal)
 #endif
 
-void subhelp_logging_pass(struct csri_logging_ext *logext)
+void subhelp_logging_pass(struct csri_logging_ext *nlogext)
 {
-	if (!logext || !logext->set_logcallback)
+	if (!nlogext || !nlogext->set_logcallback)
 		return;
-	logext->set_logcallback(logfunc, appdata);
+	nlogext->set_logcallback(logfunc, appdata);
 }
 
 void *subhelp_query_ext_logging(csri_ext_id extname)
