@@ -108,6 +108,7 @@ struct ssa_state {
 	long int ic_tcv_enc;		/**< current text fe setting */
 	iconv_t ic_tcv;			/**< iconv fe -> SSA_DESTCS.
 					 * @see SSA_DESTCS */
+	struct ssa_error **elast;	/**< last error added */
 };
 
 #if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)
@@ -497,10 +498,8 @@ static void ssa_add_error_ext(struct ssa_state *state,
 	const ssasrc_t *location, const ssasrc_t *origin,
 	enum ssa_errc ec)
 {
-	struct ssa_error **prev = &state->output->errlist, *me;
+	struct ssa_error *me;
 	size_t textlen = state->end - state->line;
-	while (*prev)
-		prev = &(*prev)->next;
 	
 	me = xnew(struct ssa_error);
 	me->next = NULL;
@@ -515,7 +514,8 @@ static void ssa_add_error_ext(struct ssa_state *state,
 	me->textline[textlen] = '\0';
 	me->linelen = (unsigned)textlen;
 
-	*prev = me;
+	*state->elast = me;
+	state->elast = &me->next;
 }
 
 /** push error on error list, without origin.
@@ -1963,6 +1963,7 @@ int ssa_lex(struct ssa *output, const void *data, size_t datasize)
 	oldlocale_numeric = setlocale(LC_NUMERIC, "C");
 
 	s.output = output;
+	s.elast = &output->errlist;
 	s.lineno = 0;
 	s.anisource = NULL;
 	s.ctx = SSACTX_INIT;
