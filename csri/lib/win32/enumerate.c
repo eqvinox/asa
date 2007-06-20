@@ -77,7 +77,7 @@ static void csrilib_do_load(const wchar_t *filename)
 	if (GetProcAddress(dlhandle, "csri_library")) {
 		subhelp_log(CSRI_LOG_WARNING, "ignoring library %ls",
 			filename);
-		goto out_dlfail;
+		goto out_freelib;
 	}
 	subhelp_log(CSRI_LOG_INFO, "loading %ls", filename);
 
@@ -118,6 +118,7 @@ static void csrilib_do_load(const wchar_t *filename)
 out_dlfail:
 	subhelp_log(CSRI_LOG_WARNING, "%ls: symbol %s not found (%s)",
 		filename, sym, get_errstr());
+out_freelib:
 	FreeLibrary(dlhandle);
 }
 
