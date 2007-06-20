@@ -95,12 +95,14 @@ static void csrilib_do_load(const wchar_t *filename)
 	ptr->ptr = GetProcAddress(dlhandle, sym);\
 	if (!ptr->ptr) goto out_dlfail; } while (0)
 #define dl_map_function(x) _dl_map_function(x, tmp.x)
+	dl_map_function(query_ext);
+	subhelp_logging_pass((struct csri_logging_ext *)
+		tmp.query_ext(NULL, CSRI_EXT_LOGGING));
 	dl_map_function(open_file);
 	dl_map_function(open_mem);
 	dl_map_function(close);
 	dl_map_function(request_fmt);
 	dl_map_function(render);
-	dl_map_function(query_ext);
 #define dl_map_local(x) _dl_map_function(x, x)
 	dl_map_local(renderer_info);
 	dl_map_local(renderer_default);

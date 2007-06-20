@@ -78,6 +78,11 @@ extern csri_inst *subhelp_open_file(csri_rend *renderer,
  */
 extern void *subhelp_query_ext_logging(csri_ext_id extname);
 
+/** configure other renderer with our settings.
+ * \param logext csri.logging from configuree.
+ */
+extern void subhelp_logging_pass(struct csri_logging_ext *logext);
+
 /** logging function.
  * \param severity severity of this message, as defined by csri.logging
  * \param msg log message, one line, without \\n at the end.
