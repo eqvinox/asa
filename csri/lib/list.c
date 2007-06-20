@@ -131,3 +131,22 @@ csri_rend *csri_renderer_byname(const char *name, const char *specific)
 	return NULL;
 }
 
+csri_rend *csri_renderer_byext(unsigned n_ext, csri_ext_id *ext)
+{
+	struct csri_wrap_rend *wrend;
+	unsigned i;
+	if (!initialized) {
+		csrilib_os_init();
+		initialized = 1;
+	}
+	for (wrend = wraprends; wrend; wrend = wrend->next) {
+		for (i = 0; i < n_ext; i++) {
+			if (!wrend->query_ext(wrend->rend, ext[i]))
+				break;
+		}
+		if (i == n_ext)
+			return wrend->rend;
+	}
+	return NULL;
+}
+

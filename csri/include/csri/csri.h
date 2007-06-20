@@ -29,7 +29,7 @@
  ****************************************************************************/
 
 /** \file csri.h - main CSRI (common subtitle renderer interface) include.
- * $Id: csri.h 11 2007-01-31 01:19:13Z equinox $ */
+ * $Id: csri.h 45 2007-06-20 01:00:40Z equinox $ */
 
 #ifndef _CSRI_H
 /** \cond */
@@ -313,6 +313,14 @@ CSRIAPI struct csri_info *csri_renderer_info(csri_rend *rend);
  */
 CSRIAPI csri_rend *csri_renderer_byname(const char *name,
 	const char *specific);
+
+/** try to find an implementation of the given extensions.
+ * \param next number of extensions pointed to by ext
+ * \param ext array of extensions to search for
+ * \return a handle to a renderer supporting ALL of the
+ *   extensions, NULL if none was found.
+ */
+CSRIAPI csri_rend *csri_renderer_byext(unsigned n_ext, csri_ext_id *ext);
 
 /** get the default (highest priority) renderer
  * \return a handle to the default renderer, or NULL if
