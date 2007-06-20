@@ -59,6 +59,7 @@ static void csrilib_do_load(const char *filename, dev_t device, ino_t inode)
 	struct csri_info *(*renderer_info)(csri_rend *rend);
 	csri_rend *(*renderer_default)();
 	csri_rend *(*renderer_next)(csri_rend *prev);
+	const char *sym;
 
 
 	if (!dlhandle) {
@@ -85,7 +86,8 @@ static void csrilib_do_load(const char *filename, dev_t device, ino_t inode)
 #define _dl_map_function(x, dst) do { \
 	char *t1 = (char *)&dst; \
 	union x { void *ptr; } *ptr = (union x *)t1; \
-	ptr->ptr = dlsym(dlhandle, "csri_" # x);\
+	sym = "csri_" # x; \
+	ptr->ptr = dlsym(dlhandle, sym);\
 	if (!ptr->ptr) goto out_dlfail; } while (0)
 #define dl_map_function(x) _dl_map_function(x, tmp.x)
 	dl_map_function(open_file);
@@ -107,6 +109,8 @@ static void csrilib_do_load(const char *filename, dev_t device, ino_t inode)
 	return;
 
 out_dlfail:
+	subhelp_log(CSRI_LOG_WARNING, "%s: symbol %s not found (%s)",
+		filename, sym, dlerror());
 	dlclose(dlhandle);
 }
 

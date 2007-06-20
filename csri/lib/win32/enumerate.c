@@ -67,6 +67,7 @@ static void csrilib_do_load(const wchar_t *filename)
 	struct csri_info *(*renderer_info)(csri_rend *rend);
 	csri_rend *(*renderer_default)();
 	csri_rend *(*renderer_next)(csri_rend *prev);
+	const char *sym;
 
 	if (!dlhandle) {
 		subhelp_log(CSRI_LOG_WARNING, "LoadLibraryEx(\"%ls\") failed: "
@@ -90,7 +91,8 @@ static void csrilib_do_load(const wchar_t *filename)
 #define _dl_map_function(x, dst) do { \
 	char *t1 = (char *)&dst; \
 	union x { FARPROC ptr; } *ptr = (union x *)t1; \
-	ptr->ptr = GetProcAddress(dlhandle, "csri_" # x);\
+	sym = "csri_" # x; \
+	ptr->ptr = GetProcAddress(dlhandle, sym);\
 	if (!ptr->ptr) goto out_dlfail; } while (0)
 #define dl_map_function(x) _dl_map_function(x, tmp.x)
 	dl_map_function(open_file);
@@ -112,6 +114,8 @@ static void csrilib_do_load(const wchar_t *filename)
 	return;
 
 out_dlfail:
+	subhelp_log(CSRI_LOG_WARNING, "%s: symbol %s not found (%s)",
+		filename, sym, get_errstr());
 	FreeLibrary(dlhandle);
 }
 
