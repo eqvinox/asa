@@ -1,0 +1,24 @@
+The asa TODO:
+
+A] csri:
+	0]	add csri_renderer_by_extension
+	1]	specify csri.format.{ssa,ass,...}
+	2]	specify csri.fourcc.*
+	3]	specify csri.mime.*
+	4]	specify csri.demux
+	5]	specify csri.stream
+
+B] asa core:
+	0]	use csri logging
+	1]	fix all the memleaks
+	2]	collision detection
+	3]	implement \be
+	4]	implement PlayRes
+	5]	implement \u & \s
+	6]	make demuxer accessible
+	7]	implement cross-demuxing for other formats (?)
+
+C] vlc:
+	0]	fix demuxer
+	1]	implement module
+
