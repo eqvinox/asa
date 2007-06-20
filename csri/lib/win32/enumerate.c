@@ -116,7 +116,7 @@ static void csrilib_do_load(const wchar_t *filename)
 	return;
 
 out_dlfail:
-	subhelp_log(CSRI_LOG_WARNING, "%s: symbol %s not found (%s)",
+	subhelp_log(CSRI_LOG_WARNING, "%ls: symbol %s not found (%s)",
 		filename, sym, get_errstr());
 	FreeLibrary(dlhandle);
 }
