@@ -20,11 +20,7 @@
 
 #include "common.h"
 
-#ifdef _WIN32
-#define CSRIAPI __declspec(dllexport)
-#else
-#define CSRIAPI
-#endif
+#define CSRIAPI f_export
 
 #define CSRI_OWN_HANDLES
 typedef struct csri_asa_rend csri_rend;

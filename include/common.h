@@ -66,33 +66,12 @@ static inline char *xstrdup(const char *s)
 }
 #endif
 
-/*
- * okay. do NOT include this header from anything other than
- * files going into the DSO / DLL. you certainly do not want
- * invisible symbols in your main program ^_^
- */
-
 #ifdef _WIN32
 # define f_export 	__declspec(dllexport)
 #else
-# if 0
-/*
- * now, i would really like to enable this, but that'll
- * require some work. TODO:
- *  - figure out why visibility-hidden screws -fstack-protector
- *  - make one library out of the, uh, 4 we have right now
- *  - decide what to export and what not to
- *  - check whether we can do #pragma GCC visib... here or whether
- *    we need to wait till after system headers
- *                                                -equinox, 20060418
- */
-# ifdef __GNUC__
-#  if __GNUC__ >= 3
-#   define ASA_STARTIMPL	_Pragma("GCC visibility push(internal)")
-#   define f_export		__attribute__((visibility ("default")))
-#   define f_fptr		__attribute__((visibility ("hidden")))
-#  endif
-# endif
+# ifdef HAVE_GCC_VISIBILITY
+#  define f_export	__attribute__((visibility ("default")))
+#  define f_fptr	__attribute__((visibility ("hidden")))
 # endif
 #endif
 

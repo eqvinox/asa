@@ -38,10 +38,6 @@
 #include <csri/csri.h>
 #include <csri/logging.h>
 
-#ifdef HAVE_GCC_VISIBILITY
-#pragma GCC visibility push(internal)
-#endif
-
 /** \defgroup subhelp subtitle filter helper API. */
 /*@{*/
 
@@ -113,10 +109,6 @@ extern void subhelp_vlog(enum csri_logging_severity severity,
 extern void subhelp_slog(enum csri_logging_severity severity, const char *msg);
 
 /*@}*/
-
-#ifdef HAVE_GCC_VISIBILITY
-#pragma GCC visibility pop
-#endif
 
 #endif /* _SUBHELP_H */
 

@@ -25,17 +25,11 @@
 #include "acconf.h"
 #endif
 
-#ifdef HAVE_GCC_VISIBILITY
-#pragma GCC visibility push(default)
-#endif
+#include "visibility.h"
+
+#define CSRIAPI export
 
 #include <csri/csri.h>
-
-#ifdef HAVE_GCC_VISIBILITY
-#pragma GCC visibility pop
-#pragma GCC visibility push(internal)
-#endif
-
 #include "csrilib_os.h"
 
 struct csri_wrap_rend {

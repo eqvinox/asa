@@ -19,31 +19,7 @@ AC_CHECK_LIB([z], [inflate])
 AC_CHECK_LIB([m], [pow])
 AC_CHECK_LIB([png], [png_init_io])
 
-AC_MSG_CHECKING([[whether preprocessor supports #pragma once]])
-AC_PREPROC_IFELSE(
-	[AC_LANG_PROGRAM([[#pragma once]])],
-	[
-		AC_MSG_RESULT([yes])
-		AC_DEFINE([HAVE_PRAGMA_ONCE], [1], [Preprocessor support for #pragma once])
-	],
-	[AC_MSG_RESULT([no])])
-
-AC_DEFUN([AC_C_FLAG], [{
-	AC_LANG_PUSH(C)
-	ac_c_flag_save="$CFLAGS"
-	CFLAGS="$CFLAGS $1"
-	AC_MSG_CHECKING([[whether $CC supports $1]])
-	AC_COMPILE_IFELSE(
-		[AC_LANG_PROGRAM([[]])],
-		[AC_MSG_RESULT([yes])],
-		[
-			CFLAGS="$ac_c_flag_save"
-			AC_MSG_RESULT([no])
-			$2
-		])
-	AC_LANG_POP(C)
-	}])
-
+AC_CPP_PRAGMA_ONCE
 AC_C_FLAG([-Wall])
 AC_C_FLAG([-Wextra],[AC_C_FLAG([-W])])
 AC_C_FLAG([-Wno-unused-parameter])
@@ -55,30 +31,7 @@ AC_ARG_ENABLE([werror],
 	[	if test "$enableval" == "yes"
 		then	AC_C_FLAG([-Werror])
 		fi])
-
-AC_MSG_CHECKING([[whether $CC supports #pragma GCC visibility]])
-
-# always use Werror since visibility is sensitive
-# doesn't work on anything other than gcc either way, so Werror is fine...
-save_cflags="$CFLAGS"
-CFLAGS="$CFLAGS -Werror"
-AC_LINK_IFELSE(
-	[AC_LANG_SOURCE([[
-		#pragma GCC visibility push(hidden)
-		void testfunc1() { }
-		#pragma GCC visibility pop
-		#pragma GCC visibility push(default)
-		void testfunc2() { }
-
-		int main() { testfunc1(); testfunc2(); return 0; }
-	]])],
-	[
-		AC_MSG_RESULT([yes])
-		AC_DEFINE([HAVE_GCC_VISIBILITY], [1], [Compiler support for #pragma GCC visibility])
-	],
-	[AC_MSG_RESULT([no])]
-)
-CFLAGS="$save_cflags"
+AC_GCC_VISIBILITY([internal])
 
 AC_PATH_XTRA
 platform=""

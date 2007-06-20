@@ -89,10 +89,6 @@ void csrilib_rend_initadd(struct csri_wrap_rend *wrend)
 
 static int initialized = 0;
 
-#ifdef HAVE_GCC_VISIBILITY
-#pragma GCC visibility push(default)
-#endif
-
 csri_rend *csri_renderer_default()
 {
 	if (!initialized) {

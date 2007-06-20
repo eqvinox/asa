@@ -21,10 +21,6 @@
 #include "csrilib.h"
 #include "subhelp.h"
 
-#ifdef HAVE_GCC_VISIBILITY
-#pragma GCC visibility push(default)
-#endif
-
 csri_inst *csri_open_file(csri_rend *rend,
 	const char *filename, struct csri_openflag *flags)
 {

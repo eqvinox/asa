@@ -27,21 +27,16 @@
 #include <stdarg.h>
 #include <string.h>
 
+#include "visibility.h"
 #include "subhelp.h"
 #include <csri/logging.h>
-
-#ifdef HAVE_GCC_VISIBILITY
-#pragma GCC visibility push(internal)
-#endif
 
 static void *appdata = NULL;
 static csri_logging_func *logfunc = NULL;
 
-#ifdef HAVE_GCC_VISIBILITY
-#pragma GCC visibility push(hidden)
-#endif
+void setlogcallback(csri_logging_func *_logfunc, void *_appdata) hidden;
 
-static void setlogcallback(csri_logging_func *_logfunc, void *_appdata)
+void setlogcallback(csri_logging_func *_logfunc, void *_appdata)
 {
 	logfunc = _logfunc;
 	appdata = _appdata;
@@ -50,10 +45,6 @@ static void setlogcallback(csri_logging_func *_logfunc, void *_appdata)
 static struct csri_logging_ext logext = {
 	setlogcallback
 };
-
-#ifdef HAVE_GCC_VISIBILITY
-#pragma GCC visibility push(internal)
-#endif
 
 void subhelp_logging_pass(struct csri_logging_ext *nlogext)
 {
