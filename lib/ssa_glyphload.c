@@ -20,6 +20,7 @@
 
 #include "common.h"
 #include "ssavm.h"
+#include "subhelp.h"
 
 #include <freetype/fttrigon.h>
 #include <assert.h>
@@ -149,8 +150,8 @@ static void ssgl_load_glyph(FT_Face fnt, unsigned idx,
 
 	*dst = NULL;
 	if (fnt->glyph->format != FT_GLYPH_FORMAT_OUTLINE) {
-		fprintf(stderr,	"non-outline glyph format %d\n",
-			fnt->glyph->format);
+		subhelp_log(CSRI_LOG_ERROR, "%s: non-vector glyph format %x",
+			fnt->family_name, fnt->glyph->format);
 		return;
 	}
 
@@ -241,8 +242,8 @@ void ssgl_prepare(struct ssav_line *l)
 
 		n = n->next;
 	}
-	fprintf(stderr, "AIEEEEEEEE! ssgl_prepare: This code should never be reached!\n"
-		"Report to equinox @ irc.chatsociety.net #aegisub!\n");
+	subhelp_log(CSRI_LOG_ERROR, "mismatching fragmentization - internal "
+		"asa error. Please file a bug report.");
 }
 
 void ssgl_dispose(struct ssav_line *l)

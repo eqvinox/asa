@@ -20,6 +20,7 @@
 
 #include "common.h"
 #include "asafont.h"
+#include "subhelp.h"
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -84,14 +85,16 @@ void asaf_init()
 #ifndef NO_FONTCONFIG
 	fontconf = FcInitLoadConfigAndFonts();
 	if (!fontconf) {
-		fprintf(stderr, "Fontconfig initialization failed\n");
+		subhelp_log(CSRI_LOG_ERROR,
+			"Fontconfig initialization failed");
 		return;
 	}
 #else
 	screenDC = CreateDCW(L"DISPLAY", NULL, NULL, NULL);
 #endif
 	if (FT_Init_FreeType(&asaf_ftlib)) {
-		fprintf(stderr, "FreeType initialization failed\n");
+		subhelp_log(CSRI_LOG_ERROR,
+			"FreeType initialization failed");
 		return;
 	}
 #ifndef NO_FONTCONFIG
@@ -143,8 +146,9 @@ struct asa_font *asaf_request(const char *name, int slant, int weight)
 //		FC_SIZE, FcTypeDouble, size,
 		NULL);
 	if (!tmp1) {
-		fprintf(stderr, "failed to build pattern for %s %d %d\n",
-			name, slant, weight);
+		subhelp_log(CSRI_LOG_WARNING,
+			"failed to build fontconfig pattern for %s "
+			"(weight %d, slant %d)", name, weight, slant);
 		return NULL;
 	}
 //	FcPatternPrint(rv->pattern);
@@ -160,7 +164,6 @@ struct asa_font *asaf_request(const char *name, int slant, int weight)
 
 	if ((rv = hash_get(hash))) {
 		FcPatternDestroy(final);
-		fprintf(stderr, "Cached %08x %s\n", hash, name);
 		return rv;
 	}
 
@@ -168,17 +171,21 @@ struct asa_font *asaf_request(const char *name, int slant, int weight)
 			!= FcResultMatch
 		|| FcPatternGetInteger(final, FC_INDEX, 0, &fontindex)
 			!= FcResultMatch) {
-		fprintf(stderr, "error locating font\n");
+		subhelp_log(CSRI_LOG_WARNING,
+			"error locating font %s (no filename/index)", name);
 		FcPatternDestroy(final);
 		return NULL;
 	}
 	
 	if (FT_New_Face(asaf_ftlib, (char *)filename, fontindex, &face)) {
-		fprintf(stderr, "error opening %s\n", filename);
+		subhelp_log(CSRI_LOG_WARNING,
+			"error loading font %s (\"%s\")", name, filename);
 		FcPatternDestroy(final);
 		return NULL;
 	} else
-		fprintf(stderr, "Loaded %08x %s => \"%s\":%d\n", hash, name, filename, fontindex);
+		subhelp_log(CSRI_LOG_INFO,
+			"loaded font %s from \"%s\":%d", name, filename,
+			fontindex);
 /*	FcPatternGetDouble(af->pattern, FC_SIZE, 0, &size);
 	FT_Set_Char_Size(af->face, size * 64, size * 64, 0, 0); */
 	FcPatternDestroy(final);

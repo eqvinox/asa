@@ -121,6 +121,12 @@ void csri_render(csri_inst *inst, struct csri_frame *frame, double time)
 
 void *csri_query_ext(csri_rend *rend, csri_ext_id extname)
 {
+	void *rv;
+	if ((rv = subhelp_query_ext_logging(extname)))
+		return rv;
+	if (!rend)
+		return NULL;
+	/* ... */
 	return NULL;
 }
 

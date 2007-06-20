@@ -46,7 +46,10 @@ libasa_la_SOURCES = \
 	utf8.c
 
 
-libasa_la_LIBADD = $(ASM) ../csri/subhelp/libsubhelp_la-openfile.lo
+libasa_la_LIBADD = \
+	../csri/subhelp/libsubhelp_la-openfile.lo \
+	../csri/subhelp/libsubhelp_la-logging.lo \
+	$(ASM)
 libasa_la_LDFLAGS = -version-info 0:0:0 -no-undefined
 libasa_la_CFLAGS = $(FREETYPE_CFLAGS) $(FONTCONFIG_CFLAGS)
  
