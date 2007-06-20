@@ -7,7 +7,6 @@ A] csri:
 	5]	specify csri.stream
 
 B] asa core:
-	0]	use csri logging
 	1]	fix all the memleaks
 	2]	collision detection
 	3]	implement \be

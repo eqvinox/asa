@@ -1,5 +1,5 @@
 AUTOMAKE_OPTIONS = foreign
-EXTRA_DIST = csri.pc.in
+EXTRA_DIST = csri.pc.in acinclude.m4
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = csri.pc
