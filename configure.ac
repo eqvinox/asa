@@ -116,8 +116,9 @@ AC_C_FLAG([-std=c99],[AC_C_FLAG([-c99])])
 AC_ARG_ENABLE([werror],
 	AC_HELP_STRING([--enable-werror], [compile with -Werror (for developers)]),
 	[	if test "$enableval" == "yes"
-		then	AC_C_FLAG([-Werror])
+		then	AC_C_FLAG([-Werror],,[werror="-Werror"])
 		fi])
+AC_SUBST([werror])
 AC_GCC_VISIBILITY([internal])
 
 

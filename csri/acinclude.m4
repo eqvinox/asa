@@ -20,8 +20,13 @@ AC_DEFUN([AC_C_FLAG], [{
 	AC_MSG_CHECKING([[whether $CC supports $1]])
 	AC_COMPILE_IFELSE(
 		[AC_LANG_PROGRAM([[]])],
-		[AC_MSG_RESULT([yes])],
 		[
+			AC_MSG_RESULT([yes])
+			m4_if([$3], [], [], [
+				CFLAGS="$ac_c_flag_save"
+				$3
+			])
+		], [
 			CFLAGS="$ac_c_flag_save"
 			AC_MSG_RESULT([no])
 			$2

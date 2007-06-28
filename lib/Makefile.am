@@ -1,6 +1,7 @@
 AM_CPPFLAGS = -D__USER__="\"`whoami` at `hostname`\"" \
 	-I$(top_srcdir)/include \
 	-I$(top_srcdir)/csri/include
+AM_CFLAGS=$(werror)
 
 SUBDIRS = amd64 i686
 if BUILD_AMD64
