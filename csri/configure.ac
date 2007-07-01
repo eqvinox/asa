@@ -87,6 +87,7 @@ AC_OUTPUT([
 	frontends/Makefile
 	frontends/avisynth25/Makefile
 	frontends/cmdline/Makefile
+	backends/Makefile
 	Makefile
 ])
 

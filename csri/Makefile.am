@@ -8,4 +8,5 @@ SUBDIRS = ac \
 	include \
 	subhelp \
 	lib \
+	backends \
 	frontends
