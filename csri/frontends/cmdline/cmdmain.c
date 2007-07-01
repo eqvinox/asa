@@ -174,6 +174,8 @@ static int real_render(double *times, const char *infile, const char *outfile,
 		}
 		idx++;
 	}
+	csri_close(inst);
+	inst = NULL;
 	frame_free(bg);
 	frame_free(a);
 	return 0;
