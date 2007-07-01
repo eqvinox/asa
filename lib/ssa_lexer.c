@@ -40,6 +40,7 @@
 #include "common.h"
 #include "ssa.h"
 #include "asaerror.h"
+#include "subhelp.h"
 
 #include <wchar.h>
 #include <wctype.h>
@@ -109,6 +110,7 @@ struct ssa_state {
 	iconv_t ic_tcv;			/**< iconv fe -> SSA_DESTCS.
 					 * @see SSA_DESTCS */
 	struct ssa_error **elast;	/**< last error added */
+	unsigned nerr;			/**< number of errors found */
 };
 
 #if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)
@@ -500,6 +502,14 @@ static void ssa_add_error_ext(struct ssa_state *state,
 {
 	struct ssa_error *me;
 	size_t textlen = state->end - state->line;
+
+	if (state->nerr++ >= state->output->maxerrs) {
+		int ne = state->nerr < 1000 ? 100 : 1000;
+		if (state->nerr % ne == 0)
+			subhelp_log(CSRI_LOG_WARNING, "%d parser errors",
+				state->nerr);
+		return;
+	}
 	
 	me = xnew(struct ssa_error);
 	me->next = NULL;
@@ -1964,6 +1974,7 @@ int ssa_lex(struct ssa *output, const void *data, size_t datasize)
 
 	s.output = output;
 	s.elast = &output->errlist;
+	s.nerr = 0;
 	s.lineno = 0;
 	s.anisource = NULL;
 	s.ctx = SSACTX_INIT;

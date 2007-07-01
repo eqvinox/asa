@@ -299,6 +299,7 @@ struct ssa_line {
 
 struct ssa {
 	struct ssa_error *errlist;
+	unsigned maxerrs;
 	struct ssa_line *line_first, **line_last;
 	struct ssa_style *style_first, **style_last;
 
