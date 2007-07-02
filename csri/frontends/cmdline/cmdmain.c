@@ -150,6 +150,7 @@ static int do_info(int argc, char **argv)
 		void *rext = csri_query_ext(r, *id);
 		void *lext = csri_query_ext(NULL, *id);
 		if (lext || rext) {
+			printf("\t%s ", *id);
 			if (!lext)
 				printf("\n");
 			else if (!rext)
