@@ -86,6 +86,53 @@ static csri_ext_id known_exts[] = {
 	NULL
 };
 
+static const char *dummy_script = "[Script Info]\r\n"
+	"ScriptType: v4.00\r\n"
+	"[V4 Styles]\r\n"
+	"Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, "
+		"OutlineColour, BackColour, Bold, Italic, Underline, "
+		"StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, "
+		"Outline, Shadow, Alignment, MarginL, MarginR, MarginV, "
+		"Encoding\r\n"
+	"Style: Default,Arial,20,&H00FFFFFF,&H0000FFFF,&H00000000,&H00000000,"
+		"0,0,0,0,100,100,0,0,1,2,2,2,10,10,10,0\r\n"
+	"[Events]\r\n"
+	"Format: Marked, Start, End, Style, Name, "
+		"MarginL, MarginR, MarginV, Effect, Text\r\n"
+	"Dialogue: Marked=0,0:00:01.00,0:00:02.00,Default,,0000,0000,0000,,"
+		"test\r\n";
+
+#define e(x) { #x, CSRI_F_ ## x }
+#define ree(x) e(RGB ## x), e(x ## RGB), e(BGR ## x), e(x ## BGR)
+static struct csri_fmtlistent {
+	const char *label;
+	enum csri_pixfmt fmt;
+} csri_fmts[] = {
+	ree(A), ree(_),
+	e(RGB), e(BGR),
+	e(AYUV), e(YUVA), e(YVUA), e(YUY2), e(YV12A), e(YV12),
+	{ NULL, 0 }
+};
+
+static void listfmts()
+{
+	csri_inst *i;
+	struct csri_fmtlistent *fmt;
+	struct csri_fmt f;
+
+	printf("\ntrying to get list of supported colorspaces:\n");
+	fflush(stdout);
+	i = csri_open_mem(r, dummy_script, strlen(dummy_script), NULL);
+
+	f.width = f.height = 256;
+	for (fmt = csri_fmts; fmt->label; fmt++) {
+		f.pixfmt = fmt->fmt;
+		if (!csri_request_fmt(i, &f))
+			printf("\t[%04x] %s\n", fmt->fmt, fmt->label);
+	}
+	csri_close(i);
+}
+
 static int do_info(int argc, char **argv)
 {
 	struct csri_info *info;
@@ -113,6 +160,7 @@ static int do_info(int argc, char **argv)
 				printf("\n");
 		}
 	}
+	listfmts();
 	return 0;
 }
 
