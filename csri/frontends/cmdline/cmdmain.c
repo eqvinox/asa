@@ -181,7 +181,7 @@ static void logfunc(void *appdata, enum csri_logging_severity sev,
 }
 
 static int real_render(double *times, const char *infile, const char *outfile,
-	const char *script, int keepalpha)
+	const char *script, enum csri_pixfmt pfmt)
 {
 	struct csri_frame *bg, *a;
 	csri_inst *inst;
@@ -190,11 +190,13 @@ static int real_render(double *times, const char *infile, const char *outfile,
 	int idx;
 	uint32_t width = 640, height = 480;
 
-	bg = infile ? png_load(infile, &width, &height, keepalpha)
-		: frame_alloc(width, height, keepalpha);
-	a = frame_alloc(width, height, keepalpha);
+	bg = infile ? png_load(infile, &width, &height, pfmt)
+		: frame_alloc(width, height, pfmt);
+	a = frame_alloc(width, height, pfmt);
 	if (!bg || !a) {
 		fprintf(stderr, "failed to allocate frame\n");
+		if (!bg)
+			fprintf(stderr, "\t- problem with background.\n");
 		return 2;
 	}
 	inst = csri_open_file(r, script, NULL);
@@ -202,7 +204,7 @@ static int real_render(double *times, const char *infile, const char *outfile,
 		fprintf(stderr, "failed to open script \"%s\"\n", script);
 		return 2;
 	}
-	fmt.pixfmt = bg->pixfmt;
+	fmt.pixfmt = pfmt;
 	fmt.width = width;
 	fmt.height = height;
 	if (csri_request_fmt(inst, &fmt)) {
@@ -219,7 +221,7 @@ static int real_render(double *times, const char *infile, const char *outfile,
 			snprintf(buffer, sizeof(buffer),
 				 "%s_%04d.png", outfile, idx);
 			printf("%s\n", buffer);
-			png_store(a, buffer, width, height, keepalpha);
+			png_store(a, buffer, width, height);
 		}
 		idx++;
 	}
@@ -234,16 +236,19 @@ static int do_render(int argc, char **argv)
 {
 	double times[3] = {0.0, 0.0, 1.0};
 	const char *outfile = NULL, *infile = NULL;
+	struct csri_fmtlistent *fmte;
 	int keepalpha = 0;
+	enum csri_pixfmt fmt = ~0U;
 	argv--, argc++;
 	while (1) {
 		int c, i;
-		const char *short_options = "t:o:i:A";
+		const char *short_options = "t:o:i:F:A";
 		char *arg, *end, *err;
 		struct option long_options[] = {
 			{"time", 1, 0, 't'},
 			{"output", 1, 0, 'o'},
 			{"input", 1, 0, 'i'},
+			{"format", 0, 0, 'F'},
 			{"alpha", 0, 0, 'A'},
 			{0, 0, 0, 0}
 		};
@@ -278,12 +283,26 @@ static int do_render(int argc, char **argv)
 			outfile = optarg;
 			break;
 		case 'A':
+			if (fmt != ~0U)
+				return do_usage(stderr);
 			keepalpha = 1;
+			break;
+		case 'F':
+			if (keepalpha || fmt != ~0U)
+				return do_usage(stderr);
+			for (fmte = csri_fmts; fmte->label; fmte++)
+				if (!strcmp(fmte->label, optarg))
+					break;
+			if (!fmte->label)
+				return do_usage(stderr);
+			fmt = fmte->fmt;
 			break;
 		default:
 			return do_usage(stderr);
 		};
 	}
+	if (fmt == ~0U)
+		fmt = keepalpha ? CSRI_F_RGBA : CSRI_F_RGB_;
 	if (!isfinite(times[0])) {
 		fprintf(stderr, "invalid start time\n");
 		return do_usage(stderr);
@@ -300,7 +319,7 @@ static int do_render(int argc, char **argv)
 		fprintf(stderr, "script name missing\n");
 		return do_usage(stderr);
 	}
-	return real_render(times, infile, outfile, argv[optind], keepalpha);
+	return real_render(times, infile, outfile, argv[optind], fmt);
 }
 
 int main(int argc, char **argv)
