@@ -14,6 +14,8 @@ B] asa core:
 	5]	implement \u & \s
 	6]	make demuxer accessible
 	7]	implement cross-demuxing for other formats (?)
+	8]	implement @Font emulation
+	9]	fix RGBA output
 
 C] vlc:
 	0]	fix demuxer
