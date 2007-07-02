@@ -78,6 +78,7 @@ AS_IF([test "$with_libass" != no],[
 		LIBASS_LIBS="-L$with_libass/lib -lass"
 	else	PKG_CHECK_MODULES([LIBASS], libass >= 0.9.1,[],[
 			AC_MSG_WARN([libass not found via pkg-config])
+			LIBASS_LIBS="-lass"
 		])
 	fi
 	CFLAGS="$CFLAGS $LIBASS_CFLAGS"
