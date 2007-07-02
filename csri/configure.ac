@@ -63,7 +63,46 @@ AC_TYPE_SIGNAL
 AC_FUNC_MEMCMP
 AC_CHECK_FUNCS([memset strdup strerror strtoul])
 
-csri_path="\${libdir}/csri:~/.csri/lib"
+AC_ARG_WITH([libass],[
+	AS_HELP_STRING([--with-libass],[build libass backend @<:@default=auto@:>@])
+],[],[	with_libass=auto
+])
+
+libass=no
+AS_IF([test "$with_libass" != no],[
+	ac_cflags_save="$CFLAGS"
+	ac_ldflags_save="$LDFLAGS"
+
+	if test "$with_libass" != auto -a "$with_libass" != yes
+	then	LIBASS_CFLAGS="-I$with_libass/include"
+		LIBASS_LIBS="-L$with_libass/lib -lass"
+	else	PKG_CHECK_MODULES([LIBASS], libass >= 0.9.1,[],[
+			AC_MSG_WARN([libass not found via pkg-config])
+		])
+	fi
+	CFLAGS="$CFLAGS $LIBASS_CFLAGS"
+	LDFLAGS="$LDFLAGS $LIBASS_LIBS"
+		
+	AC_CHECK_LIB([ass], [ass_library_init], [libass_lib="yes"])
+	AC_CHECK_HEADER([ass/ass.h], [libass_hdr="yes"])
+
+	if test "$libass_lib" == yes -a "$libass_hdr" == yes
+	then	libass=yes
+	else	if "$with_libass" != auto
+		then	AC_MSG_FAILURE([libass requested but not found])
+		fi
+	fi
+	CFLAGS="$ac_cflags_save"
+	LDFLAGS="$ac_ldflags_save"
+])
+AM_CONDITIONAL([BUILD_LIBASS], [test "$libass" == "yes" ])
+AC_SUBST([LIBASS_CFLAGS])
+AC_SUBST([LIBASS_LIBS])
+
+csrilibdir="${libdir}/csri"
+AC_SUBST([csrilibdir])
+
+csri_path="\${csri_libdir}:~/.csri/lib"
 AC_ARG_WITH(csri-libpath,
 	AC_HELP_STRING([--with-csri-libpath=PATH1:PATH2],
 		[Look for CSRI renderers in the specified directories. Separate directory names with colons. Tildes are expanded at run-time. [[$libdir/csri:~/.csri/lib]]]),
@@ -77,7 +116,8 @@ AC_SUBST([csri_path], ["$csri_path"])
 AC_CONFIG_FILES([csri.pc])
 
 echo ""
-echo "using search path: ${csri_path}"
+echo "      using search path: ${csri_path}"
+echo "building libass wrapper: ${libass}"
 echo ""
 AC_OUTPUT([
 	ac/Makefile
@@ -88,6 +128,7 @@ AC_OUTPUT([
 	frontends/avisynth25/Makefile
 	frontends/cmdline/Makefile
 	backends/Makefile
+	backends/libass/Makefile
 	Makefile
 ])
 
