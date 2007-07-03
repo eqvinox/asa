@@ -1,7 +1,6 @@
 AM_CPPFLAGS = -D__USER__="\"`whoami` at `hostname`\"" \
 	-I$(top_srcdir)/include \
 	-I$(top_srcdir)/csri/include
-AM_CFLAGS=$(werror)
 
 SUBDIRS = amd64 i686
 if BUILD_AMD64
@@ -52,5 +51,5 @@ libasa_la_LIBADD = \
 	../csri/subhelp/libsubhelp_la-logging.lo \
 	$(ASM)
 libasa_la_LDFLAGS = -version-info 0:0:0 -no-undefined
-libasa_la_CFLAGS = $(FREETYPE_CFLAGS) $(FONTCONFIG_CFLAGS)
+libasa_la_CFLAGS = $(werror) $(FREETYPE_CFLAGS) $(FONTCONFIG_CFLAGS)
  
