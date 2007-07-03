@@ -66,6 +66,13 @@ enum ssa_errc {
 	SSAEC_STRAY_BOM,		/**< stray BOM */
 	SSAEC_RAW_CTX,			/**< no script header */
 	SSAEC_INVALID_CTX,		/**< invalid command for cur ctx */
+	SSAEC_DEFAULT_STYLE_FMT,	/**< style Format: missing */
+	SSAEC_DEFAULT_LINE_FMT,		/**< line Format: missing */
+	SSAEC_NONSTANDARD_FMT,		/**< non-standard Format: */
+	SSAEC_REPEATED_FMT,		/**< repeated/late Format: */
+	SSAEC_UNKNOWN_COLUMN,		/**< unknown column in Format: */
+	SSAEC_COLUMN_VERSION,		/**< wrong version Format: column */
+	SSAEC_TEXT_NOT_LAST,		/**< event Format: Text not last */
 
 	SSAEC_MAX
 };

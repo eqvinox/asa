@@ -250,11 +250,50 @@ struct asaec_desc ssaec[ASAEC_MAX] = {
 	"the command nonetheless, but this might lead to further follow-up "
 	"errors."),
 	NULL},
-/* 40 SSAVEC_NOTSUP */
+/* 40 SSAEC_DEFAULT_STYLE_FMT */
+{1, _("style Format: missing"),
+	_("Style: lines without Format: specification were found in "
+	"this script.\n\n"
+	"For compatibility reasons, add a standard Format: line."),
+	NULL},
+/* 41 SSAEC_DEFAULT_LINE_FMT */
+{1, _("line Format: missing"),
+	_("Dialogue / other lines without Format: specification were "
+	"found in this script.\n\n"
+	"For compatibility reasons, add a standard Format: line."),
+	NULL},
+/* 42 SSAEC_NONSTANDARD_FMT */
+{1, _("non-standard Format:"),
+	_("The Format: line found does not match the default Format: "
+	"for this script version. This might cause problems with "
+	"VSFilter or older asa versions."),
+	NULL},
+/* 43 SSAEC_REPEATED_FMT */
+{2, _("repeated/late Format:"),
+	_("Another Format: line was found in a section already having "
+	"a Format: line (which may have been automatically added earlier)."
+	"This may cause undefined behaviour."),
+	NULL},
+/* 44 SSAEC_UNKNOWN_COLUMN */
+{2, _("unknown column in Format:"),
+	_("An unknown column has been specified on the Format: line."),
+	NULL},
+/* 45 SSAEC_COLUMN_VERSION */
+{2, _("wrong version Format: column"),
+	_("A column not usually allowed for this script's version has"
+	"been found. (e.g. ScaleX on a non-ASS Style)"),
+	NULL},
+/* 46 SSAEC_TEXT_NOT_LAST */
+{3, _("event Format: Text not last"),
+	_("The Events Format: line specifies a format with the Text: "
+	"field not being the last field (or missing altogether). "
+	"This is not supported."),
+	NULL},
+/* 47 SSAVEC_NOTSUP */
 {3, _("command/option not supported"),
 	_("Asa is not able to correctly process this option yet."),
 	NULL},
-/* 41 SSAVEC_FONTNX */
+/* 48 SSAVEC_FONTNX */
 {3, _("font not found"),
 #ifdef _WIN32
 	_("The font requested by this style/override was not found."
@@ -264,7 +303,7 @@ struct asaec_desc ssaec[ASAEC_MAX] = {
 	_("The font requested by this style/override was not found."),
 #endif
 	NULL},
-/* 42 SSAVEC_NOANIM */
+/* 49 SSAVEC_NOANIM */
 {3, _("unanimatable parameter"),
 	_("The script is trying to animate a parameter for which no animation "
 	"controller exists. Either asa lacks the support for this or "

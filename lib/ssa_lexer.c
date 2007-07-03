@@ -67,6 +67,8 @@
 #define ssatol		strtol		/**< @see ssasrc_t */ 
 #define ssatoul		strtoul		/**< @see ssasrc_t */ 
 
+struct ssa_parselist;
+
 /** SSA parsing context.
  * to warn about misplaced lines (and to somewhen support embedding)
  */
@@ -93,6 +95,7 @@ struct ssa_state {
 					 */
 	unsigned lineno;		/**< line number, 1 based */
 	enum ssa_context ctx;		/**< current context */
+	struct ssa_parselist *ctx_pl;	/**< parselist for context */
 	
 	unsigned unicode;		/**< is file unicode?.
 					 * disables \fe */
@@ -118,8 +121,6 @@ struct ssa_state {
 #else
 #define inline 
 #endif
-
-struct ssa_parselist;
 
 /** parameter to ssa_parsefunc.
  * stored in key lists, passed to parsefuncs
@@ -170,10 +171,16 @@ struct ssa_parsetext_tag {
 
 /* func = NULL && param = 0 marks end [use NULL, 1 for skipping stuff]
  * ssa_version for version specific stuff (default SSAV_UNDEF)
- *             can be |'ed with SSAV_OPTIONAL for "omission point"
+ *             can be |'ed with SSAP_OPTIONAL for "omission point"
  *              (see \move for example)
  */
-#define SSAV_OPTIONAL		0x8000
+#define SSAP_OPTIONAL		0x8000
+/* don't include ssa_parselist_fmt entry into default parselist.
+ * (use for alternative field names)
+ */
+#define SSAP_NODEF		0x4000
+
+#define SSAP_ALL		(SSAP_OPTIONAL | SSAP_NODEF)
 
 /** all versions */
 #define SSAV_UNDEF		SSAVV_4 | SSAVV_4P | SSAVV_4PP
@@ -185,7 +192,14 @@ struct ssa_parsetext_tag {
 struct ssa_parselist {
 	ssa_parsefunc *func;
 	par_t param;
+	long flags;
+};
+
+struct ssa_parselist_fmt {
+	ssa_parsefunc *func;
+	par_t param;
 	long ssa_version;
+	const ssasrc_t *column;
 };
 
 static unsigned ssa_genstr(struct ssa_state *state, par_t param, void *elem);
@@ -233,7 +247,7 @@ static struct ssa_parsetext_ctx ptkeys[] = {
 	{"sound:",		ssa_std,	{SSAL_SOUND},		evnt},
 	{"movie:",		ssa_std,	{SSAL_MOVIE},		evnt},
 	{"command:",		ssa_std,	{SSAL_COMMAND},		evnt},
-	{"format:",		NULL,		{0},			fmts},
+	{"format:",		ssa_fmt,	{0},			fmts},
 	/* sections */
 	{"[script info]",	ssa_setctx,	{SSACTX_INFO},		init},
 	{"[v4 styles]",		ssa_setver,	{SSAVV_4},		any},
@@ -280,117 +294,120 @@ static struct ssa_parsetext_ctx ptkeys[] = {
  * we could build this from the Format: line, but some scripts are missing
  * Format: lines entirely...
  */
-static struct ssa_parselist plcommon[] = {
-	{ssa_genint,		{e(ass_layer)},		SSAV_4P},
-	{ssa_genstr,		{e(ssa_marked)},	SSAV_4},
-	{ssa_time,		{e(start)},		SSAV_UNDEF},
-	{ssa_time,		{e(end)},		SSAV_UNDEF},
-	{ssa_sstyle,		{e(style)},		SSAV_UNDEF},
-	{ssa_genstr,		{e(name)},		SSAV_UNDEF},
-	{ssa_genint,		{e(marginl)},		SSAV_UNDEF},
-	{ssa_genint,		{e(marginr)},		SSAV_UNDEF},
-	{ssa_twoint,		{e(margint)},		SSAV_4nPP},
-	{ssa_genint,		{e(margint)},		SSAV_4PP},
-	{ssa_genint,		{e(marginb)},		SSAV_4PP},
-	{ssa_effect,		{0},			SSAV_UNDEF},
+static struct ssa_parselist_fmt plcommon[] = {
+	{ssa_genint,	{e(ass_layer)},		SSAV_4P,	"layer"},
+	{ssa_genstr,	{e(ssa_marked)},	SSAV_4,		"marked"},
+	{ssa_time,	{e(start)},		SSAV_UNDEF,	"start"},
+	{ssa_time,	{e(end)},		SSAV_UNDEF,	"end"},
+	{ssa_sstyle,	{e(style)},		SSAV_UNDEF,	"style"},
+	{ssa_genstr,	{e(name)},		SSAV_UNDEF,	"name"},
+	{ssa_genint,	{e(marginl)},		SSAV_UNDEF,	"marginl"},
+	{ssa_genint,	{e(marginr)},		SSAV_UNDEF,	"marginr"},
+	{ssa_twoint,	{e(margint)},		SSAV_4nPP,	"marginv"},
+	{ssa_genint,	{e(margint)},		SSAV_4PP,	"margint"},
+	{ssa_genint,	{e(marginb)},		SSAV_4PP,	"marginb"},
+	{ssa_effect,	{0},			SSAV_UNDEF,	"effect"},
 	/* text isn't parsed by this (commas in it ;) */
-	{NULL,			{0},			0}
+	{NULL,		{0},			0,		NULL}
 };
 #undef e
 #define e(x) ((ptrdiff_t) &((struct ssa_style *)0)->x)
+#define ND SSAP_NODEF |
 /** CSV for Style */
-static struct ssa_parselist plstyle[] = {
-	{ssa_genstr,		{e(name)},		SSAV_UNDEF},
-	{ssa_genstr,		{e(fontname)},		SSAV_UNDEF},
-	{ssa_genfp,		{e(fontsize)},		SSAV_UNDEF},
-	{ssa_colour,		{e(cprimary)},		SSAV_4},
-	{ssa_colour,		{e(csecondary)},	SSAV_4},
-	{ssa_colour,		{e(coutline)},		SSAV_4},
-	{ssa_colour,		{e(cback)},		SSAV_4},
-	{ssa_colalp,		{e(cprimary)},		SSAV_4P},
-	{ssa_colalp,		{e(csecondary)},	SSAV_4P},
-	{ssa_colalp,		{e(coutline)},		SSAV_4P},
-	{ssa_colalp,		{e(cback)},		SSAV_4P},
-	{ssa_genint,		{e(fontweight)},	SSAV_UNDEF},
-	{ssa_genint,		{e(italic)},		SSAV_UNDEF},
-	{ssa_genint,		{e(underline)},		SSAV_4P},
-	{ssa_genint,		{e(strikeout)},		SSAV_4P},
-	{ssa_genfp,		{e(scx)},		SSAV_4P},
-	{ssa_genfp,		{e(scy)},		SSAV_4P},
-	{ssa_genfp,		{e(sp)},		SSAV_4P},
-	{ssa_genfp,		{e(rot)},		SSAV_4P},
-	{ssa_genint,		{e(bstyle)},		SSAV_UNDEF},
-	{ssa_genfp,		{e(border)},		SSAV_UNDEF},
-	{ssa_genfp,		{e(shadow)},		SSAV_UNDEF},
-	{ssa_genint,		{e(align)},		SSAV_UNDEF},
-	{ssa_genint,		{e(marginl)},		SSAV_UNDEF},
-	{ssa_genint,		{e(marginr)},		SSAV_UNDEF},
-	{ssa_twoint,		{e(margint)},		SSAV_4nPP},
-	{ssa_genint,		{e(margint)},		SSAV_4PP},
-	{ssa_genint,		{e(marginb)},		SSAV_4PP},
-	{ssa_genint,		{e(alpha)},		SSAV_4},
-	{ssa_genint,		{e(encoding)},		SSAV_UNDEF},
-	{ssa_genint,		{e(relative)},		SSAV_4PP},
-	{NULL,			{0},			0}
+static struct ssa_parselist_fmt plstyle[] = {
+	{ssa_genstr,	{e(name)},		SSAV_UNDEF,	"name"},
+	{ssa_genstr,	{e(fontname)},		SSAV_UNDEF,	"fontname"},
+	{ssa_genfp,	{e(fontsize)},		SSAV_UNDEF,	"fontsize"},
+	{ssa_colour,	{e(cprimary)},		SSAV_4,  "primarycolour"},
+	{ssa_colour,	{e(csecondary)},	SSAV_4,  "secondarycolour"},
+	{ssa_colour,	{e(coutline)},		SSAV_4,  "tertiarycolour"},
+	{ssa_colour,	{e(coutline)},	     ND	SSAV_4,  "outlinecolour"},
+	{ssa_colour,	{e(cback)},		SSAV_4,  "backcolour"},
+	{ssa_colalp,	{e(cprimary)},		SSAV_4P, "primarycolour"},
+	{ssa_colalp,	{e(csecondary)},	SSAV_4P, "secondarycolour"},
+	{ssa_colalp,	{e(coutline)},		SSAV_4P, "outlinecolour"},
+	{ssa_colalp,	{e(cback)},		SSAV_4P, "backcolour"},
+	{ssa_genint,	{e(fontweight)},	SSAV_UNDEF,	"bold"},
+	{ssa_genint,	{e(italic)},		SSAV_UNDEF,	"italic"},
+	{ssa_genint,	{e(underline)},		SSAV_4P,	"underline"},
+	{ssa_genint,	{e(strikeout)},		SSAV_4P,	"strikeout"},
+	{ssa_genfp,	{e(scx)},		SSAV_4P,	"scalex"},
+	{ssa_genfp,	{e(scy)},		SSAV_4P,	"scaley"},
+	{ssa_genfp,	{e(sp)},		SSAV_4P,	"spacing"},
+	{ssa_genfp,	{e(rot)},		SSAV_4P,	"angle"},
+	{ssa_genint,	{e(bstyle)},		SSAV_UNDEF, "borderstyle"},
+	{ssa_genfp,	{e(border)},		SSAV_UNDEF,	"outline"},
+	{ssa_genfp,	{e(shadow)},		SSAV_UNDEF,	"shadow"},
+	{ssa_genint,	{e(align)},		SSAV_UNDEF,	"alignment"},
+	{ssa_genint,	{e(marginl)},		SSAV_UNDEF,	"marginl"},
+	{ssa_genint,	{e(marginr)},		SSAV_UNDEF,	"marginr"},
+	{ssa_twoint,	{e(margint)},		SSAV_4nPP,	"marginv"},
+	{ssa_genint,	{e(margint)},		SSAV_4PP,	"margint"},
+	{ssa_genint,	{e(marginb)},		SSAV_4PP,	"marginb"},
+	{ssa_genint,	{e(alpha)},		SSAV_4,		"alphalevel"},
+	{ssa_genint,	{e(encoding)},		SSAV_UNDEF,	"encoding"},
+	{ssa_genint,	{e(relative)},		SSAV_4PP,	"relativeto"},
+	{NULL,		{0},			0,		NULL}
 };
+#undef ND
 #undef e
 #define e(x) ((ptrdiff_t) &((struct ssa_node *)0)->v.x)
 static struct ssa_parselist plpos[] = {
-	{ssa_genint,		{e(pos.x)},		SSAV_UNDEF},
-	{ssa_genint,		{e(pos.y)},		SSAV_UNDEF},
+	{ssa_genint,		{e(pos.x)},		0},
+	{ssa_genint,		{e(pos.y)},		0},
 	{NULL,			{0},			0}
 };
 static struct ssa_parselist plorg[] = {
-	{ssa_genint,		{e(org.x)},		SSAV_UNDEF},
-	{ssa_genint,		{e(org.y)},		SSAV_UNDEF},
+	{ssa_genint,		{e(org.x)},		0},
+	{ssa_genint,		{e(org.y)},		0},
 	{NULL,			{0},			0}
 };
 static struct ssa_parselist plfad[] = {
-	{ssa_genint,		{e(fad.in)},		SSAV_UNDEF},
-	{ssa_genint,		{e(fad.out)},		SSAV_UNDEF},
+	{ssa_genint,		{e(fad.in)},		0},
+	{ssa_genint,		{e(fad.out)},		0},
 	{NULL,			{0},			0}
 };
 static struct ssa_parselist plfade[] = {
-	{ssa_alpha,		{e(fade.a1)},		SSAV_UNDEF},
-	{ssa_alpha,		{e(fade.a2)},		SSAV_UNDEF},
-	{ssa_alpha,		{e(fade.a3)},		SSAV_UNDEF},
-	{ssa_genint,		{e(fade.start1)},	SSAV_UNDEF},
-	{ssa_genint,		{e(fade.end1)},		SSAV_UNDEF},
-	{ssa_genint,		{e(fade.start2)},	SSAV_UNDEF},
-	{ssa_genint,		{e(fade.end2)},		SSAV_UNDEF},
+	{ssa_alpha,		{e(fade.a1)},		0},
+	{ssa_alpha,		{e(fade.a2)},		0},
+	{ssa_alpha,		{e(fade.a3)},		0},
+	{ssa_genint,		{e(fade.start1)},	0},
+	{ssa_genint,		{e(fade.end1)},		0},
+	{ssa_genint,		{e(fade.start2)},	0},
+	{ssa_genint,		{e(fade.end2)},		0},
 	{NULL,			{0},			0}
 };
 static struct ssa_parselist plmove[] = {
-	{ssa_genint,		{e(move.x1)},		SSAV_UNDEF},
-	{ssa_genint,		{e(move.y1)},		SSAV_UNDEF},
-	{ssa_genint,		{e(move.x2)},		SSAV_UNDEF},
-	{ssa_genint,		{e(move.y2)},		SSAV_UNDEF},
-	{ssa_genint,		{e(move.start)}, SSAV_UNDEF | SSAV_OPTIONAL},
-	{ssa_genint,		{e(move.end)},		SSAV_UNDEF},
+	{ssa_genint,		{e(move.x1)},		0},
+	{ssa_genint,		{e(move.y1)},		0},
+	{ssa_genint,		{e(move.x2)},		0},
+	{ssa_genint,		{e(move.y2)},		0},
+	{ssa_genint,		{e(move.start)}, 	SSAP_OPTIONAL},
+	{ssa_genint,		{e(move.end)},		0},
 	{NULL,			{0},			0}
 };
 static struct ssa_parselist plclip[] = {
-	{ssa_genint,		{e(clip.x1)},		SSAV_UNDEF},
-	{ssa_genint,		{e(clip.y1)},		SSAV_UNDEF},
-	{ssa_genint,		{e(clip.x2)},		SSAV_UNDEF},
-	{ssa_genint,		{e(clip.y2)},		SSAV_UNDEF},
+	{ssa_genint,		{e(clip.x1)},		0},
+	{ssa_genint,		{e(clip.y1)},		0},
+	{ssa_genint,		{e(clip.x2)},		0},
+	{ssa_genint,		{e(clip.y2)},		0},
 	{NULL,			{0},			0}
 };
 #undef e
 
 #define e(x) ((ptrdiff_t) &((struct ssa_line *)0)->effp.x)
 static struct ssa_parselist plscroll[] = {
-	{ssa_genint,		{e(scroll.y1)},		SSAV_UNDEF},
-	{ssa_genint,		{e(scroll.y2)},		SSAV_UNDEF},
-	{ssa_genfp,		{e(scroll.delay)},	SSAV_UNDEF},
-	{ssa_genint,	{e(scroll.fadeawayh)},	SSAV_UNDEF | SSAV_OPTIONAL},
+	{ssa_genint,		{e(scroll.y1)},		0},
+	{ssa_genint,		{e(scroll.y2)},		0},
+	{ssa_genfp,		{e(scroll.delay)},	0},
+	{ssa_genint,		{e(scroll.fadeawayh)},	SSAP_OPTIONAL},
 	{NULL,			{0},			0}
 };
 
 static struct ssa_parselist plbanner[] = {
-	{ssa_genfp,		{e(banner.delay)},	SSAV_UNDEF},
-	{ssa_genint,	{e(banner.ltr)},	SSAV_UNDEF | SSAV_OPTIONAL},
-	{ssa_genint,	{e(banner.fadeawayw)},	SSAV_UNDEF | SSAV_OPTIONAL},
+	{ssa_genfp,		{e(banner.delay)},	0},
+	{ssa_genint,		{e(banner.ltr)},	SSAP_OPTIONAL},
+	{ssa_genint,		{e(banner.fadeawayw)},	SSAP_OPTIONAL},
 	{NULL,			{0},			0}
 };
 #undef e
@@ -658,6 +675,9 @@ static void ssa_strdup(ssa_string *dst, ssa_string *src)
  */
 static unsigned ssa_setctx(struct ssa_state *state, par_t param, void *elem)
 {
+	if (state->ctx_pl)
+		free(state->ctx_pl);
+	state->ctx_pl = NULL;
 	state->ctx = param.lparam;
 	return 1;
 }
@@ -687,8 +707,10 @@ static unsigned ssa_setver(struct ssa_state *state, par_t param, void *elem)
 		}
 		/* see semantics of ssa_parsefunc */
 		state->param = after;
-	} else
-		state->ctx = SSACTX_STYLE;
+	} else {
+		par_t p = { SSACTX_STYLE };
+		ssa_setctx(state, p, elem);
+	}
 	if (state->output->version && state->output->version != ver) {
 		ssa_add_error(state, state->line,
 			SSAEC_AMBIGUOUS_SVER);
@@ -945,7 +967,6 @@ static unsigned ssa_time(struct ssa_state *state, par_t param, void *elem)
 	return 1;
 }
 
-#define SSAV_MASK(x) (enum ssa_version)(x & (~SSAV_OPTIONAL))
 /** ssa_parse_xsv - parses X-separated values according to ssa_parselist.
  * @param p dispatch list
  * @param elem passed to dispatch parsefuncs
@@ -959,12 +980,8 @@ static inline unsigned ssa_parse_xsv(struct ssa_state *s,
 	const ssasrc_t *comma = s->param - 1, *save_pend = s->pend;
 	unsigned ret;
 	while (p->func || p->param.lparam || p->param.offset) {
-		if (!(SSAV_MASK(p->ssa_version) & s->output->version)) {
-			p++;
-			continue;
-		}
 		if (!comma) {
-			if (p->ssa_version & SSAV_OPTIONAL)
+			if (p->flags & SSAP_OPTIONAL)
 				return 1;
 			ssa_add_error(s, s->pend, SSAEC_TRUNCLINE);
 			return 0;
@@ -989,12 +1006,41 @@ static inline unsigned ssa_parse_xsv(struct ssa_state *s,
 	return 1;
 }
 
+/** ssa_default_fmt - turn ssa_parselist_fmt into ssa_parselist.
+ * @param 
+ */
+static struct ssa_parselist *ssa_default_fmt(struct ssa_state *s,
+	struct ssa_parselist_fmt *fmtpl)
+{
+	struct ssa_parselist *rv, *o;
+	struct ssa_parselist_fmt *p = fmtpl;
+	unsigned nalloc = 1;
+
+	for (p = fmtpl; p->func || p->param.lparam || p->param.offset; p++)
+		if (p->ssa_version & s->output->version
+			&& !(p->ssa_version & SSAP_NODEF))
+			nalloc++;
+	o = rv = (struct ssa_parselist *)xmalloc(nalloc
+		* sizeof(struct ssa_parselist));
+	for (p = fmtpl; p->func || p->param.lparam || p->param.offset; p++)
+		if (p->ssa_version & s->output->version
+			&& !(p->ssa_version & SSAP_NODEF)) {
+			o->func = p->func;
+			o->param = p->param;
+			o->flags = p->ssa_version & SSAP_ALL;
+			o++;
+		}
+	memset(o, 0, sizeof(*o));
+	return rv;
+}
+
 /** ssa_style - parse Style: line.
  * @param param unused
  * @param elem (points to output) unused
  */
 static unsigned ssa_style(struct ssa_state *state, par_t param, void *elem)
 {
+	struct ssa_parselist *pl;
 	struct ssa_style *style = xnewz(struct ssa_style);
 	*state->output->style_last = style;
 	state->output->style_last = &style->next;
@@ -1002,8 +1048,22 @@ static unsigned ssa_style(struct ssa_state *state, par_t param, void *elem)
 	style->relative = 1;
 	style->node_last = &style->node_first;
 
-	if (!ssa_parse_xsv(state, plstyle, style, ','))
+	pl = state->ctx_pl;
+	if (!pl) {
+		pl = ssa_default_fmt(state, plstyle);
+		if (state->ctx == SSACTX_STYLE) {
+			ssa_add_error(state, state->line,
+				SSAEC_DEFAULT_STYLE_FMT);
+			state->ctx_pl = pl;
+		 }
+	}
+	if (!ssa_parse_xsv(state, pl, style, ',')) {
+		if (!state->ctx_pl)
+			free(pl);
 		return 0;
+	}
+	if (!state->ctx_pl)
+		free(pl);
 	if (state->param == state->end)
 		return 1;
 	ssa_add_error(state, state->param, SSAEC_TRAILGB_LINE);
@@ -1401,6 +1461,7 @@ static unsigned ssa_effect(struct ssa_state *state, par_t param, void *elem)
 static unsigned ssa_std(struct ssa_state *state, par_t param, void *elem)
 {
 	struct ssa_line *line = xnewz(struct ssa_line);
+	struct ssa_parselist *pl;
 	par_t genstr_param;
 
 	line->type = param.lparam;
@@ -1410,8 +1471,22 @@ static unsigned ssa_std(struct ssa_state *state, par_t param, void *elem)
 	state->sline = line;
 	/* TODO: init with sane defaults */
 
-	if (!ssa_parse_xsv(state, plcommon, line, ','))
+	pl = state->ctx_pl;
+	if (!pl) {
+		pl = ssa_default_fmt(state, plcommon);
+		if (state->ctx == SSACTX_EVENTS) {
+			ssa_add_error(state, state->line,
+				SSAEC_DEFAULT_LINE_FMT);
+			state->ctx_pl = pl;
+		}
+	}
+	if (!ssa_parse_xsv(state, pl, line, ',')) {
+		if (!state->ctx_pl)
+			free(pl);
 		return 0;
+	}
+	if (!state->ctx_pl)
+		free(pl);
 	if (state->param == state->end) {
 		ssa_add_error(state, state->end, SSAEC_TRUNCLINE);
 		return 0;
@@ -1978,6 +2053,7 @@ int ssa_lex(struct ssa *output, const void *data, size_t datasize)
 	s.lineno = 0;
 	s.anisource = NULL;
 	s.ctx = SSACTX_INIT;
+	s.ctx_pl = NULL;
 
 	memset(output, 0, sizeof(struct ssa));
 	output->line_last = &output->line_first;
@@ -2079,6 +2155,8 @@ cont:
 	iconv_close(s.ic_srcout);
 	if (freeme)
 		free(freeme);
+	if (s.ctx_pl)
+		free(s.ctx_pl);
 	setlocale(LC_CTYPE, oldlocale_ctype);
 	setlocale(LC_NUMERIC, oldlocale_numeric);
 	return 0;
