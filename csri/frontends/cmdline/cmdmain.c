@@ -32,6 +32,7 @@
 #include <csri/csri.h>
 #include <csri/logging.h>
 #include <csri/openerr.h>
+#include <csri/stream.h>
 
 #include "render.h"
 
@@ -83,6 +84,9 @@ static int do_list(int argc, char **argv)
 static csri_ext_id known_exts[] = {
 	CSRI_EXT_OPENERR,
 	CSRI_EXT_LOGGING,
+	CSRI_EXT_STREAM,
+	CSRI_EXT_STREAM_F_ASS,
+	CSRI_EXT_STREAM_F_TEXT,
 	NULL
 };
 
