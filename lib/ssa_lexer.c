@@ -78,6 +78,7 @@ enum ssa_context {
 	SSACTX_INFO = 1 << 2,		/**< script info */
 	SSACTX_STYLE = 1 << 3,		/**< style */
 	SSACTX_EVENTS = 1 << 4,		/**< events */
+	SSACTX_PACKET = 1 << 5,		/**< MKV streaming */
 };
 
 /** lexer state / instance.
@@ -230,18 +231,22 @@ static unsigned ssa_fe    (struct ssa_state *state, par_t param, void *elem);
 
 
 #define fmts	(SSACTX_STYLE | SSACTX_EVENTS)
+#define dlg	(SSACTX_RAW | SSACTX_EVENTS | SSACTX_PACKET)
 #define evnt	(SSACTX_RAW | SSACTX_EVENTS)
 #define styl	(SSACTX_RAW | SSACTX_STYLE)
 #define info	(SSACTX_RAW | SSACTX_INFO)
 #define init	(SSACTX_INIT)
 #define any	(~0UL)
 
+/** index of ptkeys entry to use for SSACTX_PACKET */
+#define PTKEYS_PACKET	0
+
 #define apply_offset(x,y) (((char *)x) + y)		/**< apply e(x) */
 #define e(x) ((ptrdiff_t) &((struct ssa *)0)->x)	/**< store offset */
 /** global keyword table */
 static struct ssa_parsetext_ctx ptkeys[] = {
 	/* content lines - first because used the most */
-	{"dialogue:",		ssa_std,	{SSAL_DIALOGUE},	evnt},
+	{"dialogue:",		ssa_std,	{SSAL_DIALOGUE},	dlg},
 	{"style:",		ssa_style,	{0},			styl},
 	{"styleex:",		ssa_styleex,	{0},			styl},
 	{"comment:",		ssa_std,	{SSAL_COMMENT},		evnt},
@@ -311,6 +316,19 @@ static struct ssa_parselist_fmt plcommon[] = {
 	{ssa_effect,	{0},			SSAV_UNDEF,	"effect"},
 	/* text isn't parsed by this (commas in it ;) */
 	{NULL,		{0},			0,		NULL}
+};
+
+/** CSV for MKV-style streaming */
+static struct ssa_parselist plpacket[] = {
+	{ssa_genint,	{e(read_order)},	0},
+	{ssa_genint,	{e(ass_layer)},		0},
+	{ssa_sstyle,	{e(style)},		0},
+	{ssa_genstr,	{e(name)},		0},
+	{ssa_gencrd,	{e(marginl)},		0},
+	{ssa_gencrd,	{e(marginr)},		0},
+	{ssa_twocrd,	{e(margint)},		0},
+	{ssa_effect,	{0},			0},
+	{NULL,		{0},			0}
 };
 #undef e
 #define e(x) ((ptrdiff_t) &((struct ssa_style *)0)->x)
@@ -521,15 +539,22 @@ static void ssa_add_error_ext(struct ssa_state *state,
 {
 	struct ssa_error *me;
 	size_t textlen = state->end - state->line;
-
-	subhelp_log(CSRI_LOG_DEBUG, "parser: %d:%d: %s: %s",
-		state->lineno, location - state->line,
+	char *severity =
 		ssaec[ec].sev == 0 ? "information" :
 		ssaec[ec].sev == 1 ? "hint" :
 		ssaec[ec].sev == 2 ? "warning" :
 		ssaec[ec].sev == 3 ? "error" :
 		ssaec[ec].sev == 4 ? "fatal" :
-		"?", ssaec[ec].sh);
+		"?";
+
+
+	if (state->ctx == SSACTX_PACKET)
+		subhelp_log(CSRI_LOG_DEBUG, "parser: <stream>: %s: %s",
+			severity, ssaec[ec].sh);
+	else
+		subhelp_log(CSRI_LOG_DEBUG, "parser: %d:%d: %s: %s",
+			state->lineno, location - state->line,
+			severity, ssaec[ec].sh);
 
 	if (state->nerr++ >= state->output->maxerrs) {
 		int ne = state->nerr < 1000 ? 100 : 1000;
@@ -2350,6 +2375,55 @@ cont:
 	setlocale(LC_CTYPE, oldlocale_ctype);
 	setlocale(LC_NUMERIC, oldlocale_numeric);
 	return 0;
+}
+
+/** stream packet lexer.
+ * @param output result, must be allocated prior to calling, will be zeroed
+ * @param data script input, possibly mmap'ed (is never written to)
+ * @param datasize size of data
+ *
+ * WARNING: this resets output->line_first and output->line_last!
+ */
+void ssa_lex_packet(struct ssa *output, const void *data, size_t datasize)
+{
+	struct ssa_state s;
+	const char *csrc = (const char *)data, *cend = csrc + datasize;
+	char *oldlocale_ctype, *oldlocale_numeric;
+
+	oldlocale_ctype = setlocale(LC_CTYPE, "C");
+	oldlocale_numeric = setlocale(LC_NUMERIC, "C");
+
+	s.output = output;
+	s.output->line_first = NULL;
+	s.output->line_last = &s.output->line_first;
+	s.elast = NULL;
+	s.nerr = 0;
+	s.lineno = 0;
+	s.anisource = NULL;
+	s.ctx = SSACTX_PACKET;
+	s.ctx_pl = plpacket;
+	s.ic_srccs = "UTF-8";
+	s.ic_srcout = iconv_open(SSA_DESTCS, "UTF-8");
+	s.unicode = 1;
+
+	do {
+		const ssasrc_t *lend = ssa_chr(csrc, cend, '\xA'), *now;
+		if (!lend)
+			lend = cend;
+		if (lend > csrc)
+			s.end = (*(lend - 1) == '\xD') ? lend - 1 : lend;
+		s.line = now = csrc;
+
+		ssa_skipws(&s, &now, s.end);
+		if (now != s.end && *now != ';' && *now != '!')
+			ssa_main_call(&s, &ptkeys[PTKEYS_PACKET]);
+		csrc = lend + 1;
+	} while (csrc < cend);
+
+	iconv_close(s.ic_srcout);
+	setlocale(LC_CTYPE, oldlocale_ctype);
+	setlocale(LC_NUMERIC, oldlocale_numeric);
+	return;
 }
 
 /** free a ssa_string.
