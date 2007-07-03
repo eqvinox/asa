@@ -4,7 +4,6 @@ A] csri:
 	2]	specify csri.fourcc.*
 	3]	specify csri.mime.*
 	4]	specify csri.demux
-	5]	specify csri.stream
 
 B] asa core:
 	1]	fix all the memleaks
