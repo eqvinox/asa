@@ -50,13 +50,17 @@ extern "C" {
 /** stream extension group */
 #define CSRI_EXT_STREAM (csri_ext_id)"csri.stream"
 
+/** streaming formats.
+ * these are openflags, too */
+#define CSRI_EXT_STREAM_F CSRI_EXT_STREAM ".format"
+
 /** Matroska-style ASS streaming.
  * header contains standard SSA stuff, packet contains
  * ReadOrder,Layer,Style,Speaker,MarginL,R,V,Effect,Text
  */
-#define CSRI_EXT_STREAM_ASS CSRI_EXT_STREAM ".ass"
+#define CSRI_EXT_STREAM_F_ASS CSRI_EXT_STREAM_F ".ass"
 /** Simple text + timestamp streams */
-#define CSRI_EXT_STREAM_TEXT CSRI_EXT_STREAM ".text"
+#define CSRI_EXT_STREAM_F_TEXT CSRI_EXT_STREAM_F ".text"
 /* missing: USF, MPEG-4 TT */
 
 /** stream extension information structure */
@@ -65,7 +69,9 @@ struct csri_stream_ext {
 	 * \param renderer the renderer handle.
 	 * \param header codec-private stream header.
 	 * \param headerlen byte length of header data.
-	 * \param flags optional openflags.
+	 * \param flags openflags.\n
+	 *   this SHOULD contain an openflag (data unused)
+	 *   indicating the format.
 	 *
 	 * not NULL if this extension is supported.
 	 * may take various flags like csri_openerr_flag.
