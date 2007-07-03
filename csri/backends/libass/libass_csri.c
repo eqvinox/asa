@@ -54,6 +54,7 @@ typedef struct csri_asa_inst {
 } csri_inst;
 
 #include <csri/csri.h>
+#include <csri/stream.h>
 #include <subhelp.h>
 
 static struct csri_libass_rend csri_libass = { NULL };
@@ -162,8 +163,68 @@ void csri_render(csri_inst *inst, struct csri_frame *frame, double time)
 	}
 }
 
+static csri_inst *libass_init_stream(csri_rend *renderer,
+	const void *header, size_t headerlen,
+	struct csri_openflag *flags)
+{
+	csri_inst *rv;
+
+	if (renderer != &csri_libass)
+		return NULL;
+
+	while (flags) {
+		if (!strcmp(flags->name, CSRI_EXT_STREAM_F_ASS))
+			break;
+		if (strncmp(flags->name, CSRI_EXT_STREAM_F ".",
+			sizeof(CSRI_EXT_STREAM_F)))
+			return NULL;
+		flags = flags->next;
+	}
+
+	rv = (csri_inst *)malloc(sizeof(csri_inst));
+	if (!rv)
+		return NULL;
+
+	rv->ass_renderer = ass_renderer_init(renderer->ass_library);
+	if (!rv->ass_renderer) {
+		free(rv);
+		return NULL;
+	}
+	ass_set_font_scale(rv->ass_renderer, 1.);
+	ass_set_fonts(rv->ass_renderer, NULL, "Sans");
+	rv->ass_track = ass_new_track(csri_libass.ass_library);
+	if (!rv->ass_track) {
+		ass_renderer_done(rv->ass_renderer);
+		free(rv);
+		return NULL;
+	}
+	ass_process_codec_private(rv->ass_track, (void *)header, headerlen);
+	return rv;
+}
+
+static void libass_push_packet(csri_inst *inst,
+	const void *packet, size_t packetlen,
+	double pts_start, double pts_end)
+{
+	ass_process_chunk(inst->ass_track, (void *)packet, packetlen,
+		(int)(pts_start * 1000), (int)((pts_end - pts_start) * 1000));
+}
+
+static int dummy = 0;
+static struct csri_stream_ext streamext = {
+	libass_init_stream,
+	libass_push_packet,
+	NULL
+};
+
 void *csri_query_ext(csri_rend *rend, csri_ext_id extname)
 {
+	if (!rend)
+		return NULL;
+	if (!strcmp(extname, CSRI_EXT_STREAM_F_ASS))
+		return &dummy;
+	if (!strcmp(extname, CSRI_EXT_STREAM))
+		return &streamext;
 	return NULL;
 }
 
