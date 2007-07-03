@@ -214,8 +214,10 @@ struct ssa_vm {
 
 /* positioner */
 	double playresx, playresy;
-	FT_Vector res;
-	FT_Matrix scale;
+	FT_Vector playres,	/**< playres */
+		outsize;	/**< video res */
+	FT_Matrix cscale,	/**< coordinate scale */
+		fscale;		/**< font scale, xx=yy */
 	long scalebas;
 };
 

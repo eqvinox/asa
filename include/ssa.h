@@ -66,6 +66,8 @@ enum ssa_effecttype {
 typedef char ssasrc_t;			/**< source byte */
 typedef unsigned ssaout_t;		/**< output type */
 
+typedef signed coord_t;			/**< FT-style 16.16 */
+
 /** SSA string.
  * ok, now for the explanations:
  *  - num of characters? e - s
@@ -115,11 +117,13 @@ struct ssa_style {
 		border,
 		shadow;
 	long int
-		align,
+		align;
+	coord_t
 		marginl,
 		marginr,
 		margint,
-		marginb,
+		marginb;
+	long int
 		alpha,		/**< SSA doesn't implement this */
 		encoding,	/**< line encoding */
 		relative;	/**< coordinate base, 0 means screen */
@@ -224,7 +228,7 @@ struct ssa_node {
 		colour_t colour;
 		alpha_t alpha;
 		struct {
-			long x, y;
+			coord_t x, y;
 		} pos, org;
 		struct {
 			long in, out;
@@ -234,10 +238,11 @@ struct ssa_node {
 			long start1, end1, start2, end2;
 		} fade;
 		struct {
-			long x1, y1, x2, y2;
+			coord_t x1, y1, x2, y2;
 		} clip;
 		struct {
-			long x1, y1, x2, y2, start, end;
+			coord_t x1, y1, x2, y2;
+			long start, end;
 		} move;
 		struct {
 			enum ssa_t_flags flags;
@@ -268,7 +273,8 @@ struct ssa_line {
 	enum ssa_linetype type;
 
 	long int
-		ass_layer,
+		ass_layer;
+	coord_t
 		marginl,
 		marginr,
 		margint,
@@ -283,7 +289,7 @@ struct ssa_line {
 	enum ssa_effecttype effect;
 	union {
 		struct {
-			long y1, y2;
+			coord_t y1, y2;
 			double delay;
 			long fadeawayh;
 		} scroll;

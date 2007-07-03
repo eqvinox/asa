@@ -37,12 +37,12 @@ static void ssgl_rotmat(FT_Matrix *m, double dangle)
 }
 #endif
 
-void ssgl_matrix(struct ssav_params *p, FT_Matrix *fx0)
+void ssgl_matrix(struct ssa_vm *vm, struct ssav_params *p, FT_Matrix *fx0)
 {
-	fx0->xx = (int)(p->m.fscx * 655.36);
+	fx0->xx = (int)(p->m.fscx * vm->fscale.xx * 0.01);
 	fx0->xy = 0x00000L;
 	fx0->yx = 0x00000L;
-	fx0->yy = (int)(-p->m.fscy * 655.36);
+	fx0->yy = (int)(-p->m.fscy * vm->fscale.yy * 0.01);
 }
 
 
@@ -165,7 +165,7 @@ static void ssgl_load_glyph(FT_Face fnt, unsigned idx,
 	*dst = (FT_OutlineGlyph)tmp;
 }
 
-void ssgl_prepare(struct ssav_line *l)
+void ssgl_prepare(struct ssa_vm *vm, struct ssav_line *l)
 {
 	FT_Vector pos, hv;
 	FT_Matrix mat;
@@ -190,7 +190,7 @@ void ssgl_prepare(struct ssav_line *l)
 			p = p->finalized;
 
 		fnt = asaf_sactivate(n->params->fsiz);
-		ssgl_matrix(p, &mat);
+		ssgl_matrix(vm, p, &mat);
 
 		/* generate 3d matrix */
 		ssgl_matrix3d(p, n->matrix3d);

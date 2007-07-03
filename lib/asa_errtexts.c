@@ -289,11 +289,17 @@ struct asaec_desc ssaec[ASAEC_MAX] = {
 	"field not being the last field (or missing altogether). "
 	"This is not supported."),
 	NULL},
-/* 47 SSAVEC_NOTSUP */
+/* 47 SSAEC_FP_COORD */
+{0, _("floating point coordinates"),
+	_("This script uses floating point/decimal coordinates. "
+	"Support for this is nonstandard and likely to cause "
+	"problems with other renderers."),
+	NULL},
+/* 48 SSAVEC_NOTSUP */
 {3, _("command/option not supported"),
 	_("Asa is not able to correctly process this option yet."),
 	NULL},
-/* 48 SSAVEC_FONTNX */
+/* 49 SSAVEC_FONTNX */
 {3, _("font not found"),
 #ifdef _WIN32
 	_("The font requested by this style/override was not found."
@@ -303,7 +309,7 @@ struct asaec_desc ssaec[ASAEC_MAX] = {
 	_("The font requested by this style/override was not found."),
 #endif
 	NULL},
-/* 49 SSAVEC_NOANIM */
+/* 50 SSAVEC_NOANIM */
 {3, _("unanimatable parameter"),
 	_("The script is trying to animate a parameter for which no animation "
 	"controller exists. Either asa lacks the support for this or "

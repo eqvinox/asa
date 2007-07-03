@@ -90,9 +90,9 @@ enum ssar_redoflags ssar_eval(struct ssa_vm *vm, struct ssav_line *l,
 
 	memcpy(&l->active, &l->base, sizeof(struct ssav_lineparams));
 	if (l->active.clip.xMax == -1)
-		l->active.clip.xMax = vm->res.x;
+		l->active.clip.xMax = vm->playres.x;
 	if (l->active.clip.yMax == -1)
-		l->active.clip.yMax = vm->res.y;
+		l->active.clip.yMax = vm->playres.y;
 	if (l->nctr) {
 		fl |= SSAR_REND | SSAR_WRAP;
 		for (c = 0; c < l->nctr; c++)

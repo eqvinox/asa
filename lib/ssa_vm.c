@@ -604,10 +604,10 @@ static void ssav_lineint(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
 static void ssav_clip(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
 	ptrdiff_t param)
 {
-	ctx->vl->base.clip.xMin = n->v.clip.x1 << 16;
-	ctx->vl->base.clip.xMax = n->v.clip.x2 << 16;
-	ctx->vl->base.clip.yMin = n->v.clip.y1 << 16;
-	ctx->vl->base.clip.yMax = n->v.clip.y2 << 16;
+	ctx->vl->base.clip.xMin = n->v.clip.x1;
+	ctx->vl->base.clip.xMax = n->v.clip.x2;
+	ctx->vl->base.clip.yMin = n->v.clip.y1;
+	ctx->vl->base.clip.yMax = n->v.clip.y2;
 }
 
 static void ssava_clip(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
@@ -616,7 +616,7 @@ static void ssava_clip(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
 #define clipctr(dst, src) \
 	ctr->type = SSAVC_FTPOS; \
 	ctr->offset = l(active.clip.dst); \
-	ctr->nextval.pos = n->v.clip.src << 16; \
+	ctr->nextval.pos = n->v.clip.src; \
 	ssav_anim_lineinsert(ctx, ctr);
 	clipctr(xMin, x1)
 	clipctr(xMax, x2)
@@ -631,8 +631,8 @@ static void ssav_pos(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
 	ptrdiff_t param)
 {
 	ctx->vl->flags |= (param == l(base.pos)) ? SSAV_POS : SSAV_ORG;
-	((FT_Vector *)apply_offset(ctx->vl, param))->x = n->v.pos.x << 16;
-	((FT_Vector *)apply_offset(ctx->vl, param))->y = n->v.pos.y << 16;
+	((FT_Vector *)apply_offset(ctx->vl, param))->x = n->v.pos.x;
+	((FT_Vector *)apply_offset(ctx->vl, param))->y = n->v.pos.y;
 }
 
 static void ssava_pos(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
@@ -642,12 +642,12 @@ static void ssava_pos(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
 
 	ctr->type = SSAVC_FTPOS;
 	ctr->offset = param - l(base.pos) + l(active.pos.x);
-	ctr->nextval.pos = n->v.pos.x << 16;
+	ctr->nextval.pos = n->v.pos.x;
 	ssav_anim_lineinsert(ctx, ctr);
 
 	ctr->type = SSAVC_FTPOS;
 	ctr->offset = param - l(base.pos) + l(active.pos.y);
-	ctr->nextval.pos = n->v.pos.y << 16;
+	ctr->nextval.pos = n->v.pos.y;
 	ssav_anim_lineinsert(ctx, ctr);
 }
 
@@ -657,8 +657,8 @@ static void ssav_move(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
 	struct ssav_controller ctr;
 
 	ctx->vl->flags |= SSAV_POS | SSAV_POSANIM;
-	ctx->vl->base.pos.x = n->v.move.x1 << 16;
-	ctx->vl->base.pos.y = n->v.move.y1 << 16;
+	ctx->vl->base.pos.x = n->v.move.x1;
+	ctx->vl->base.pos.y = n->v.move.y1;
 
 	ctr.t1 = n->v.move.start * 0.001;
 	ctr.length_rez = 1. / ((n->v.move.end - n->v.move.start) * 0.001);
@@ -666,12 +666,12 @@ static void ssav_move(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
 
 	ctr.type = SSAVC_FTPOS;
 	ctr.offset = l(active.pos.x);
-	ctr.nextval.pos = n->v.move.x2 << 16;
+	ctr.nextval.pos = n->v.move.x2;
 	ssav_anim_lineinsert(ctx, &ctr);
 
 	ctr.type = SSAVC_FTPOS;
 	ctr.offset = l(active.pos.y);
-	ctr.nextval.pos = n->v.move.y2 << 16;
+	ctr.nextval.pos = n->v.move.y2;
 	ssav_anim_lineinsert(ctx, &ctr);
 }
 

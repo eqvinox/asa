@@ -73,6 +73,7 @@ enum ssa_errc {
 	SSAEC_UNKNOWN_COLUMN,		/**< unknown column in Format: */
 	SSAEC_COLUMN_VERSION,		/**< wrong version Format: column */
 	SSAEC_TEXT_NOT_LAST,		/**< event Format: Text not last */
+	SSAEC_FP_COORD,			/**< floating point coordinates */
 
 	SSAEC_MAX
 };

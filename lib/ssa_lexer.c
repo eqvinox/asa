@@ -204,7 +204,8 @@ struct ssa_parselist_fmt {
 
 static unsigned ssa_genstr(struct ssa_state *state, par_t param, void *elem);
 static unsigned ssa_genint(struct ssa_state *state, par_t param, void *elem);
-static unsigned ssa_twoint(struct ssa_state *state, par_t param, void *elem);
+static unsigned ssa_gencrd(struct ssa_state *state, par_t param, void *elem);
+static unsigned ssa_twocrd(struct ssa_state *state, par_t param, void *elem);
 static unsigned ssa_genfp (struct ssa_state *state, par_t param, void *elem);
 static unsigned ssa_genbool(struct ssa_state *state, par_t param, void *elem);
 
@@ -302,11 +303,11 @@ static struct ssa_parselist_fmt plcommon[] = {
 	{ssa_time,	{e(end)},		SSAV_UNDEF,	"end"},
 	{ssa_sstyle,	{e(style)},		SSAV_UNDEF,	"style"},
 	{ssa_genstr,	{e(name)},		SSAV_UNDEF,	"name"},
-	{ssa_genint,	{e(marginl)},		SSAV_UNDEF,	"marginl"},
-	{ssa_genint,	{e(marginr)},		SSAV_UNDEF,	"marginr"},
-	{ssa_twoint,	{e(margint)},		SSAV_4nPP,	"marginv"},
-	{ssa_genint,	{e(margint)},		SSAV_4PP,	"margint"},
-	{ssa_genint,	{e(marginb)},		SSAV_4PP,	"marginb"},
+	{ssa_gencrd,	{e(marginl)},		SSAV_UNDEF,	"marginl"},
+	{ssa_gencrd,	{e(marginr)},		SSAV_UNDEF,	"marginr"},
+	{ssa_twocrd,	{e(margint)},		SSAV_4nPP,	"marginv"},
+	{ssa_gencrd,	{e(margint)},		SSAV_4PP,	"margint"},
+	{ssa_gencrd,	{e(marginb)},		SSAV_4PP,	"marginb"},
 	{ssa_effect,	{0},			SSAV_UNDEF,	"effect"},
 	/* text isn't parsed by this (commas in it ;) */
 	{NULL,		{0},			0,		NULL}
@@ -340,11 +341,11 @@ static struct ssa_parselist_fmt plstyle[] = {
 	{ssa_genfp,	{e(border)},		SSAV_UNDEF,	"outline"},
 	{ssa_genfp,	{e(shadow)},		SSAV_UNDEF,	"shadow"},
 	{ssa_genint,	{e(align)},		SSAV_UNDEF,	"alignment"},
-	{ssa_genint,	{e(marginl)},		SSAV_UNDEF,	"marginl"},
-	{ssa_genint,	{e(marginr)},		SSAV_UNDEF,	"marginr"},
-	{ssa_twoint,	{e(margint)},		SSAV_4nPP,	"marginv"},
-	{ssa_genint,	{e(margint)},		SSAV_4PP,	"margint"},
-	{ssa_genint,	{e(marginb)},		SSAV_4PP,	"marginb"},
+	{ssa_gencrd,	{e(marginl)},		SSAV_UNDEF,	"marginl"},
+	{ssa_gencrd,	{e(marginr)},		SSAV_UNDEF,	"marginr"},
+	{ssa_twocrd,	{e(margint)},		SSAV_4nPP,	"marginv"},
+	{ssa_gencrd,	{e(margint)},		SSAV_4PP,	"margint"},
+	{ssa_gencrd,	{e(marginb)},		SSAV_4PP,	"marginb"},
 	{ssa_genint,	{e(alpha)},		SSAV_4,		"alphalevel"},
 	{ssa_genint,	{e(encoding)},		SSAV_UNDEF,	"encoding"},
 	{ssa_genint,	{e(relative)},		SSAV_4PP,	"relativeto"},
@@ -354,13 +355,13 @@ static struct ssa_parselist_fmt plstyle[] = {
 #undef e
 #define e(x) ((ptrdiff_t) &((struct ssa_node *)0)->v.x)
 static struct ssa_parselist plpos[] = {
-	{ssa_genint,		{e(pos.x)},		0},
-	{ssa_genint,		{e(pos.y)},		0},
+	{ssa_gencrd,		{e(pos.x)},		0},
+	{ssa_gencrd,		{e(pos.y)},		0},
 	{NULL,			{0},			0}
 };
 static struct ssa_parselist plorg[] = {
-	{ssa_genint,		{e(org.x)},		0},
-	{ssa_genint,		{e(org.y)},		0},
+	{ssa_gencrd,		{e(org.x)},		0},
+	{ssa_gencrd,		{e(org.y)},		0},
 	{NULL,			{0},			0}
 };
 static struct ssa_parselist plfad[] = {
@@ -379,27 +380,27 @@ static struct ssa_parselist plfade[] = {
 	{NULL,			{0},			0}
 };
 static struct ssa_parselist plmove[] = {
-	{ssa_genint,		{e(move.x1)},		0},
-	{ssa_genint,		{e(move.y1)},		0},
-	{ssa_genint,		{e(move.x2)},		0},
-	{ssa_genint,		{e(move.y2)},		0},
+	{ssa_gencrd,		{e(move.x1)},		0},
+	{ssa_gencrd,		{e(move.y1)},		0},
+	{ssa_gencrd,		{e(move.x2)},		0},
+	{ssa_gencrd,		{e(move.y2)},		0},
 	{ssa_genint,		{e(move.start)}, 	SSAP_OPTIONAL},
 	{ssa_genint,		{e(move.end)},		0},
 	{NULL,			{0},			0}
 };
 static struct ssa_parselist plclip[] = {
-	{ssa_genint,		{e(clip.x1)},		0},
-	{ssa_genint,		{e(clip.y1)},		0},
-	{ssa_genint,		{e(clip.x2)},		0},
-	{ssa_genint,		{e(clip.y2)},		0},
+	{ssa_gencrd,		{e(clip.x1)},		0},
+	{ssa_gencrd,		{e(clip.y1)},		0},
+	{ssa_gencrd,		{e(clip.x2)},		0},
+	{ssa_gencrd,		{e(clip.y2)},		0},
 	{NULL,			{0},			0}
 };
 #undef e
 
 #define e(x) ((ptrdiff_t) &((struct ssa_line *)0)->effp.x)
 static struct ssa_parselist plscroll[] = {
-	{ssa_genint,		{e(scroll.y1)},		0},
-	{ssa_genint,		{e(scroll.y2)},		0},
+	{ssa_gencrd,		{e(scroll.y1)},		0},
+	{ssa_gencrd,		{e(scroll.y2)},		0},
 	{ssa_genfp,		{e(scroll.delay)},	0},
 	{ssa_genint,		{e(scroll.fadeawayh)},	SSAP_OPTIONAL},
 	{NULL,			{0},			0}
@@ -808,6 +809,7 @@ static inline unsigned ssa_scannum(struct ssa_state *state, ssasrc_t *buf,
 	ssasrc_t **bptr, unsigned allow_dot, unsigned allow_sign,
 	unsigned maxlen)
 {
+	unsigned dot = allow_dot + 1;
 	*bptr = buf;
 	/* overrun neither line nor buf */
 	while (state->param < state->pend && *bptr < buf + maxlen) {
@@ -815,7 +817,7 @@ static inline unsigned ssa_scannum(struct ssa_state *state, ssasrc_t *buf,
 		if (ssa_isdigit(*state->param)
 			|| (*bptr == buf && allow_sign
 			 && (*state->param == '+' || *state->param == '-'))
-			|| (allow_dot && *state->param == '.'))
+			|| (*state->param == '.' && (dot++ == 2)))
 
 			*(*bptr)++ = *state->param++;
 		else
@@ -836,14 +838,13 @@ static inline unsigned ssa_scannum(struct ssa_state *state, ssasrc_t *buf,
 		return 0;
 	}
 	**bptr = '\0';
-	return 1;
+	return dot;
 }
 
-/** core for ssa_genint and ssa_twoint.
- * @see ssa_genint
+/** long int into offset.
+ * @see ssa_genstr
  */
-static inline unsigned ssa_genintcore(struct ssa_state *state, par_t param,
-	void *elem, long int *value)
+static unsigned ssa_genint(struct ssa_state *state, par_t param, void *elem)
 {
 	long int result;
 	ssasrc_t buf[12]; /* -2147483648\0 */
@@ -860,6 +861,34 @@ static inline unsigned ssa_genintcore(struct ssa_state *state, par_t param,
 		ssa_add_error(state, state->param, SSAEC_NUM_INVAL);
 		return 0;
 	}
+	*(long int *)apply_offset(elem, param.offset) = result;
+	return 1;
+}
+
+/** core for ssa_genint and ssa_twoint.
+ * @see ssa_genint
+ */
+static inline unsigned ssa_gencrdcore(struct ssa_state *state, par_t param,
+	void *elem, coord_t *value)
+{
+	coord_t result;
+	unsigned dot;
+	ssasrc_t buf[15]; /* -32767.9999847\0 (well, two digits are safety)*/
+	ssasrc_t *bptr, *endptr;
+
+	dot = ssa_scannum(state, buf, &bptr, 1, 1, 15);
+	if (!dot)
+		return 0;
+	if (dot == 2)	/* dot == 2, no dot found */
+		result = ssatol(buf, &endptr, 10) << 16;
+	else {		/* dot == 3, dot found */
+		ssa_add_error(state, state->param, SSAEC_FP_COORD);
+		result = (coord_t)(ssatod(buf, &endptr) * 65536.);
+	}
+	if (bptr != endptr) {
+		ssa_add_error(state, state->param, SSAEC_NUM_INVAL);
+		return 0;
+	}
 	*value = result;
 
 	return 1;
@@ -868,22 +897,22 @@ static inline unsigned ssa_genintcore(struct ssa_state *state, par_t param,
 /** long int into offset.
  * @see ssa_genstr
  */
-static unsigned ssa_genint(struct ssa_state *state, par_t param, void *elem)
+static unsigned ssa_gencrd(struct ssa_state *state, par_t param, void *elem)
 {
-	return ssa_genintcore(state, param, elem,
-		(long int *)apply_offset(elem, param.offset));
+	return ssa_gencrdcore(state, param, elem,
+		(coord_t *)apply_offset(elem, param.offset));
 }
 
 /** long int into offset and offset + sizeof(long).
  * @see ssa_genstr
  */
-static unsigned ssa_twoint(struct ssa_state *state, par_t param, void *elem)
+static unsigned ssa_twocrd(struct ssa_state *state, par_t param, void *elem)
 {
-	long int value;
-	if (!ssa_genintcore(state, param, elem, &value))
+	coord_t value;
+	if (!ssa_gencrdcore(state, param, elem, &value))
 		return 0;
-	((long int *)apply_offset(elem, param.offset))[0] = value;
-	((long int *)apply_offset(elem, param.offset))[1] = value;
+	((coord_t *)apply_offset(elem, param.offset))[0] = value;
+	((coord_t *)apply_offset(elem, param.offset))[1] = value;
 	return 1;
 }
 

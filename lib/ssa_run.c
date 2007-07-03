@@ -131,7 +131,7 @@ static inline void ssar_one(struct ssa_vm *vm, FT_OutlineGlyph *g,
 	shaddist.x = (FT_Pos)(shad * 64);
 	shaddist.y = (FT_Pos)(shad * 64);
 	if (vm->scalebas)
-		FT_Vector_Transform(&shaddist, &vm->scale);
+		FT_Vector_Transform(&shaddist, &vm->fscale);
 
 	org.x >>= 10;
 	org.y >>= 10;
@@ -146,8 +146,10 @@ static inline void ssar_one(struct ssa_vm *vm, FT_OutlineGlyph *g,
 	/* move */
 	FT_Glyph_Transform(transformed, NULL, &org);
 
-	/* \fscx, \fscy */
-	FT_Glyph_Transform(transformed, &vm->scale, NULL);
+	/* \fscx, \fscy and playres scaling are done directly after
+	 * loading the glyph.
+	 * - FT_Glyph_Transform(transformed, &vm->cscale, NULL); -
+	 */
 
 	bord = (bord + 63) >> 6;
 	FT_Glyph_Get_CBox(transformed, FT_GLYPH_BBOX_PIXELS, &cbox);
@@ -225,15 +227,16 @@ void ssar_line(struct ssa_vm *vm, struct ssav_line *l, struct assp_fgroup *fg,
 			prevg = ng;
 		}
 
+		/* actually, active.clip is set in ssa_anim.c:90 */
 		p.f = ng->frame;
 		cpos.x = l->active.clip.xMin;
 		cpos.y = l->active.clip.yMin;
-		FT_Vector_Transform(&cpos, &vm->scale);
+		FT_Vector_Transform(&cpos, &vm->cscale);
 		p.cx0 = clip(cpos.x >> 16, 0, (int)ng->frame->group->w);
 		p.cy0 = clip(cpos.y >> 16, 0, (int)ng->frame->group->h);
 		cpos.x = l->active.clip.xMax;
 		cpos.y = l->active.clip.yMax;
-		FT_Vector_Transform(&cpos, &vm->scale);
+		FT_Vector_Transform(&cpos, &vm->cscale);
 		p.cx1 = clip(cpos.x >> 16, 0, (int)ng->frame->group->w);
 		p.cy1 = clip(cpos.y >> 16, 0, (int)ng->frame->group->h);
 		p.xo = p.yo = 0;
@@ -257,7 +260,7 @@ void ssar_line(struct ssa_vm *vm, struct ssav_line *l, struct assp_fgroup *fg,
 
 		if (bordersize && vm->scalebas) {
 			FT_Vector border = {bordersize, bordersize};
-			FT_Vector_Transform(&border, &vm->scale);
+			FT_Vector_Transform(&border, &vm->fscale);
 			/* this is the vsfilter way, don't bug me >_> */
 			bordersize = (border.x + border.y) >> 1;
 		}

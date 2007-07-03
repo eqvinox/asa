@@ -342,7 +342,7 @@ static void assa_wrap(struct ssa_vm *vm, struct assa_layer *lay,
 
 	newa = xnew(struct assa_alloc);
 
-	ssgl_prepare(l);
+	ssgl_prepare(vm, l);
 
 	newa->next = NULL;
 	newa->line = l;
@@ -352,24 +352,22 @@ static void assa_wrap(struct ssa_vm *vm, struct assa_layer *lay,
 	r.xalign = l->xalign;
 	r.yalign = l->yalign;
 	if (l->flags & SSAV_POS) {
-#if 0
-		r.pos.x = l->active.pos.x * (1. - l->xalign);
-		r.size.x = (FT_Pos)(l->active.pos.x * l->xalign
-			+ (vm->res.x - l->active.pos.x)	* (1 - l->xalign));
-		r.pos.y = l->active.pos.y * (1 - l->yalign);
-		r.size.y = (FT_Pos)(l->active.pos.y * l->yalign
-			+ (vm->res.y - l->active.pos.y)	* (1 - l->yalign));
-#else
-		r.pos.x = l->active.pos.x - (FT_Pos)(l->xalign * vm->res.x);
-		r.pos.y = l->active.pos.y - (FT_Pos)(l->yalign * vm->res.y);
-		r.size.x = vm->res.x;
-		r.size.y = vm->res.y;
-#endif
+		r.pos = l->active.pos;
+		FT_Vector_Transform(&r.pos, &vm->cscale);
+		r.pos.x -= (FT_Pos)(l->xalign * vm->outsize.x);
+		r.pos.y -= (FT_Pos)(l->yalign * vm->outsize.y);
+		r.size = vm->outsize;
 	} else {
-		r.pos.x = l->marginl << 16;
-		r.size.x = vm->res.x - ((l->marginl + l->marginr) << 16);
-		r.pos.y = l->margint << 16;
-		r.size.y = vm->res.y - ((l->margint + l->marginb) << 16);
+		FT_Vector tmp;
+		r.pos.x = l->marginl;
+		r.pos.y = l->margint;
+		FT_Vector_Transform(&r.pos, &vm->cscale);
+		tmp.x = l->marginr;
+		tmp.y = l->marginb;
+		FT_Vector_Transform(&tmp, &vm->cscale);
+		r.size = vm->outsize;
+		r.size.x -= r.pos.x + tmp.x;
+		r.size.y -= r.pos.y + tmp.y;
 	}
 	assa_fit(l, &r);
 	if ((l->flags & SSAV_ORG) == 0) {
@@ -414,19 +412,22 @@ void assa_end(struct ssa_vm *vm)
 
 void assa_setup(struct ssa_vm *vm, unsigned width, unsigned height)
 {
-	vm->scale.xy = 0x00000;
-	vm->scale.yx = 0x00000;
+	vm->cscale.xy = 0x00000;
+	vm->cscale.yx = 0x00000;
+	vm->outsize.x = width << 16;
+	vm->outsize.y = height << 16;
 	if (vm->playresx != 0.0 && vm->playresy != 0.0) {
-		vm->res.x = (int)(vm->playresx * 65536.);
-		vm->res.y = (int)(vm->playresy * 65536.);
-		vm->scale.xx = (FT_Pos)(width * 65536. / vm->playresx);
-		vm->scale.yy = (FT_Pos)(height * 65536. / vm->playresy);
+		vm->playres.x = (int)(vm->playresx * 65536.);
+		vm->playres.y = (int)(vm->playresy * 65536.);
+		vm->cscale.xx = (FT_Pos)(width * 65536. / vm->playresx);
+		vm->cscale.yy = (FT_Pos)(height * 65536. / vm->playresy);
 	} else {
-		vm->res.x = width << 16;
-		vm->res.y = height << 16;
-		vm->scale.xx = 0x10000;
-		vm->scale.yy = 0x10000;
+		vm->playres = vm->outsize;
+		vm->cscale.xx = 0x10000;
+		vm->cscale.yy = 0x10000;
 	}
+	vm->fscale = vm->cscale;
+	vm->fscale.xx = vm->fscale.yy;
 	vm->redoflags = SSAR_COLO | SSAR_REND | SSAR_WRAP;
 }
 
