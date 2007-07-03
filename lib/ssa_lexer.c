@@ -1093,7 +1093,8 @@ static void ssa_fmt_one(struct ssa_state *s, struct ssa_fmt_temp *t)
 
 	if (!t->strange && t->plpos->column) {
 		while (t->plpos->column
-			&& !(t->plpos->ssa_version & s->output->version))
+			&& (!(t->plpos->ssa_version & s->output->version)
+				|| t->plpos->ssa_version & SSAP_NODEF))
 			t->plpos++;
 		if (ssa_fmt_try(s, t, &t->plpos))
 			return;
@@ -1172,6 +1173,12 @@ static unsigned ssa_fmt(struct ssa_state *s, par_t param, void *elem)
 		ssa_fmt_one(s, &t);
 		s->pend = save_pend;
 	}
+	while (t.plpos->column
+		&& (!(t.plpos->ssa_version & s->output->version)
+			|| t.plpos->ssa_version & SSAP_NODEF))
+		t.plpos++;
+	if (!t.text && t.plpos->column)
+		ssa_fmt_strange(s, &t);
 	t.o = (struct ssa_parselist *)xrealloc(t.o,
 		(t.opos + 1) * sizeof(struct ssa_parselist));
 	memset(t.o + t.opos, 0, sizeof(t.o[0]));
