@@ -214,6 +214,7 @@ static unsigned ssa_notsup(struct ssa_state *state, par_t param, void *elem);
 static unsigned ssa_style (struct ssa_state *state, par_t param, void *elem);
 static unsigned ssa_styleex(struct ssa_state *state, par_t param, void *elem);
 static unsigned ssa_std   (struct ssa_state *state, par_t param, void *elem);
+static unsigned ssa_fmt   (struct ssa_state *state, par_t param, void *elem);
 static unsigned ssa_sstyle(struct ssa_state *state, par_t param, void *elem);
 static unsigned ssa_time  (struct ssa_state *state, par_t param, void *elem);
 static unsigned ssa_colour(struct ssa_state *state, par_t param, void *elem);
@@ -1032,6 +1033,150 @@ static struct ssa_parselist *ssa_default_fmt(struct ssa_state *s,
 		}
 	memset(o, 0, sizeof(*o));
 	return rv;
+}
+
+/** temporary bookkeeping for Format: parsing */
+struct ssa_fmt_temp {
+	struct ssa_parselist_fmt *pl,	/**< expected */
+		*plpos;			/**< all */
+	struct ssa_parselist *o;	/**< output */
+	int opos, omax;
+	int text, strange;
+};
+
+/** ssa_fmt_strange - emit strange-Format: warning once per Format:
+ * @param s ssa state
+ * @param t Format: parser state
+ */
+static inline void ssa_fmt_strange(struct ssa_state *s, struct ssa_fmt_temp *t)
+{
+	if (!t->strange) {
+		ssa_add_error(s, s->param, SSAEC_NONSTANDARD_FMT);
+		t->strange = 1;
+	}
+}
+
+/** ssa_fmt_try - check whether ssa_parselist_fmt matches column name.
+ * @param s ssa state
+ * @param t Format: parser state
+ * @param pl double pointer to entry to check.\n
+ *   will be incremented if it matches, to update expected position
+ * @return nonzero if match
+ */
+static int ssa_fmt_try(struct ssa_state *s, struct ssa_fmt_temp *t,
+	struct ssa_parselist_fmt **pl)
+{
+	const ssasrc_t *after;
+	after = ssa_compare(s, s->param, s->pend, (*pl)->column, NULL);
+	if (!after)
+		return 0;
+	ssa_skipws(s, &after, s->pend);
+	if (after != s->pend)
+		return 0;
+	t->o[t->opos].func = (*pl)->func;
+	t->o[t->opos].param = (*pl)->param;
+	t->o[t->opos].flags = (*pl)->ssa_version & SSAP_ALL;
+	t->opos++;
+	(*pl)++;
+	s->param = s->pend;
+	return 1;
+}
+
+/** ssa_fmt_one - process one Format: entry.
+ * @param s ssa state
+ * @param t Format: parser state, updated by this
+ */
+static void ssa_fmt_one(struct ssa_state *s, struct ssa_fmt_temp *t)
+{
+	struct ssa_parselist_fmt *plsearch;
+	const ssasrc_t *save_start = s->param;
+
+	if (!t->strange && t->plpos->column) {
+		while (t->plpos->column
+			&& !(t->plpos->ssa_version & s->output->version))
+			t->plpos++;
+		if (ssa_fmt_try(s, t, &t->plpos))
+			return;
+	}
+	if (s->ctx == SSACTX_EVENTS) {
+		const ssasrc_t *after;
+		after = ssa_compare(s, s->param, s->pend, "text", NULL);
+		if (after) {
+			t->text = 1;
+			if (t->plpos->column)
+				ssa_fmt_strange(s, t);
+			s->param = after;
+			return;
+		}
+	}
+	ssa_fmt_strange(s, t);
+	for (plsearch = t->pl; plsearch->column; plsearch++) {
+		if (!(plsearch->ssa_version & s->output->version))
+			continue;
+		if (ssa_fmt_try(s, t, &plsearch))
+			return;
+	}
+	for (plsearch = t->pl; plsearch->column; plsearch++)
+		if (ssa_fmt_try(s, t, &plsearch)) {
+			ssa_add_error(s, save_start, SSAEC_COLUMN_VERSION);
+			return;
+		}
+	ssa_add_error(s, save_start, SSAEC_UNKNOWN_COLUMN);
+}
+
+/** ssa_fmt - parse Format: line according to active context.
+ * @param s parser state
+ * @param param unused
+ * @param elem (points to output) unused
+ * @return always 0 (ignore remaining line)
+ *
+ * updates ssa_state.ctx_pl accordingly.
+ */
+static unsigned ssa_fmt(struct ssa_state *s, par_t param, void *elem)
+{
+	struct ssa_fmt_temp t;
+	const ssasrc_t *comma = s->param - 1, *save_pend = s->pend;
+
+	if (s->ctx == SSACTX_STYLE)
+		t.pl = plstyle;
+	else if (s->ctx == SSACTX_EVENTS)
+		t.pl = plcommon;
+	else {
+		ssa_add_error(s, s->line, SSAEC_INVALID_CTX);
+		return 0;
+	}
+	if (s->ctx_pl) {
+		ssa_add_error(s, s->line, SSAEC_REPEATED_FMT);
+		free(s->ctx_pl);
+	}
+
+	t.text = t.strange = t.opos = 0;
+	t.omax = 32;
+	t.o = (struct ssa_parselist *)xmalloc(t.omax
+		* sizeof(struct ssa_parselist));
+	t.plpos = t.pl;
+	while (comma) {
+		if (t.text) {
+			ssa_add_error(s, s->param, SSAEC_TEXT_NOT_LAST);
+			break;
+		}
+		s->param = comma + 1;
+		if ((comma = ssa_chr(s->param, s->pend, ',')))
+			s->pend = comma;
+		if (t.opos == t.omax) {
+			t.omax += 32;
+			t.o = (struct ssa_parselist *)xrealloc(t.o,
+				t.omax * sizeof(struct ssa_parselist));
+		}
+		ssa_skipws(s, &s->param, s->pend);
+		ssa_fmt_one(s, &t);
+		s->pend = save_pend;
+	}
+	t.o = (struct ssa_parselist *)xrealloc(t.o,
+		(t.opos + 1) * sizeof(struct ssa_parselist));
+	memset(t.o + t.opos, 0, sizeof(t.o[0]));
+	s->ctx_pl = t.o;
+	return 0;
 }
 
 /** ssa_style - parse Style: line.
