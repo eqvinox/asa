@@ -1,4 +1,3 @@
-AUTOMAKE_OPTIONS = foreign
 EXTRA_DIST = asa.pc.in acinclude.m4
 
 pkgconfigdir = $(libdir)/pkgconfig

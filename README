@@ -1,0 +1,41 @@
+Installation
+============
+
+asa installation works as with any other autoconf/automake package.
+
+   The full set ships two separate packages, asa and csri. The former
+is the actual asa subtitle renderer library while csri, an acronym for
+"common subtitle renderer interface" contains glue logic and helper
+functions for integrating subtitle support into your application or
+writing your own renderer.
+
+
+asa ./configure options
+=======================
+
+`--enable-optimize'
+     Enable various optimisations, both compiler-wise (-O2, -ffast-math,
+     etc.) and source-wise (using SIMD assembly, if available).
+
+     Note that you do NOT need to worry about CPU support for SIMD
+     assembly code. Where SIMD assembly is used, asa checks for proper
+     CPU support first. Just enable it.
+
+`--enable-werror'
+     (Intended for developers) Aborts the build on warnings.
+
+`--prefix'
+`--libdir'
+     Installation destination directories. The actual asa library goes
+     to (libdir)+"/csri"
+
+
+csri ./configure options
+========================
+
+`--without-libass'
+     Do not try to build csri wrapper for libass.
+
+`--with-libass=path'
+     Try to find libass in (path) and build the csri wrapper for it.
+

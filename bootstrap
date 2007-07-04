@@ -7,5 +7,8 @@ automake --version | head -n 1
 gettext --version | head -n 1
 echo "+++"
 
+touch ChangeLog
+git log --pretty=medium asa_0.3.2.. > ChangeLog
+
 autoreconf -f -i -s
 
