@@ -9,6 +9,7 @@ stamp-h1
 .libs
 Makefile
 Makefile.in
+gmon.out
 /asa.pc
 /config.log
 /config.status
@@ -19,4 +20,5 @@ Makefile.in
 /m4
 /_darcs
 /ABOUT-NLS
+/INSTALL
 /ChangeLog
