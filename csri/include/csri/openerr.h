@@ -59,7 +59,7 @@ enum csri_openerr_flags {
 	/** csri_openerr_flag.custerr valid */
 	CSRI_OPENERR_CUSTERR = (1 << 3),
 	/** csri_openerr_flag.warncount valid */
-	CSRI_OPENERR_WARNCOUNT = (1 << 4),
+	CSRI_OPENERR_WARNCOUNT = (1 << 4)
 };
 
 /** returned error information.
