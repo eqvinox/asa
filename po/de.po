@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: asa\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-03-29 16:44+0200\n"
+"POT-Creation-Date: 2007-07-05 16:34+0200\n"
 "PO-Revision-Date: 2006-05-25 14:51+0200\n"
 "Last-Translator: David Lamparter <equinox@diac24.net>\n"
 "Language-Team: David Lamparter <equinox@diac24.net>\n"
@@ -20,7 +20,7 @@ msgstr ""
 msgid "no error"
 msgstr "kein Fehler"
 
-#: lib/asa_errtexts.c:32 lib/asa_errtexts.c:254
+#: lib/asa_errtexts.c:32 lib/asa_errtexts.c:299
 msgid "command/option not supported"
 msgstr "Befehl/Option nicht unterstützt"
 
@@ -573,15 +573,115 @@ msgstr ""
 "eine Zeile in die falsche Sektion gerutscht ist. Asa versucht trotzdem, den "
 "Befehl auszuführen; dies kann jedoch zu Folgefehlern führen."
 
+#: lib/asa_errtexts.c:254
+msgid "style Format: missing"
+msgstr "Format: für Style fehlt"
+
 #: lib/asa_errtexts.c:255
+msgid ""
+"Style: lines without Format: specification were found in this script.\n"
+"\n"
+"For compatibility reasons, add a standard Format: line."
+msgstr ""
+"Das Skript enthält Style:-Zeilen ohne vorhergehendes Format:.\n"
+"\n"
+"Aus Kompatibilitätsgründen sollte eine Format:-Zeile hinzugefügt werden."
+
+#: lib/asa_errtexts.c:260
+msgid "line Format: missing"
+msgstr "Format: für Inhalt fehlt"
+
+#: lib/asa_errtexts.c:261
+msgid ""
+"Dialogue / other lines without Format: specification were found in this "
+"script.\n"
+"\n"
+"For compatibility reasons, add a standard Format: line."
+msgstr ""
+"Das Skript enthält Dialogue:-/ andere Zeilen ohne vorhergehendes Format:.\n"
+"\n"
+"Aus Kompatibilitätsgründen sollte eine Format:-Zeile hinzugefügt werden."
+
+#: lib/asa_errtexts.c:266
+msgid "non-standard Format:"
+msgstr "Non-Standard Format:"
+
+#: lib/asa_errtexts.c:267
+msgid ""
+"The Format: line found does not match the default Format: for this script "
+"version. This might cause problems with VSFilter or older asa versions."
+msgstr ""
+"Die Angaben in der Format:-Zeile entsprechen nicht den normalen Angaben "
+"dieser SSA-/ASS-Version. Dies kann zu Problemen mit VSFilter oder älteren "
+"asa-Versionen führen."
+
+#: lib/asa_errtexts.c:272
+msgid "repeated/late Format:"
+msgstr "Format: wiederholt/verspätet"
+
+#: lib/asa_errtexts.c:273
+msgid ""
+"Another Format: line was found in a section already having a Format: line "
+"(which may have been automatically added earlier).This may cause undefined "
+"behaviour."
+msgstr ""
+"Eine Format:-Zeile wurde in dieser Sektion gefunden, nachdem bereits "
+"Inhalt verarbeitet wurde. Dies kann zu undefinierten Ergebnissen führen."
+
+#: lib/asa_errtexts.c:278
+msgid "unknown column in Format:"
+msgstr "Format: enthält unbekanntes Feld"
+
+#: lib/asa_errtexts.c:279
+msgid "An unknown column has been specified on the Format: line."
+msgstr "Im Format: ist ein Feld angegeben, das asa nicht bekannt ist."
+
+#: lib/asa_errtexts.c:282
+msgid "wrong version Format: column"
+msgstr "Format: Feld aus anderer Version"
+
+#: lib/asa_errtexts.c:283
+msgid ""
+"A column not usually allowed for this script's version has been found. "
+"(e.g. ScaleX on a non-ASS Style)"
+msgstr ""
+"Die Format:-Zeile enthält ein Feld aus einer anderen SSA-/ASS-Version. "
+"(z.B. ScaleX in einem nicht-ASS Style)"
+
+#: lib/asa_errtexts.c:287
+msgid "event Format: Text not last"
+msgstr "Format: Text nicht letztes Feld"
+
+#: lib/asa_errtexts.c:288
+msgid ""
+"The Events Format: line specifies a format with the Text: field not being "
+"the last field (or missing altogether). This is not supported."
+msgstr ""
+"Das Textfeld ist nicht das letzte Feld der Format:-Angabe für die "
+"Dialogzeilen, oder es ist nicht vorhanden. Dies wird nicht unterstützt. "
+
+#: lib/asa_errtexts.c:293
+msgid "floating point coordinates"
+msgstr "Fließkommakoordinaten"
+
+#: lib/asa_errtexts.c:294
+msgid ""
+"This script uses floating point/decimal coordinates. Support for this is "
+"nonstandard and likely to cause problems with other renderers."
+msgstr ""
+"Das Skript benutzt Fließkommakoordinaten (Koordinaten mit Dezimalpunkt). "
+"Dies ist nicht im Standard vorgesehen und kann zu Problemen mit anderer "
+"Software führen."
+
+#: lib/asa_errtexts.c:300
 msgid "Asa is not able to correctly process this option yet."
 msgstr "Asa kann diese Option zur Zeit noch nicht korrekt verarbeiten. "
 
-#: lib/asa_errtexts.c:258
+#: lib/asa_errtexts.c:303
 msgid "font not found"
 msgstr "Schriftart nicht gefunden"
 
-#: lib/asa_errtexts.c:260
+#: lib/asa_errtexts.c:305
 msgid ""
 "The font requested by this style/override was not found.\n"
 "\n"
@@ -595,17 +695,17 @@ msgstr ""
 "Schnittstelle in Verbindung mit copyrightgeschützten oder nicht-TrueType-"
 "Schriftarten ausgelöst."
 
-#: lib/asa_errtexts.c:264
+#: lib/asa_errtexts.c:309
 msgid "The font requested by this style/override was not found."
 msgstr ""
 "Die von diesem Style / Stilbefehl angeforderte Schriftart konnte nicht "
 "lokalisiert werden."
 
-#: lib/asa_errtexts.c:268
+#: lib/asa_errtexts.c:313
 msgid "unanimatable parameter"
 msgstr "Nicht animierbarer Parameter"
 
-#: lib/asa_errtexts.c:269
+#: lib/asa_errtexts.c:314
 msgid ""
 "The script is trying to animate a parameter for which no animation "
 "controller exists. Either asa lacks the support for this or animating this "

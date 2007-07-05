@@ -280,7 +280,7 @@ struct asaec_desc ssaec[ASAEC_MAX] = {
 	NULL},
 /* 45 SSAEC_COLUMN_VERSION */
 {2, _("wrong version Format: column"),
-	_("A column not usually allowed for this script's version has"
+	_("A column not usually allowed for this script's version has "
 	"been found. (e.g. ScaleX on a non-ASS Style)"),
 	NULL},
 /* 46 SSAEC_TEXT_NOT_LAST */
