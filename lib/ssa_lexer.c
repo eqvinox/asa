@@ -522,6 +522,15 @@ static void ssa_add_error_ext(struct ssa_state *state,
 	struct ssa_error *me;
 	size_t textlen = state->end - state->line;
 
+	subhelp_log(CSRI_LOG_DEBUG, "parser: %d:%d: %s: %s",
+		state->lineno, location - state->line,
+		ssaec[ec].sev == 0 ? "information" :
+		ssaec[ec].sev == 1 ? "hint" :
+		ssaec[ec].sev == 2 ? "warning" :
+		ssaec[ec].sev == 3 ? "error" :
+		ssaec[ec].sev == 4 ? "fatal" :
+		"?", ssaec[ec].sh);
+
 	if (state->nerr++ >= state->output->maxerrs) {
 		int ne = state->nerr < 1000 ? 100 : 1000;
 		if (state->nerr % ne == 0)
