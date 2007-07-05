@@ -225,6 +225,8 @@ static void ssav_add_error_style(enum ssav_errc code, char *ext_str,
 static struct ssav_params *ssav_addref(struct ssav_params *p)
 {
 	p->nref++;
+	asaf_saddref(p->fsiz);
+	asaf_faddref(p->font);
 	return p;
 }
 
