@@ -2475,6 +2475,7 @@ void ssa_text_packet(struct ssa *output, iconv_t ic,
 
 	convsize = convleft = datasize;
 	conv = (char *)xmalloc(convsize);
+	convpos = 0;
 	iconv(ic, NULL, NULL, NULL, NULL);
 	do {
 		convsize += 256;
