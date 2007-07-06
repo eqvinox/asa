@@ -178,12 +178,13 @@ static int asai_run_insns(struct asa_import_state *state,
 static int asai_commit(struct asa_import_state *state,
 	struct asa_import_insn *insn)
 {
-	int rv;
+	int rv = 0;
 
 	if (!state->out)
 		return 0;
-	rv = state->cb(state->cb_arg, state->start, state->end,
-		state->out, state->outlen);
+	if (state->outlen > 0)
+		rv = state->cb(state->cb_arg, state->start, state->end,
+			state->out, state->outlen);
 	xfree(state->out);
 	state->out = NULL;
 	state->outlen = 0;
