@@ -15,6 +15,8 @@ asa_opt_disp="none - renderer slower than a snail on slow-motion"
 
 # Checks for programs.
 AC_PROG_CC
+AC_PROG_YACC
+AM_PROG_LEX
 
 # stuff that may fail => do it early
 AC_MSG_NOTICE([--- checking basic system dependencies ---])
@@ -193,6 +195,7 @@ AC_OUTPUT([
 	lib/Makefile
 	lib/amd64/Makefile
 	lib/i686/Makefile
+	lib/import/Makefile
 	interfaces/Makefile
 	po/Makefile.in
 	Makefile

@@ -2,7 +2,7 @@ AM_CPPFLAGS = -D__USER__="\"`whoami` at `hostname`\"" \
 	-I$(top_srcdir)/include \
 	-I$(top_srcdir)/csri/include
 
-SUBDIRS = amd64 i686
+SUBDIRS = import amd64 i686
 if BUILD_AMD64
 ASM = amd64/commit.o
 CLEANFILES = $(ASM)
@@ -49,6 +49,7 @@ libasa_la_SOURCES = \
 libasa_la_LIBADD = \
 	../csri/subhelp/libsubhelp_la-openfile.lo \
 	../csri/subhelp/libsubhelp_la-logging.lo \
+	import/libimport.la \
 	$(ASM)
 libasa_la_LDFLAGS = -version-info 0:0:0 -no-undefined
 libasa_la_CFLAGS = $(werror) $(FREETYPE_CFLAGS) $(FONTCONFIG_CFLAGS)
