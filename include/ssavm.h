@@ -28,6 +28,8 @@
 #include "asaproc.h"
 #include "asafont.h"
 
+#include <iconv.h>
+
 #define SSA_DEBUG 1
 
 struct ssa;
@@ -200,6 +202,11 @@ struct ssa_frag {
 	struct ssav_line *lines[];
 };
 
+enum ssa_vm_streamflags {
+	SSAV_STREAM_TEXT = (1 << 0),
+	SSAV_STREAM_AUTODISCARD = (1 << 1)
+};
+
 /** instance data for the VM */
 struct ssa_vm {
 /* vm core */
@@ -211,6 +218,9 @@ struct ssa_vm {
 	struct ssav_error *errlist, **errnext;
 
 	enum ssar_redoflags redoflags;
+
+	enum ssa_vm_streamflags stream;
+	iconv_t textconv;
 
 /* positioner */
 	double playresx, playresy;
@@ -226,6 +236,8 @@ extern struct ssa_frag *ssap_frag_add(struct ssa_vm *v,
 	struct ssa_frag *prev, struct ssav_line *l);
 
 extern void ssav_create(struct ssa_vm *vm, struct ssa *ssa);
+extern void ssav_packet(struct ssa_vm *vm, struct ssa *ssa,
+	const void *data, size_t datasize, double start, double end);
 
 #endif /* _SSAVM_H */
 
