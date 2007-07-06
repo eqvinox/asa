@@ -23,6 +23,7 @@
 #define _SSA_H
 
 #include <stdlib.h>
+#include <iconv.h>
 #include "colour.h"
 
 struct ssa_error;			/* defined in asaerror.h */
@@ -346,6 +347,8 @@ extern void *xmalloc(size_t size); */
 extern int ssa_lex(struct ssa *output, const void *data, size_t datasize);
 extern void ssa_lex_packet(struct ssa *output, const void *data,
 	size_t datasize);
+extern void ssa_text_packet(struct ssa *output, iconv_t ic,
+	const void *data, size_t datasize);
 extern void ssa_lex_clearlines(struct ssa *output);
 extern void ssa_free(struct ssa *output);
 extern const char *ssa_typename(enum ssa_nodetype type);

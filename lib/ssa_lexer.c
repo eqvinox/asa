@@ -2446,6 +2446,79 @@ void ssa_lex_packet(struct ssa *output, const void *data, size_t datasize)
 	return;
 }
 
+/** stuff a plain text packet into a ssa structure.
+ * @param output result, must be allocated prior to calling, will be zeroed
+ * @param data script input, possibly mmap'ed (is never written to)
+ * @param datasize size of data
+ *
+ * WARNING: this calls ssa_lex_clearlines!
+ */
+void ssa_text_packet(struct ssa *output, iconv_t ic,
+	const void *data, size_t datasize)
+{
+	struct ssa_line *line = xnewz(struct ssa_line);
+	size_t inleft = datasize, convsize, convleft;
+	ICONV_CONST char *input = (ICONV_CONST char *)data;
+	char *conv, *endpos;
+	ptrdiff_t convpos;
+	const ssaout_t *now, *lbreak, *end;
+
+	ssa_lex_clearlines(output);
+
+	line->type = SSAL_DIALOGUE;
+	line->node_last = &line->node_first;
+	output->line_first = line;
+	output->line_last = &line->next;
+	/* TODO: init with sane defaults */
+
+	convsize = convleft = datasize;
+	conv = (char *)xmalloc(convsize);
+	iconv(ic, NULL, NULL, NULL, NULL);
+	do {
+		convsize += 256;
+		convleft += 256;
+
+		conv = (char *)xrealloc(conv, convsize);
+		endpos = conv + convpos;
+
+		iconv_errno = 0;
+		iconv(ic, &input, &inleft, &endpos, &convleft);
+
+		convpos = endpos - conv;
+	} while (iconv_errno == E2BIG);
+	if (iconv_errno || inleft) {
+		xfree(conv);
+		return;
+	}
+
+	now = (ssaout_t *)conv;
+	end = (ssaout_t *)endpos;
+	do {
+		struct ssa_node *n;
+
+		for (lbreak = now; lbreak < end && *lbreak != '\n';
+			lbreak++)
+			;
+
+		n = xnew(struct ssa_node);
+		n->next = NULL;
+		n->type = SSAN_TEXT;
+		n->v.text.s = (ssaout_t *)xmalloc((lbreak - now + 2)
+			* sizeof(ssaout_t));
+		memcpy(n->v.text.s, now, (lbreak - now) * sizeof(ssaout_t));
+		n->v.text.e = n->v.text.s + (lbreak - now);
+		n->v.text.e[0] = n->v.text.e[1] = 0;
+		*line->node_last = n;
+		line->node_last = &n->next;
+
+		if (lbreak == end)
+			break;
+		ssa_add_newline(SSAN_NEWLINEH, &line->node_last);
+		now = lbreak + 1;
+	} while(1);
+	xfree(conv);
+}
+
 /** free a ssa_string.
  * @param str the string to be freed.
  */
