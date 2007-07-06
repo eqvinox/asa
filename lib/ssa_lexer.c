@@ -2427,15 +2427,15 @@ void ssa_lex_packet(struct ssa *output, const void *data, size_t datasize)
 	s.unicode = 1;
 
 	do {
-		const ssasrc_t *lend = ssa_chr(csrc, cend, '\xA'), *now;
+		const ssasrc_t *lend = ssa_chr(csrc, cend, '\xA');
 		if (!lend)
 			lend = cend;
 		if (lend > csrc)
 			s.end = (*(lend - 1) == '\xD') ? lend - 1 : lend;
-		s.line = now = csrc;
+		s.line = s.param = csrc;
 
-		ssa_skipws(&s, &now, s.end);
-		if (now != s.end && *now != ';' && *now != '!')
+		ssa_skipws(&s, &s.param, s.end);
+		if (s.param != s.end && *s.param != ';' && *s.param != '!')
 			ssa_main_call(&s, &ptkeys[PTKEYS_PACKET]);
 		csrc = lend + 1;
 	} while (csrc < cend);
