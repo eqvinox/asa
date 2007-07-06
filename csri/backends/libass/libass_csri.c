@@ -172,15 +172,6 @@ static csri_inst *libass_init_stream(csri_rend *renderer,
 	if (renderer != &csri_libass)
 		return NULL;
 
-	while (flags) {
-		if (!strcmp(flags->name, CSRI_EXT_STREAM_F_ASS))
-			break;
-		if (strncmp(flags->name, CSRI_EXT_STREAM_F ".",
-			sizeof(CSRI_EXT_STREAM_F)))
-			return NULL;
-		flags = flags->next;
-	}
-
 	rv = (csri_inst *)malloc(sizeof(csri_inst));
 	if (!rv)
 		return NULL;
@@ -210,7 +201,6 @@ static void libass_push_packet(csri_inst *inst,
 		(int)(pts_start * 1000), (int)((pts_end - pts_start) * 1000));
 }
 
-static int dummy = 0;
 static struct csri_stream_ext streamext = {
 	libass_init_stream,
 	libass_push_packet,
@@ -221,9 +211,7 @@ void *csri_query_ext(csri_rend *rend, csri_ext_id extname)
 {
 	if (!rend)
 		return NULL;
-	if (!strcmp(extname, CSRI_EXT_STREAM_F_ASS))
-		return &dummy;
-	if (!strcmp(extname, CSRI_EXT_STREAM))
+	if (!strcmp(extname, CSRI_EXT_STREAM_ASS))
 		return &streamext;
 	return NULL;
 }
