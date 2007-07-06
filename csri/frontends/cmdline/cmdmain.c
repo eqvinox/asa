@@ -106,6 +106,8 @@ static const char *dummy_script = "[Script Info]\r\n"
 	"Dialogue: Marked=0,0:00:01.00,0:00:02.00,Default,,0000,0000,0000,,"
 		"test\r\n";
 
+static const char *dummy_stream = "1,0,Default,,0000,0000,0000,,stream\r\n";
+
 #define e(x) { #x, CSRI_F_ ## x }
 #define ree(x) e(RGB ## x), e(x ## RGB), e(BGR ## x), e(x ## BGR)
 static struct csri_fmtlistent {
@@ -326,6 +328,105 @@ static int do_render(int argc, char **argv)
 	return real_render(times, infile, outfile, argv[optind], fmt);
 }
 
+static int do_streamtest(int argc, char **argv)
+{
+	const char *outfile = NULL;
+	struct csri_fmtlistent *fmte;
+	enum csri_pixfmt pfmt = ~0U;
+	struct csri_frame *bg, *a;
+	csri_inst *inst;
+	struct csri_fmt fmt;
+	uint32_t width = 640, height = 480;
+	struct csri_stream_ext *sext;
+
+	argv--, argc++;
+	while (1) {
+		int c;
+		const char *short_options = "o:F:";
+		struct option long_options[] = {
+			{"output", 1, 0, 'o'},
+			{"format", 0, 0, 'F'},
+			{0, 0, 0, 0}
+		};
+		c = getopt_long(argc, argv, short_options, long_options, NULL);
+		if (c == -1)
+			break;
+		switch (c) {
+		case 'o':
+			outfile = optarg;
+			break;
+		case 'F':
+			if (pfmt != ~0U)
+				return do_usage(stderr);
+			for (fmte = csri_fmts; fmte->label; fmte++)
+				if (!strcmp(fmte->label, optarg))
+					break;
+			if (!fmte->label)
+				return do_usage(stderr);
+			pfmt = fmte->fmt;
+			break;
+		default:
+			return do_usage(stderr);
+		};
+	}
+	if (pfmt == ~0U)
+		pfmt = CSRI_F_RGB_;
+
+	sext = (struct csri_stream_ext *)csri_query_ext(r,
+		CSRI_EXT_STREAM_ASS);
+	if (!sext) {
+		fprintf(stderr, "renderer does not support ASS streaming\n");
+		return 2;
+	}
+
+	bg = frame_alloc(width, height, pfmt);
+	a = frame_alloc(width, height, pfmt);
+	if (!bg || !a) {
+		fprintf(stderr, "failed to allocate frame\n");
+		return 2;
+	}
+	inst = sext->init_stream(r, dummy_script, strlen(dummy_script), NULL);
+	if (!inst) {
+		fprintf(stderr, "failed to initialize stream\n");
+		return 2;
+	}
+	fmt.pixfmt = pfmt;
+	fmt.width = width;
+	fmt.height = height;
+	if (csri_request_fmt(inst, &fmt)) {
+		fprintf(stderr, "format not supported by renderer\n");
+		return 2;
+	}
+
+	frame_copy(a, bg, width, height);
+	csri_render(inst, a, 1.75);
+	if (outfile) {
+		char buffer[256];
+		snprintf(buffer, sizeof(buffer),
+			 "%s_nstream.png", outfile);
+		printf("%s\n", buffer);
+		png_store(a, buffer, width, height);
+	}
+
+	frame_copy(a, bg, width, height);
+	sext->push_packet(inst, dummy_stream, strlen(dummy_stream),
+		1.5, 2.0);
+	csri_render(inst, a, 1.75);
+	if (outfile) {
+		char buffer[256];
+		snprintf(buffer, sizeof(buffer),
+			 "%s_stream.png", outfile);
+		printf("%s\n", buffer);
+		png_store(a, buffer, width, height);
+	}
+
+	csri_close(inst);
+	inst = NULL;
+	frame_free(bg);
+	frame_free(a);
+	return 0;
+}
+
 int main(int argc, char **argv)
 {
 	struct csri_logging_ext *logext;
@@ -366,5 +467,7 @@ int main(int argc, char **argv)
 		return do_info(argc - 1, argv + 1);
 	if (!strcmp(argv[0], "render"))
 		return do_render(argc - 1, argv + 1);
+	if (!strcmp(argv[0], "streamtest"))
+		return do_streamtest(argc - 1, argv + 1);
 	return do_usage(stderr);
 }
