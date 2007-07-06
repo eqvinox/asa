@@ -173,7 +173,10 @@
 				return REGEX_R;
 			}
 	\\-		/* skip over */
-	\\[^0-9-]	ensure(1); *strbuf_ptr++ = yytext[1];
+	\\n		ensure(1); *strbuf_ptr++ = '\n';
+	\\r		ensure(1); *strbuf_ptr++ = '\r';
+	\\t		ensure(1); *strbuf_ptr++ = '\t';
+	\\[^0-9ntr-]	ensure(1); *strbuf_ptr++ = yytext[1];
 	[^\\/]+		{
 				ssize_t len = strlen(yytext);
 				ensure(len);
