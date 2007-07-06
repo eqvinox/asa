@@ -1236,6 +1236,8 @@ static unsigned ssa_style(struct ssa_state *state, par_t param, void *elem)
 	state->output->style_last = &style->next;
 	/* TODO: init with sane defaults */
 	style->relative = 1;
+	style->scx = 100.0;
+	style->scy = 100.0;
 	style->node_last = &style->node_first;
 
 	pl = state->ctx_pl;
