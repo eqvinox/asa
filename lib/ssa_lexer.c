@@ -67,6 +67,9 @@
 #define ssatol		strtol		/**< @see ssasrc_t */ 
 #define ssatoul		strtoul		/**< @see ssasrc_t */ 
 
+static void ssa_freenodes(struct ssa_node *nodes);
+static void ssa_freestr(ssa_string *str);
+
 struct ssa_parselist;
 
 /** SSA parsing context.
@@ -2377,12 +2380,30 @@ cont:
 	return 0;
 }
 
+/** free all event lines.
+ * @param output ssa lexer
+ */
+void ssa_lex_clearlines(struct ssa *output)
+{
+	struct ssa_line *line, *lnext;
+	for (line = output->line_first; line; line = lnext) {
+		ssa_freenodes(line->node_first);
+		ssa_freestr(&line->ssa_marked);
+		ssa_freestr(&line->name);
+		ssa_freestr(&line->text);
+		lnext = line->next;
+		xfree(line);
+	}
+	output->line_first = NULL;
+	output->line_last = &output->line_first;
+}
+
 /** stream packet lexer.
  * @param output result, must be allocated prior to calling, will be zeroed
  * @param data script input, possibly mmap'ed (is never written to)
  * @param datasize size of data
  *
- * WARNING: this resets output->line_first and output->line_last!
+ * WARNING: this calls ssa_lex_clearlines!
  */
 void ssa_lex_packet(struct ssa *output, const void *data, size_t datasize)
 {
@@ -2393,9 +2414,8 @@ void ssa_lex_packet(struct ssa *output, const void *data, size_t datasize)
 	oldlocale_ctype = setlocale(LC_CTYPE, "C");
 	oldlocale_numeric = setlocale(LC_NUMERIC, "C");
 
+	ssa_lex_clearlines(output);
 	s.output = output;
-	s.output->line_first = NULL;
-	s.output->line_last = &s.output->line_first;
 	s.elast = NULL;
 	s.nerr = 0;
 	s.lineno = 0;
@@ -2469,18 +2489,10 @@ static void ssa_freenodes(struct ssa_node *nodes)
 void ssa_free(struct ssa *output)
 {
 	struct ssa_style *style, *snext;
-	struct ssa_line *line, *lnext;
 	struct ssa_error *err, *errnext;
 	struct ssa_parsetext_ctx *pt;
 
-	for (line = output->line_first; line; line = lnext) {
-		ssa_freenodes(line->node_first);
-		ssa_freestr(&line->ssa_marked);
-		ssa_freestr(&line->name);
-		ssa_freestr(&line->text);
-		lnext = line->next;
-		xfree(line);
-	}
+	ssa_lex_clearlines(output);
 
 	for (style = output->style_first; style; style = snext) {
 		ssa_freestr(&style->name);
