@@ -67,6 +67,9 @@
 #define ssatol		strtol		/**< @see ssasrc_t */ 
 #define ssatoul		strtoul		/**< @see ssasrc_t */ 
 
+static void ssa_freenodes(struct ssa_node *nodes);
+static void ssa_freestr(ssa_string *str);
+
 struct ssa_parselist;
 
 /** SSA parsing context.
@@ -78,6 +81,7 @@ enum ssa_context {
 	SSACTX_INFO = 1 << 2,		/**< script info */
 	SSACTX_STYLE = 1 << 3,		/**< style */
 	SSACTX_EVENTS = 1 << 4,		/**< events */
+	SSACTX_PACKET = 1 << 5,		/**< MKV streaming */
 };
 
 /** lexer state / instance.
@@ -230,18 +234,22 @@ static unsigned ssa_fe    (struct ssa_state *state, par_t param, void *elem);
 
 
 #define fmts	(SSACTX_STYLE | SSACTX_EVENTS)
+#define dlg	(SSACTX_RAW | SSACTX_EVENTS | SSACTX_PACKET)
 #define evnt	(SSACTX_RAW | SSACTX_EVENTS)
 #define styl	(SSACTX_RAW | SSACTX_STYLE)
 #define info	(SSACTX_RAW | SSACTX_INFO)
 #define init	(SSACTX_INIT)
 #define any	(~0UL)
 
+/** index of ptkeys entry to use for SSACTX_PACKET */
+#define PTKEYS_PACKET	0
+
 #define apply_offset(x,y) (((char *)x) + y)		/**< apply e(x) */
 #define e(x) ((ptrdiff_t) &((struct ssa *)0)->x)	/**< store offset */
 /** global keyword table */
 static struct ssa_parsetext_ctx ptkeys[] = {
 	/* content lines - first because used the most */
-	{"dialogue:",		ssa_std,	{SSAL_DIALOGUE},	evnt},
+	{"dialogue:",		ssa_std,	{SSAL_DIALOGUE},	dlg},
 	{"style:",		ssa_style,	{0},			styl},
 	{"styleex:",		ssa_styleex,	{0},			styl},
 	{"comment:",		ssa_std,	{SSAL_COMMENT},		evnt},
@@ -311,6 +319,19 @@ static struct ssa_parselist_fmt plcommon[] = {
 	{ssa_effect,	{0},			SSAV_UNDEF,	"effect"},
 	/* text isn't parsed by this (commas in it ;) */
 	{NULL,		{0},			0,		NULL}
+};
+
+/** CSV for MKV-style streaming */
+static struct ssa_parselist plpacket[] = {
+	{ssa_genint,	{e(read_order)},	0},
+	{ssa_genint,	{e(ass_layer)},		0},
+	{ssa_sstyle,	{e(style)},		0},
+	{ssa_genstr,	{e(name)},		0},
+	{ssa_gencrd,	{e(marginl)},		0},
+	{ssa_gencrd,	{e(marginr)},		0},
+	{ssa_twocrd,	{e(margint)},		0},
+	{ssa_effect,	{0},			0},
+	{NULL,		{0},			0}
 };
 #undef e
 #define e(x) ((ptrdiff_t) &((struct ssa_style *)0)->x)
@@ -521,15 +542,22 @@ static void ssa_add_error_ext(struct ssa_state *state,
 {
 	struct ssa_error *me;
 	size_t textlen = state->end - state->line;
-
-	subhelp_log(CSRI_LOG_DEBUG, "parser: %d:%d: %s: %s",
-		state->lineno, location - state->line,
+	char *severity =
 		ssaec[ec].sev == 0 ? "information" :
 		ssaec[ec].sev == 1 ? "hint" :
 		ssaec[ec].sev == 2 ? "warning" :
 		ssaec[ec].sev == 3 ? "error" :
 		ssaec[ec].sev == 4 ? "fatal" :
-		"?", ssaec[ec].sh);
+		"?";
+
+
+	if (state->ctx == SSACTX_PACKET)
+		subhelp_log(CSRI_LOG_DEBUG, "parser: <stream>: %s: %s",
+			severity, ssaec[ec].sh);
+	else
+		subhelp_log(CSRI_LOG_DEBUG, "parser: %d:%d: %s: %s",
+			state->lineno, location - state->line,
+			severity, ssaec[ec].sh);
 
 	if (state->nerr++ >= state->output->maxerrs) {
 		int ne = state->nerr < 1000 ? 100 : 1000;
@@ -2354,6 +2382,145 @@ cont:
 	return 0;
 }
 
+/** free all event lines.
+ * @param output ssa lexer
+ */
+void ssa_lex_clearlines(struct ssa *output)
+{
+	struct ssa_line *line, *lnext;
+	for (line = output->line_first; line; line = lnext) {
+		ssa_freenodes(line->node_first);
+		ssa_freestr(&line->ssa_marked);
+		ssa_freestr(&line->name);
+		ssa_freestr(&line->text);
+		lnext = line->next;
+		xfree(line);
+	}
+	output->line_first = NULL;
+	output->line_last = &output->line_first;
+}
+
+/** stream packet lexer.
+ * @param output result, must be allocated prior to calling, will be zeroed
+ * @param data script input, possibly mmap'ed (is never written to)
+ * @param datasize size of data
+ *
+ * WARNING: this calls ssa_lex_clearlines!
+ */
+void ssa_lex_packet(struct ssa *output, const void *data, size_t datasize)
+{
+	struct ssa_state s;
+	const char *csrc = (const char *)data, *cend = csrc + datasize;
+	char *oldlocale_ctype, *oldlocale_numeric;
+
+	oldlocale_ctype = setlocale(LC_CTYPE, "C");
+	oldlocale_numeric = setlocale(LC_NUMERIC, "C");
+
+	ssa_lex_clearlines(output);
+	s.output = output;
+	s.elast = NULL;
+	s.nerr = 0;
+	s.lineno = 0;
+	s.anisource = NULL;
+	s.ctx = SSACTX_PACKET;
+	s.ctx_pl = plpacket;
+	s.ic_srccs = "UTF-8";
+	s.ic_srcout = iconv_open(SSA_DESTCS, "UTF-8");
+	s.unicode = 1;
+
+	do {
+		const ssasrc_t *lend = ssa_chr(csrc, cend, '\xA');
+		if (!lend)
+			lend = cend;
+		if (lend > csrc)
+			s.end = (*(lend - 1) == '\xD') ? lend - 1 : lend;
+		s.line = s.param = csrc;
+
+		ssa_skipws(&s, &s.param, s.end);
+		if (s.param != s.end && *s.param != ';' && *s.param != '!')
+			ssa_main_call(&s, &ptkeys[PTKEYS_PACKET]);
+		csrc = lend + 1;
+	} while (csrc < cend);
+
+	iconv_close(s.ic_srcout);
+	setlocale(LC_CTYPE, oldlocale_ctype);
+	setlocale(LC_NUMERIC, oldlocale_numeric);
+	return;
+}
+
+/** stuff a plain text packet into a ssa structure.
+ * @param output result, must be allocated prior to calling, will be zeroed
+ * @param data script input, possibly mmap'ed (is never written to)
+ * @param datasize size of data
+ *
+ * WARNING: this calls ssa_lex_clearlines!
+ */
+void ssa_text_packet(struct ssa *output, iconv_t ic,
+	const void *data, size_t datasize)
+{
+	struct ssa_line *line = xnewz(struct ssa_line);
+	size_t inleft = datasize, convsize, convleft;
+	ICONV_CONST char *input = (ICONV_CONST char *)data;
+	char *conv, *endpos;
+	ptrdiff_t convpos;
+	const ssaout_t *now, *lbreak, *end;
+
+	ssa_lex_clearlines(output);
+
+	line->type = SSAL_DIALOGUE;
+	line->node_last = &line->node_first;
+	output->line_first = line;
+	output->line_last = &line->next;
+	/* TODO: init with sane defaults */
+
+	convsize = convleft = datasize;
+	conv = (char *)xmalloc(convsize);
+	iconv(ic, NULL, NULL, NULL, NULL);
+	do {
+		convsize += 256;
+		convleft += 256;
+
+		conv = (char *)xrealloc(conv, convsize);
+		endpos = conv + convpos;
+
+		iconv_errno = 0;
+		iconv(ic, &input, &inleft, &endpos, &convleft);
+
+		convpos = endpos - conv;
+	} while (iconv_errno == E2BIG);
+	if (iconv_errno || inleft) {
+		xfree(conv);
+		return;
+	}
+
+	now = (ssaout_t *)conv;
+	end = (ssaout_t *)endpos;
+	do {
+		struct ssa_node *n;
+
+		for (lbreak = now; lbreak < end && *lbreak != '\n';
+			lbreak++)
+			;
+
+		n = xnew(struct ssa_node);
+		n->next = NULL;
+		n->type = SSAN_TEXT;
+		n->v.text.s = (ssaout_t *)xmalloc((lbreak - now + 2)
+			* sizeof(ssaout_t));
+		memcpy(n->v.text.s, now, (lbreak - now) * sizeof(ssaout_t));
+		n->v.text.e = n->v.text.s + (lbreak - now);
+		n->v.text.e[0] = n->v.text.e[1] = 0;
+		*line->node_last = n;
+		line->node_last = &n->next;
+
+		if (lbreak == end)
+			break;
+		ssa_add_newline(SSAN_NEWLINEH, &line->node_last);
+		now = lbreak + 1;
+	} while(1);
+	xfree(conv);
+}
+
 /** free a ssa_string.
  * @param str the string to be freed.
  */
@@ -2397,18 +2564,10 @@ static void ssa_freenodes(struct ssa_node *nodes)
 void ssa_free(struct ssa *output)
 {
 	struct ssa_style *style, *snext;
-	struct ssa_line *line, *lnext;
 	struct ssa_error *err, *errnext;
 	struct ssa_parsetext_ctx *pt;
 
-	for (line = output->line_first; line; line = lnext) {
-		ssa_freenodes(line->node_first);
-		ssa_freestr(&line->ssa_marked);
-		ssa_freestr(&line->name);
-		ssa_freestr(&line->text);
-		lnext = line->next;
-		xfree(line);
-	}
+	ssa_lex_clearlines(output);
 
 	for (style = output->style_first; style; style = snext) {
 		ssa_freestr(&style->name);

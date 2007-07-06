@@ -27,6 +27,7 @@ typedef struct csri_asa_rend csri_rend;
 typedef struct csri_asa_inst csri_inst;
 
 #include <csri/csri.h>
+#include <csri/stream.h>
 #include <subhelp.h>
 
 #include "asaproc.h"
@@ -38,6 +39,9 @@ typedef struct csri_asa_inst csri_inst;
 struct csri_asa_inst {
 	struct ssa_vm vm;
 	struct assp_fgroup *framegroup;
+
+	unsigned streaming;
+	struct ssa streamlex;
 };
 
 static struct csri_asa_rend {
@@ -75,12 +79,43 @@ csri_inst *csri_open_mem(csri_rend *renderer,
 	return rv;
 }
 
+csri_inst *csri_stream_ass_init_stream(csri_rend *renderer,
+	const void *header, size_t headerlen, struct csri_openflag *flags)
+{
+	csri_inst *rv;
+
+	if (renderer != &csri_asa)
+		return NULL;
+	if (!csri_asa.ref++) {
+		asa_opt_init();
+		asaf_init();
+	}
+
+	rv = xnewz(csri_inst);
+	rv->streaming = 1;
+	if (ssa_lex(&rv->streamlex, header, headerlen)) {
+		xfree(rv);
+		return NULL;
+	}
+	ssav_create(&rv->vm, &rv->streamlex);
+	rv->vm.stream = SSAV_STREAM_AUTODISCARD;
+	return rv;
+}
+
+static void csri_stream_ass_push_packet(csri_inst *inst,
+	const void *packet, size_t packetlen, double start, double end)
+{
+	ssav_packet(&inst->vm, &inst->streamlex,
+		packet, packetlen, start, end);
+}
 
 void csri_close(csri_inst *inst)
 {
 	if (inst->framegroup)
 		assp_fgroupfree(inst->framegroup);
 	ssar_flush(&inst->vm);
+	if (inst->streaming)
+		ssa_free(&inst->streamlex);
 	free(inst);
 
 #if 0
@@ -115,14 +150,21 @@ void csri_render(csri_inst *inst, struct csri_frame *frame, double time)
 	ssar_run(&inst->vm, time, inst->framegroup, frame);
 }
 
+static struct csri_stream_ext asa_stream_ext = {
+	csri_stream_ass_init_stream,
+	csri_stream_ass_push_packet,
+	NULL
+};
+
 void *csri_query_ext(csri_rend *rend, csri_ext_id extname)
 {
 	void *rv;
 	if ((rv = subhelp_query_ext_logging(extname)))
 		return rv;
-	if (!rend)
+	if (rend != &csri_asa)
 		return NULL;
-	/* ... */
+	if (!strcmp(extname, CSRI_EXT_STREAM_ASS))
+		return &asa_stream_ext;
 	return NULL;
 }
 

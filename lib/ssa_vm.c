@@ -909,6 +909,7 @@ void ssav_create(struct ssa_vm *vm, struct ssa *ssa)
 	struct ssa_line *l = ssa->line_first;
 	struct ssa_frag *hint;
 
+	vm->stream = 0;
 	vm->playresx = ssa->playresx;
 	vm->playresy = ssa->playresy;
 	vm->scalebas = ssa->scalebas;
@@ -937,5 +938,26 @@ void ssav_create(struct ssa_vm *vm, struct ssa *ssa)
 		l = l->next;
 	}
 	return;
+}
+
+void ssav_packet(struct ssa_vm *vm, struct ssa *ssa,
+	const void *data, size_t datasize, double start, double end)
+{
+	struct ssa_frag *hint = vm->cache ? vm->cache : vm->fragments;
+	struct ssa_line *l;
+
+	if (vm->stream & SSAV_STREAM_TEXT)
+		ssa_text_packet(ssa, vm->textconv, data, datasize);
+	else
+		ssa_lex_packet(ssa, data, datasize);
+
+	l = ssa->line_first;
+	while (l) {
+		l->start = start;
+		l->end = end;
+		if (l->type == SSAL_DIALOGUE)
+			ssav_prep_dialogue(ssa, vm, l, &hint);
+		l = l->next;
+	}
 }
 
