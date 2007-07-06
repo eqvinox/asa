@@ -97,6 +97,7 @@ enum asa_import_target {
 /** importing instructions for format */
 struct asa_import_format {
 	struct asa_import_format *next,		/**< next format */
+		*prevtgt,			/**< previous target */
 		*nexttgt;			/**< next target of this*/
 
 	char *name;				/**< format name */
@@ -116,24 +117,17 @@ struct asa_import_detect {
 
 };
 
-#define MAXDELTA	4	/**< nr of times kept for delta backref */
-#define MAXGROUP	24	/**< maximum number of regex match groups */
-
-/** state of a running import */
-struct asa_import_state {
-	char *line;			/**< beginning of current line */
-
-	char **matches;			/**< active matchgroups */
-	int	nmatches,		/**< number of matchgroups */
-		selected;		/**< currently active matchgroup */
-	char *out;			/**< output buffer (NULL if empty) */
-
-	double start,			/**< start time */
-		end;			/**< end time */
-	double delta[MAXDELTA];		/**< hist of last times for delta */
-};
-
 extern struct asa_import_detect *asa_det_first, **asa_det_last;
 extern struct asa_import_format *asa_fmt_first, **asa_fmt_last;
+
+typedef int (asa_import_callback)(void *arg, double start, double stop,
+	const char *buffer, size_t buffer_length);
+
+extern struct asa_import_detect *asa_imports_detect(const void *data,
+	size_t dlen);
+extern int asa_import(const void *data, size_t dlen, double fps,
+	struct asa_import_detect *det, enum asa_import_target target,
+	asa_import_callback *callback, void *arg);
+extern void asa_init_import();
 
 #endif

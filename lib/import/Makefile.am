@@ -5,7 +5,7 @@ AM_CPPFLAGS = -D_GNU_SOURCE \
 
 noinst_HEADERS = imports.h
 noinst_LTLIBRARIES = libimport.la
-libimport_la_SOURCES = imports_par.y imports_lex.l
+libimport_la_SOURCES = imports_par.y imports_lex.l imports_vm.c
 
 # force dependency
 imports_lex.lo: imports_par.h
