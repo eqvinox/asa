@@ -427,17 +427,18 @@ enum ssar_redoflags assa_realloc(struct ssa_vm *vm,
 	struct ssav_line *l, enum ssar_redoflags prev)
 {
 	struct assa_layer *lay = assa_getlayer(vm, l->ass_layer);
+	struct assa_alloc **curpos = lay->curpos;
 
-	if (*lay->curpos
-		&& (*lay->curpos)->line == l
-		&& !(prev & SSAR_WRAP)) 
-		lay->curpos = &(*lay->curpos)->next;
-	else {
-		assa_trash(lay);
-		prev |= SSAR_WRAP | SSAR_REND;
-		assa_wrap(vm, lay, l);
+	if (!(prev & SSAR_WRAP)) {
+		for (; *curpos; curpos = &(*curpos)->next)
+			if ((*curpos)->line == l) {
+				lay->curpos = &(*curpos)->next;
+				return prev;
+			}
 	}
-		
+	assa_trash(lay);
+	prev |= SSAR_WRAP | SSAR_REND;
+	assa_wrap(vm, lay, l);
 	return prev;
 }
 
