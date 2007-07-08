@@ -11,6 +11,7 @@ AC_CONFIG_HEADER([include/acconf.h])
 asa_optimize=NONE
 
 asa_opt_disp="none - renderer slower than a snail on slow-motion"
+simpfmt_disp="yes"
 
 
 # Checks for programs.
@@ -32,6 +33,10 @@ PKG_CHECK_MODULES([FREETYPE], freetype2 >= 9.10.3,, [
 ])
 PKG_CHECK_MODULES([FONTCONFIG], fontconfig >= 2.2.0,, [
 	AC_MSG_FAILURE([asa needs fontconfig 2.2 or newer. Also check your pkg-config installation.])
+])
+PKG_CHECK_MODULES([PCRE], libpcre >= 6.5,, [
+	AC_MSG_WARN([libpcre not available - no support for simple subtitle formats.])
+	simpfmt_disp="no - pcre >= 6.5 missing"
 ])
 
 LDFLAGS="$LDFLAGS $FREETYPE_LIBS $FONTCONFIG_LIBS"
@@ -179,14 +184,6 @@ AM_CONDITIONAL([BUILD_I686], [test "$asa_optimize" == "i686"])
 csrilibdir="${libdir}/csri"
 AC_SUBST([csrilibdir], [$csrilibdir])
 
-echo " "
-echo " configuration summary: "
-echo " "
-echo "   library installation path: $csrilibdir"
-echo "   build renderer & ssa libs: always built"
-echo "     using optimization:      $asa_opt_disp"
-echo " "
-
 AC_CONFIG_FILES([asa.pc])
 
 AC_OUTPUT([
@@ -200,4 +197,13 @@ AC_OUTPUT([
 	po/Makefile.in
 	Makefile
 ])
+
+echo " "
+echo " configuration summary: "
+echo " "
+echo "   library installation path: $csrilibdir"
+echo "   build renderer & ssa libs: always built"
+echo "   simple formats (like SRT): $simpfmt_disp"
+echo "          using optimization: $asa_opt_disp"
+echo " "
 
