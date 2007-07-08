@@ -186,6 +186,8 @@ struct ssav_line {
 	struct ssav_lineparams base, active;
 	enum ssav_lineflags flags;
 
+	FT_Pos x[2], y[2];
+
 	unsigned nctr;
 	struct ssav_controller ctrs[];
 };

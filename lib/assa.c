@@ -83,8 +83,6 @@ static void assa_trash(struct assa_layer *lay)
 
 struct assa_rect {
 	FT_Vector pos, size;
-
-	int wrapdir;
 	double xalign, yalign;
 };
 
@@ -295,16 +293,21 @@ static void assa_fit_q0(struct fitlines *fls,
  * @param r the rectangle to use (including alignment info)
  * @param h_total total height of all the lines
  */
-static void assa_fit_arrange(struct fitlines *fls,
+static void assa_fit_arrange(struct ssav_line *l, struct fitlines *fls,
 	struct assa_rect *r, FT_Pos h_total)
 {
 	FT_Pos y, x;
+	FT_Pos w;
 	struct fitline *fl, *end;
 
-	y = r->pos.y + (FT_Pos)((double)(r->size.y - h_total) * r->yalign);
+	l->y[0] = y = r->pos.y + (FT_Pos)((double)(r->size.y - h_total) * r->yalign);
+	l->y[1] = l->y[0] + h_total;
+	l->x[0] = w = 0;
 	for (fl = fls->fl, end = fl + fls->used; fl < end; fl++) {
 		struct ssav_unit *u = fl->startat;
 		x = r->pos.x + (FT_Pos)((double)(r->size.x - fl->size.x) * r->xalign);
+		if (fl->size.x > w)
+			l->x[0] = x, w = fl->size.x;
 
 		y += fl->size.y;
 		while (u != fl->endat) {
@@ -314,8 +317,13 @@ static void assa_fit_arrange(struct fitlines *fls,
 			u = u->next;
 		}
 	}
+	l->x[1] = l->x[0] + w;
 }
 
+/** fitting parent: try to place line into a rectangle.
+ * @param l the line to fit
+ * @param r the rectangle to use (including alignment info)
+ */
 static void assa_fit(struct ssav_line *l, struct assa_rect *r)
 {
 	FT_Pos h_total = 0;
@@ -329,11 +337,48 @@ static void assa_fit(struct ssav_line *l, struct assa_rect *r)
 		assa_fit_q0(&fls, l->unit_first, r->size.x, &h_total, l->wrap);
 	else
 		assa_fit_q12(&fls, l->unit_first, r->size.x, &h_total, l->wrap);
-	assa_fit_arrange(&fls, r, h_total);
+	assa_fit_arrange(l, &fls, r, h_total);
 
 	xfree(fls.fl);
 }
 
+/** move line until it doesn't collide with any other on-layer one.
+ * @param l line to update
+ * @param lay layer for collision information
+ */
+static void assa_collide(struct ssav_line *l, struct assa_layer *lay)
+{
+	struct ssav_unit *u;
+	struct assa_alloc *a = lay->allocs;
+	FT_Pos offsety = 0;
+	int movedir = l->yalign >= 0.5, nmovedir = 1 - movedir;
+
+	for (; a; a = a->next) {
+		struct ssav_line *cl = a->line;
+
+		if (l->x[0] >= cl->x[1]
+			|| l->x[1] < cl->x[0])
+			continue;
+		if (l->y[0] + offsety >= cl->y[1]
+			|| l->y[1] + offsety < cl->y[0])
+			continue;
+
+		offsety = cl->y[nmovedir] - l->y[movedir] - movedir;
+		a = lay->allocs;
+	}
+	l->y[0] += offsety;
+	l->y[1] += offsety;
+
+	offsety >>= 10;
+	for (u = l->unit_first; u; u = u->next)
+		u->final.y += offsety;
+}
+
+/** wrap and position line.
+ * @param vm the SSA vm to use (for frame size)
+ * @param lay ASS layer (only same-layer lines get collision detection)
+ * @param l the line to process
+ */
 static void assa_wrap(struct ssa_vm *vm, struct assa_layer *lay,
 	struct ssav_line *l)
 {
@@ -346,8 +391,6 @@ static void assa_wrap(struct ssa_vm *vm, struct assa_layer *lay,
 
 	newa->next = NULL;
 	newa->line = l;
-	*lay->curpos = newa;
-	lay->curpos = &newa->next;
 
 	r.xalign = l->xalign;
 	r.yalign = l->yalign;
@@ -357,6 +400,7 @@ static void assa_wrap(struct ssa_vm *vm, struct assa_layer *lay,
 		r.pos.x -= (FT_Pos)(l->xalign * vm->outsize.x);
 		r.pos.y -= (FT_Pos)(l->yalign * vm->outsize.y);
 		r.size = vm->outsize;
+		assa_fit(l, &r);
 	} else {
 		FT_Vector tmp;
 		r.pos.x = l->marginl;
@@ -368,12 +412,15 @@ static void assa_wrap(struct ssa_vm *vm, struct assa_layer *lay,
 		r.size = vm->outsize;
 		r.size.x -= r.pos.x + tmp.x;
 		r.size.y -= r.pos.y + tmp.y;
+		assa_fit(l, &r);
+		assa_collide(l, lay);
 	}
-	assa_fit(l, &r);
 	if ((l->flags & SSAV_ORG) == 0) {
 		l->active.org.x = r.pos.x + (FT_Pos)(r.xalign * r.size.x);
 		l->active.org.y = r.pos.y + (FT_Pos)(r.yalign * r.size.y);
 	}
+	*lay->curpos = newa;
+	lay->curpos = &newa->next;
 }
 
 enum ssar_redoflags assa_realloc(struct ssa_vm *vm,
