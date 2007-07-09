@@ -1,0 +1,362 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{ucs}
+\usepackage[utf8x]{inputenc}
+\usepackage[english]{babel}
+\usepackage[margin=3cm]{geometry}
+%\usepackage{amsmath}
+%\usepackage{amssymb}
+%\usepackage{latexsym}
+%\usepackage{amsxtra}
+%\usepackage{amscd}
+\usepackage{charter}
+\usepackage{fancyhdr}
+\usepackage{color}
+\usepackage{url}
+\pagestyle{plain}
+\setlength{\parskip}{0pt}
+\setlength{\parindent}{0pt}
+
+\definecolor{hl}{rgb}{1,0,0}
+\newcommand{\todo}{\textbf\textsf{\color{hl}TODO: }}
+\definecolor{ann}{rgb}{0.66,0.33,0}
+\newcommand{\ann}[1]{\textit\textsf{\color{ann}#1}}
+
+\newcommand{\may}{\textsc{may}}
+\newcommand{\should}{\textsc{should}}
+\newcommand{\shouldnot}{\textsc{should not}}
+\newcommand{\must}{\textsc{must}}
+\newcommand{\mustnot}{\textsc{must not}}
+
+\newcommand{\oc}[1]{\texttt{\textbackslash #1}}
+\newcommand{\syntax}[1]{
+	\subsubsection*{Syntax}
+	\begin{tabbing}
+	\hspace{2cm}\=\\[-16pt]
+	#1
+	\end{tabbing}
+}
+\newcommand{\mustuse}{\must\ be ignored if not enabled through \texttt{Use:}}
+\newcommand{\mayuse}{\may\ be used without corresponding \texttt{Use:},
+	but a warning \should\ be emitted.}
+\newcommand{\secspec}[1]{Section:\>\texttt{#1}}
+\newcommand{\secspecs}[2]{Sections:\>\texttt{#1}, \texttt{#2}}
+\newcommand{\usespec}[3]{Use:\>``\texttt{#1}'', version #2\\\> #3}
+
+\begin{document}
+\title{Advanced Sub Station Alpha, 3rd extension}
+\author{equinox}
+\maketitle
+
+\tableofcontents
+\newpage
+\setlength{\parskip}{8pt}
+\section{Abstract}
+This document outlines an extension of the \emph{Sub Station Alpha}\cite{SSA}
+subtitle data format. It is based on earlier extensions, particularly
+ASS (\emph{Advanced SSA}, \cite{ASS}) and ASS2\cite{ASS2}. Since the
+specifications for these formats already are pretty vague, the possibilities
+for this specification are rather limited.
+
+As SSA, ASS and ASS2 were basically specified by the set of features
+implemented by the Sub Station Alpha and VSFilter\cite{VSFilter} applications,
+respectively, this specification is largely based on the set of features
+implemented by asa\cite{asa}.
+
+A significant amount of features specified herein are based on the
+AS5\cite{AS5} specification currently under development. This specification
+backports compatible extensions from there.
+
+\subsection{Usage context}
+This document makes no incompatible modifications to existing structures,
+making it possible to use the extensions defined herein with both ASS and
+ASS2 format files. Theoretically, usage with SSA format files is possible
+as well; this is not recommended though.
+
+\subsection{Conventions}
+This document uses the following keywords as specified in RFC2119\cite{2119}:\\
+\may, \should, \shouldnot, \must, \mustnot.
+
+Examples in this specification use incomplete \texttt{Format:} lines.
+\textbf{This serves illustration purposes only. This specification does \emph{not}
+encourage non-standard \texttt{Format:} lines, and scripts \mustnot\ use them.}
+
+\section{Overall modifications}
+\subsection{ASS Streaming}
+The Matroska project\cite{mkv} specifies a format for packetizing ASS data.
+The format of a data packet is defined as follows:
+
+\begin{verbatim}
+[ReadOrder],[Layer],Style,Name,MarginL,MarginR,MarginV,Effect,Text
+\end{verbatim}
+
+Start/end timestamps are passed down from the container format. Any non-event
+data (script header, styles) is included in the codec-private header.
+
+The ASS3 specification includes this packetization and clarifies the following
+points:
+\begin{itemize}
+\item \texttt{Format:} lines do not affect the data packet format.
+The data packet format is fixed as documented above. Also, while ASS2 \may\ 
+be used in the header part, data packets do not use \texttt{MarginT} and
+\texttt{MarginB}.
+\item \texttt{Dialogue:} lines \mustnot\ be included in the codec-private
+header. Renderers \should\ process them anyway, in spite of compatibility.
+\item data packets \mustnot\ contain comments (indicated with \verb!;! or
+\verb;!;)
+\end{itemize}
+
+\subsection{HTML colors}
+\syntax{\usespec{ass3.colour}{1}{\mayuse}}
+
+\begin{verbatim}
+\[1234]c#[AA]RRGGBB
+\[1234]a#AA
+\alpha#AA
+Style: #[AA]RRGGBB
+\end{verbatim}
+
+\subsubsection*{Interpretation}
+In addition to the existing raw decimal and \verb!&HBBGGRR[AA]! formats,
+\verb!#[AA]RRGGBB! colour specifications are allowed in any
+place the former two appear.
+
+Regarding alpha values, colour specifications are treated differently
+based upon their digit length. If the colour is specified using six
+hexadecimal digits, the alpha value is not affected or defaults to zero
+for styles. If the colour is specified using eight digits, the alpha
+value is set using the first two digits. Any other number of digits
+is an invalid use.
+
+Note that the ``HTML'' title does not imply availability of color names
+like ``red'' or ``black''.
+
+\subsubsection*{Compatibility}
+As long as ASS3 does not gain widespread software support, this syntax
+\shouldnot\ be used for subtitle distribution. Use cases include
+hardsubbing and pre-distribution circulation (implying conversion to
+standard syntax before distribution).
+
+\subsubsection*{Examples}
+\begin{verbatim}
+Format: PrimaryColour
+Style: #00FF0000
+
+Format: Text
+Dialogue: {\1c#00FF00\alpha#CC}
+Dialogue: {\3c#4400FF00}
+\end{verbatim}
+
+\newpage
+\section{New commands}
+\subsection{\texttt{Use:}}
+\syntax{\secspec{[Script Info]}}
+
+\begin{verbatim}
+Use: ExtensionName [, [MinVersion] [, [MaxVersion] ] ]
+\end{verbatim}
+
+\subsubsection*{Interpretation}
+Since ASS3 does not use its own \texttt{ScriptType} value or its own
+\texttt{[Styles]} header, ASS3 content cannot be distinguished from ASS or
+ASS2 by those means. To allow specification of the extension set used,
+the \texttt{Use:} command \must\ be used, unless the extension states
+something different. It allows requesting certain
+extensions from processing software and permits emitting more meaningful
+warning messages.
+
+\emph{ExtensionName} consist of two or more tokens, separated by ASCII dots
+(\texttt{.}, no whitespace allowed). Each token consists of one or more ASCII
+alphanumeric characters (A-Z, a-z, 0-9) or underscores (\texttt{\_}). Uppercase
+and lowercase letters are considered equivalent when comparing extension names.
+
+ASS3 Extension specifications include their name, the ones defined in this
+document use \texttt{ass3} for the first token. To faciliate further
+extensions, \texttt{ass3} \mustnot\ be used by custom extensions.
+
+Version numbers are integers. \emph{MinVersion} and \emph{MaxVersion}
+specify the requested extension version, inclusively. Their default
+values are 1 and the maximum value supported, respectively.
+
+Extensions not available are assigned version number 0, so specifying
+MinVersion as 0 suppresses warnings about unavailable extensions.
+Analogous, specifying MaxVersion as 0 indicates that the script
+is incompatible with the extension and a warning \should\ be emitted.
+
+\subsubsection*{Compatibility}
+Since processing software ignores unknown commands, this command
+\must\ be used as appropriate.
+
+\subsubsection*{Examples}
+\begin{verbatim}
+Use: ass3.StyleEx
+Use: ass3.decimal_coords, 0
+\end{verbatim}
+
+\newpage
+\subsection{\texttt{StyleEx:}}
+\syntax{
+	\secspecs{[V4+ Styles]}{[V4++ Styles]}\\
+	\usespec{ass3.StyleEx}{1}{\mustuse}
+}
+
+\begin{verbatim}
+StyleEx: Name, [Parent], [Override codes]
+\end{verbatim}
+
+\subsubsection*{Interpretation}
+This command defines a new style, named by the first and only required
+parameter. The style is inserted into the same namespace as used by the
+\verb!Style:! command.
+
+Depending on the other parameters, the style is defined as follows:
+\begin{itemize}
+\item if the \emph{Parent} parameter is present, the style named by it is
+copied. Otherwise, a renderer-dependent default style is loaded.
+\item any override codes present are executed on top of the previously
+loaded Style. Override codes which cannot be resolved immediately are
+retained for execution upon reference (e.g. \verb!\t!).
+\end{itemize}
+
+\subsubsection*{Compatibility}
+For renderers not supporting \verb!StyleEx!, standard \verb!Style:! lines
+\should\ be added, using the same style name. Renderers implementing
+\verb!StyleEx! \must\ therefore give higher priority to this command,
+making it possible to override the compatibility definitions.
+
+\subsubsection*{Examples}
+\begin{verbatim}
+Use: ass3.styleex
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize
+Style: A, Arial, 16
+StyleEx: B, A, \fnTahoma
+StyleEx: C, B, \t(\fs24)
+\end{verbatim}
+
+\section{Modifications to existing commands}
+\subsection{\texttt{Dialogue:} with arbitary precision timestamps}
+\syntax{
+	\secspec{[Events]}\\
+	\usespec{ass3.precision}{1}{\mayuse}
+}
+
+\subsubsection*{Interpretation}
+By legacy from SSA, timestamps in ASS files have centisecond precision.
+This extension lifts this limitation by allowing more than two digits
+after the separating dot. Together with the second part, this can be
+interpreted as plain decimal notation.
+
+However, for compatibility reasons, scripts \mustnot\ use less than two
+digits.
+
+\subsubsection*{Compatibility}
+Since timestamps are usually processed by the producers of the script
+(either by hardsubbing or by converting into container timestamps for
+softsubs), this extension can be used as available.
+ 
+\subsubsection*{Example}
+\begin{verbatim}
+Format: Start
+Dialogue: 0:00:01.100
+Dialogue: 0:00:03.12815
+\end{verbatim}
+
+\section{New override codes}
+\subsection{\todo \oc{fax}, \oc{fay}}
+
+\subsection{\todo \oc{fsc}}
+\ann{\oc{fscx}+\oc{fscy}, is this in any spec yet?}
+
+\section{Modifications to existing override codes}
+\subsection{\todo \oc{t} with \oc{pos}, \oc{org}}
+\syntax{\usespec{ass3.animation}{1}{\mustuse}}
+
+\subsection{\oc{pos}, \oc{org} with decimal coordinates}
+\syntax{\usespec{ass3.decimal\_coords}{1}{\mayuse}}
+
+\subsubsection*{Interpretation}
+Traditionally, increasing SSA coordinate resolution to subpixel
+resolution involved increasing \texttt{PlayRes}. This extension
+allows decimal coordinates, removing the need for increasing
+\texttt{PlayRes}.
+
+The \oc{move} override \should\ also be implemented using
+decimal coordinates. However, replacing \oc{move} by
+\oc{t(\oc{pos})} is recommended for ASS3 scripts.
+
+\subsubsection*{Compatibility}
+Compatibility of this extension relies on software cutting off
+the decimal part and therefore is rather well.
+ 
+\subsubsection*{Example}
+\begin{verbatim}
+Format: Text
+Dialogue: {\pos(271.82818,314.1592)}
+\end{verbatim}
+
+\subsection{\todo \oc{k*} with arbitary precision timings}
+
+\section{Other notes regarding existing override codes}
+\subsection{\todo Multiple \oc{t} per line}
+\ann{(just clarifications, also compatibility note about ordering with vsfilter)}
+
+\subsection{\oc{r0} deprecation}
+
+The \oc{r0} command in particular--and any use of zero or unrecognisable
+parameters in general--to reset a style override to its style default is
+declared deprecated by ASS3 and \mustnot\ be used in ASS3 scripts.
+
+To reset a styling option to its style default, scripts \may\ use the
+corresponding override tag without any argument. Any parameter value
+\must\ be evaluated by processing software in its appropriate context.
+
+\subsection{\texttt{+/-parameter} compatibility}
+
+For some override tags, VSFilter supports an undocumented relative value
+syntax, as in \oc{fs+5}. This extension is neither documented, nor well-known,
+nor compatible with other renderers. Even worse, it is unclear which tags
+it works on, since for example \oc{fscx} may pretty well take a negative
+argument.
+
+This syntax is explicitly not part of ASS3 and \should\ be avoided.
+
+\subsection{\todo \texttt{\{* \}} for inline comments}
+
+A rather large number of subtitle authors appears to be using the
+space between curly braces (\texttt{\{\}}) for in-line comments.
+Although improbable, this can lead to problems with future extensions
+as well as with broken or buggy processing software.
+
+ASS3 scripts therefore \mustnot\ abuse override braces this way. Comments
+\should\ be added using the \texttt{Comment:} command.
+
+\addcontentsline{toc}{section}{References}
+\begin{thebibliography}{1}
+\bibitem{SSA} Kotus, Sub Station Alpha. Website, 1997-2003.\\
+\url{http://web.archive.org/web/*/http://www.eswat.demon.co.uk/substation.html}
+
+\bibitem{ASS} \#Anime-Fansubs, Advanced Sub Station Alpha.\\
+\url{http://www.anime-fansubs.org}\\
+\url{http://moodub.free.fr/video/ass-specs.doc}
+
+\bibitem{ASS2} Gabest, Advanced Sub Station Alpha 2. SVN, 2005.\\
+\url{http://svn.sourceforge.net/viewcvs.cgi/guliverkli/trunk/guliverkli/src/subtitles/STS.cpp?r1=423&r2=453}
+
+\bibitem{VSFilter} Gabest, VSFilter. Application, 2003-2007.\\
+\url{http://sourceforge.net/projects/guliverkli/}
+
+\bibitem{asa} equinox, asa. Application, 2004-2007.\\
+\url{http://asa.diac24.net/}
+
+\bibitem{AS5} ArchMage ZeratuL et al., AS5. Draft, 2006-2007.\\
+\url{http://asa.diac24.net/AS5}
+
+\bibitem{2119} S. Bradner, Key words for use in RFCs to Indicate Requirement Levels. RFC, 1997.\\
+\url{http://www.ietf.org/rfc/rfc2119.txt}
+
+\bibitem{mkv} The Matroska project.
+\url{http://www.matroska.org/}
+
+\end{thebibliography}
+\end{document}
