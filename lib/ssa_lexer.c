@@ -1566,6 +1566,9 @@ static inline unsigned ssa_parsetext(struct ssa_state *state,
 			case '\\':
 				ssa_tmp_add(&text, &line->node_last, tmps);
 				break;
+			case 'h':
+				ssa_tmp_add(&text, &line->node_last, 0xa0);
+				break;
 			case 'n':
 				ssa_tmp_close(&text);
 				ssa_add_newline(SSAN_NEWLINE,
