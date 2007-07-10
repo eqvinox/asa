@@ -1,33 +1,5 @@
-\documentclass[11pt,a4paper]{article}
-\usepackage{ucs}
-\usepackage[utf8x]{inputenc}
-\usepackage[english]{babel}
-\usepackage[margin=3cm]{geometry}
-%\usepackage{amsmath}
-%\usepackage{amssymb}
-%\usepackage{latexsym}
-%\usepackage{amsxtra}
-%\usepackage{amscd}
-\usepackage{charter}
-\usepackage{fancyhdr}
-\usepackage{color}
-\usepackage{url}
-\pagestyle{plain}
-\setlength{\parskip}{0pt}
-\setlength{\parindent}{0pt}
+\documentclass{spec}
 
-\definecolor{hl}{rgb}{1,0,0}
-\newcommand{\todo}{\textbf\textsf{\color{hl}TODO: }}
-\definecolor{ann}{rgb}{0.66,0.33,0}
-\newcommand{\ann}[1]{\textit\textsf{\color{ann}#1}}
-
-\newcommand{\may}{\textsc{may}}
-\newcommand{\should}{\textsc{should}}
-\newcommand{\shouldnot}{\textsc{should not}}
-\newcommand{\must}{\textsc{must}}
-\newcommand{\mustnot}{\textsc{must not}}
-
-\newcommand{\oc}[1]{\texttt{\textbackslash #1}}
 \newcommand{\syntax}[1]{
 	\subsubsection*{Syntax}
 	\begin{tabbing}
@@ -35,21 +7,16 @@
 	#1
 	\end{tabbing}
 }
-\newcommand{\mustuse}{\must\ be ignored if not enabled through \texttt{Use:}}
-\newcommand{\mayuse}{\may\ be used without corresponding \texttt{Use:},
-	but a warning \should\ be emitted.}
+\newcommand{\mustuse}{\must\ be ignored if no ASS3 Extension declaration was used}
+\newcommand{\mayuse}{\may\ be used in non-ASS3 files, but a warning \should\ be emitted.}
 \newcommand{\secspec}[1]{Section:\>\texttt{#1}}
 \newcommand{\secspecs}[2]{Sections:\>\texttt{#1}, \texttt{#2}}
-\newcommand{\usespec}[3]{Use:\>``\texttt{#1}'', version #2\\\> #3}
 
 \begin{document}
 \title{Advanced Sub Station Alpha, 3rd extension}
 \author{equinox}
-\maketitle
+\spectitle
 
-\tableofcontents
-\newpage
-\setlength{\parskip}{8pt}
 \section{Abstract}
 This document outlines an extension of the \emph{Sub Station Alpha}\cite{SSA}
 subtitle data format. It is based on earlier extensions, particularly
@@ -70,7 +37,12 @@ backports compatible extensions from there.
 This document makes no incompatible modifications to existing structures,
 making it possible to use the extensions defined herein with both ASS and
 ASS2 format files. Theoretically, usage with SSA format files is possible
-as well; this is not recommended though.
+as well; this is by specification forbidden.
+
+ASS3 files are recognised by an \texttt{Extension:\~ASS3} declaration in the
+\texttt{[Script Info]} header (cf. \ref{Extensions}). The \texttt{ScriptType}
+header can be either \texttt{v4.00+} or \texttt{v4.00++}, selecting the
+fields used on style and dialogue lines.
 
 \subsection{Conventions}
 This document uses the following keywords as specified in RFC2119\cite{2119}:\\
@@ -78,7 +50,7 @@ This document uses the following keywords as specified in RFC2119\cite{2119}:\\
 
 Examples in this specification use incomplete \texttt{Format:} lines.
 \textbf{This serves illustration purposes only. This specification does \emph{not}
-encourage non-standard \texttt{Format:} lines, and scripts \mustnot\ use them.}
+specify usage of non-standard \texttt{Format:} lines, and scripts \mustnot\ use them.}
 
 \section{Overall modifications}
 \subsection{ASS Streaming}
@@ -106,7 +78,7 @@ header. Renderers \should\ process them anyway, in spite of compatibility.
 \end{itemize}
 
 \subsection{HTML colors}
-\syntax{\usespec{ass3.colour}{1}{\mayuse}}
+\syntax{\mayuse}
 
 \begin{verbatim}
 \[1234]c#[AA]RRGGBB
@@ -146,57 +118,11 @@ Dialogue: {\1c#00FF00\alpha#CC}
 Dialogue: {\3c#4400FF00}
 \end{verbatim}
 
-\newpage
 \section{New commands}
-\subsection{\texttt{Use:}}
-\syntax{\secspec{[Script Info]}}
-
-\begin{verbatim}
-Use: ExtensionName [, [MinVersion] [, [MaxVersion] ] ]
-\end{verbatim}
-
-\subsubsection*{Interpretation}
-Since ASS3 does not use its own \texttt{ScriptType} value or its own
-\texttt{[Styles]} header, ASS3 content cannot be distinguished from ASS or
-ASS2 by those means. To allow specification of the extension set used,
-the \texttt{Use:} command \must\ be used, unless the extension states
-something different. It allows requesting certain
-extensions from processing software and permits emitting more meaningful
-warning messages.
-
-\emph{ExtensionName} consist of two or more tokens, separated by ASCII dots
-(\texttt{.}, no whitespace allowed). Each token consists of one or more ASCII
-alphanumeric characters (A-Z, a-z, 0-9) or underscores (\texttt{\_}). Uppercase
-and lowercase letters are considered equivalent when comparing extension names.
-
-ASS3 Extension specifications include their name, the ones defined in this
-document use \texttt{ass3} for the first token. To faciliate further
-extensions, \texttt{ass3} \mustnot\ be used by custom extensions.
-
-Version numbers are integers. \emph{MinVersion} and \emph{MaxVersion}
-specify the requested extension version, inclusively. Their default
-values are 1 and the maximum value supported, respectively.
-
-Extensions not available are assigned version number 0, so specifying
-MinVersion as 0 suppresses warnings about unavailable extensions.
-Analogous, specifying MaxVersion as 0 indicates that the script
-is incompatible with the extension and a warning \should\ be emitted.
-
-\subsubsection*{Compatibility}
-Since processing software ignores unknown commands, this command
-\must\ be used as appropriate.
-
-\subsubsection*{Examples}
-\begin{verbatim}
-Use: ass3.StyleEx
-Use: ass3.decimal_coords, 0
-\end{verbatim}
-
-\newpage
 \subsection{\texttt{StyleEx:}}
 \syntax{
 	\secspecs{[V4+ Styles]}{[V4++ Styles]}\\
-	\usespec{ass3.StyleEx}{1}{\mustuse}
+	\mustuse
 }
 
 \begin{verbatim}
@@ -234,11 +160,30 @@ StyleEx: B, A, \fnTahoma
 StyleEx: C, B, \t(\fs24)
 \end{verbatim}
 
+\newpage
+\subsection{\texttt{Extensions:}}
+\label{Extensions}
+\syntax{\secspec{[Script Info]}}
+
+\begin{verbatim}
+Extensions: [Token[,Token[,...]]]
+Extensions: ASS3
+\end{verbatim}
+
+\subsubsection*{Interpretation}
+This script header key defines the extension set used by the script.
+The comma-separated list specifies the extensions to activate and
+modifies renderer behaviour.
+
+The ASS3 specification defines only one token, ``\texttt{ASS3}'',
+which enables the features outlined in this document. Unknown values
+\must\ be ignored.
+
 \section{Modifications to existing commands}
 \subsection{\texttt{Dialogue:} with arbitary precision timestamps}
 \syntax{
 	\secspec{[Events]}\\
-	\usespec{ass3.precision}{1}{\mayuse}
+	\mayuse
 }
 
 \subsubsection*{Interpretation}
@@ -262,6 +207,49 @@ Dialogue: 0:00:01.100
 Dialogue: 0:00:03.12815
 \end{verbatim}
 
+\subsection{\texttt{Dialogue:} \texttt{\{* \}} for inline comments}
+\syntax{
+	\secspec{[Events]}\\
+	\mustuse
+}
+\begin{verbatim}
+Format: Text
+Dialogue: ...{*...}...
+\end{verbatim}
+
+\subsubsection*{Interpretation}
+
+Existing SSA/ASS versions notably lack a possibility to introduce an
+in-line comment. ASS3 defines \texttt{\{*} to start an in-line comment,
+which spans all text until the next \texttt{\}} or until the end of the line.
+
+Escape sequences and override codes \mustnot\ be honoured inside comments
+declared this way. This implies that override sections can be commented out by
+adding a \texttt{*} in front, and it also means that \texttt{\}} cannot
+be used inside these comments.
+
+There \mustnot\ be any white-space between the opening curly brace and the
+star.
+
+Together with the introduction of this sequence, (ab)using override blocks
+for comments is declared invalid and \mustnot\ be used anymore. Comments in
+ASS3 scripts \must\ be added using either \texttt{\{*} syntax or via the
+\texttt{Comment:} command.
+
+{\footnotesize
+\textbf{Background:} A rather large number of subtitle authors appears to be
+using the space between curly braces (\texttt{\{\}}) for in-line comments.
+Although improbable, this can lead to problems with future extensions
+as well as with broken or buggy processing software.
+}
+
+\subsubsection*{Examples}
+\begin{verbatim}
+Format: Text
+Dialogue: This is {*not}visible.
+Dialogue: And this has {*\fs100}the same font size everywhere.
+\end{verbatim}
+
 \section{New override codes}
 \subsection{\todo \oc{fax}, \oc{fay}}
 
@@ -270,10 +258,10 @@ Dialogue: 0:00:03.12815
 
 \section{Modifications to existing override codes}
 \subsection{\todo \oc{t} with \oc{pos}, \oc{org}}
-\syntax{\usespec{ass3.animation}{1}{\mustuse}}
+\syntax{\mustuse}
 
 \subsection{\oc{pos}, \oc{org} with decimal coordinates}
-\syntax{\usespec{ass3.decimal\_coords}{1}{\mayuse}}
+\syntax{\mayuse}
 
 \subsubsection*{Interpretation}
 Traditionally, increasing SSA coordinate resolution to subpixel
@@ -320,16 +308,6 @@ it works on, since for example \oc{fscx} may pretty well take a negative
 argument.
 
 This syntax is explicitly not part of ASS3 and \should\ be avoided.
-
-\subsection{\todo \texttt{\{* \}} for inline comments}
-
-A rather large number of subtitle authors appears to be using the
-space between curly braces (\texttt{\{\}}) for in-line comments.
-Although improbable, this can lead to problems with future extensions
-as well as with broken or buggy processing software.
-
-ASS3 scripts therefore \mustnot\ abuse override braces this way. Comments
-\should\ be added using the \texttt{Comment:} command.
 
 \addcontentsline{toc}{section}{References}
 \begin{thebibliography}{1}
