@@ -1,0 +1,450 @@
+% $Id: elatex.sty,v 1.1 2007/05/28 15:16:54 lehman stable $
+
+% Copyright (c) 2007 Philipp Lehman, author-maintained.
+%
+% Permission is granted to copy, distribute and/or modify this
+% software under the terms of the LaTeX Project Public License
+% (LPPL), version 1.3.
+%
+% This software is provided `as is', without warranty of any kind,
+% either expressed or implied, including, but not limited to, the
+% implied warranties of merchantability and fitness for a particular
+% purpose.
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{elatex}[2007/05/28 v1.1 e-TeX tools for LaTeX]
+
+\begingroup
+\@ifundefined{eTeXversion}
+  {\PackageError{elatex}
+     {Not running under e-TeX}
+     {This package requires e-TeX. Try compiling the document
+      with\MessageBreak `elatex' instead of `latex'. When using
+      pdfTeX, try `pdfelatex'\MessageBreak instead of `pdflatex'}%
+   \aftergroup\endinput}
+  {}
+\endgroup
+
+\RequirePackage{etex}
+
+\edef\elx@catcodes{\catcode\number`\&=\the\catcode`\&\relax}
+\catcode`\&=3
+
+\AtEndOfPackage{%
+  \elx@catcodes
+  \let\elx@catcodes\@undefined}
+
+% {<cstoken>}[<arguments>][<optarg default>]{<definition>}
+
+\newcommand*{\newrobustcmd}{}
+\protected\def\newrobustcmd{%
+  \@ifstar
+    {\let\l@ngrel@x\protected\elx@new@command}
+    {\def\l@ngrel@x{\protected\long}\elx@new@command}}
+
+\def\elx@new@command#1{\@testopt{\elx@newcommand#1}0}
+\def\elx@newcommand#1[#2]{%
+  \@ifnextchar[%]
+    {\elx@xargdef#1[#2]}
+    {\@argdef#1[#2]}}
+\long\def\elx@xargdef#1[#2][#3]#4{%
+  \@ifdefinable#1{%
+    \expandafter\protected
+    \expandafter\def
+    \expandafter#1%
+    \expandafter{%
+      \expandafter\@testopt
+      \csname\string#1\endcsname{#3}}%
+    \expandafter\@yargdef
+    \csname\string#1\endcsname\tw@{#2}{#4}}}
+
+% {<cstoken>}[<arguments>][<optarg default>]{<definition>}
+
+\newrobustcmd*{\renewrobustcmd}{%
+  \@ifstar
+    {\let\l@ngrel@x\protected\elx@renew@command}
+    {\def\l@ngrel@x{\protected\long}\elx@renew@command}}
+
+\def\elx@renew@command#1{%
+  \begingroup
+    \escapechar\m@ne
+    \xdef\@gtempa{{\string#1}}%
+  \endgroup
+  \expandafter\@ifundefined\@gtempa
+     {\@latex@error{\noexpand#1undefined}\@ehc}
+     {}%
+  \let\@ifdefinable\@rc@ifdefinable
+  \elx@new@command#1}
+
+% {<cstoken>}[<arguments>][<optarg default>]{<definition>}
+
+\newrobustcmd*{\providerobustcmd}{%
+  \@ifstar
+    {\let\l@ngrel@x\protected\elx@provide@command}
+    {\def\l@ngrel@x{\protected\long}\elx@provide@command}}
+
+\def\elx@provide@command#1{%
+  \begingroup
+    \escapechar\m@ne
+    \xdef\@gtempa{{\string#1}}%
+  \endgroup
+  \expandafter\@ifundefined\@gtempa
+    {\def\reserved@a{\elx@new@command#1}}
+    {\def\reserved@a{\elx@renew@command\reserved@a}}%
+  \reserved@a}%
+
+% {<cstoken>}
+
+\@onlypreamble\robustify
+\newrobustcmd*{\robustify}[1]{%
+  \ifundef#1%
+    {\@latex@error{\string#1 undefined}\@ehc}
+    {\begingroup
+     \edef\elx@resrvda{\meaning#1}%
+     \edef\elx@resrvdb{%
+       \noexpand\protect\expandafter\noexpand
+       \csname\expandafter\@gobble\string#1 \endcsname}%
+     \edef\elx@resrvdb{\meaning\elx@resrvdb}%
+     \ifx\elx@resrvda\elx@resrvdb
+       \letcs#1{\expandafter\@gobble\string#1 }%
+       \cslet{\expandafter\@gobble\string#1 }\@undefined
+     \fi
+     \edef\elx@resrvda{%
+       \def\noexpand\elx@resrvda####1\detokenize{macro:}####2->####3&{%
+         \protected####1\def\detokenize{#1}####2{####3}}%
+       \edef\noexpand\elx@resrvda{%
+         \noexpand\elx@resrvda\meaning#1&}}%
+     \elx@resrvda
+     \elx@scantoks\endgroup\elx@resrvda}}
+
+% {<cstoken>}{<true>}{<false>}
+
+\newcommand*{\ifdef}[1]{%
+  \ifdefined#1%
+    \expandafter\@firstoftwo
+  \else
+    \expandafter\@secondoftwo
+  \fi}
+
+% {<cstoken>}{<true>}{<false>}
+
+\newcommand*{\ifundef}[1]{%
+  \ifdefined#1%
+    \ifx#1\relax
+      \expandafter\expandafter
+      \expandafter\@firstoftwo
+    \else
+      \expandafter\expandafter
+      \expandafter\@secondoftwo
+    \fi
+  \else
+    \expandafter\@firstoftwo
+  \fi}
+
+% {<csname>}{<true>}{<false>}
+
+\newcommand*{\ifcsdef}[1]{%
+  \ifcsname#1\endcsname
+    \expandafter\@firstoftwo
+  \else
+    \expandafter\@secondoftwo
+  \fi}
+
+% {<csname>}{<true>}{<false>}
+
+\newcommand*{\ifcsundef}[1]{%
+  \ifcsname#1\endcsname
+    \expandafter\ifx\csname#1\endcsname\relax
+      \expandafter\expandafter
+      \expandafter\@firstoftwo
+    \else
+      \expandafter\expandafter
+      \expandafter\@secondoftwo
+    \fi
+  \else
+    \expandafter\@firstoftwo
+  \fi}
+
+% {<string>}{<true>}{<false>}
+
+\newcommand{\ifblank}[1]{% from url.sty
+  \elx@ifblank@i#1&&\@secondoftwo\@firstoftwo:}
+\long\def\elx@ifblank@i#1#2&#3#4#5:{#4}
+
+% {<cstoken>}{<search>}{<true}{<false>}
+
+\@onlypreamble\ifpatchable
+\newrobustcmd{\ifpatchable}{%
+  \begingroup
+  \@makeother\#%
+  \elx@ifpatchable}
+
+\def\elx@ifpatchable#1#2{%
+  \endgroup
+  \ifundef{#1}
+    {\@firstoftwo}
+    {\begingroup
+     \edef\elx@resrvda{%
+       \def\noexpand\elx@resrvda####1->####2&{%
+         \noexpand\elx@resrvdb####2\detokenize{#2}&}%
+       \def\noexpand\elx@resrvdb####1\detokenize{#2}####2&{%
+         \endgroup\noexpand\noexpand\noexpand\ifblank{####2}}%
+       \edef\noexpand\elx@resrvda{%
+         \noexpand\elx@resrvda\meaning#1&}%
+       \noexpand\elx@resrvda}%
+     \elx@resrvda}
+    {\@secondoftwo}
+    {\@firstoftwo}}
+
+% [<prefix>]{<cstoken>}{<search>}{<replace>}{<success>}{<failure>}
+
+\@onlypreamble\patchcommand
+\newrobustcmd*{\patchcommand}{%
+  \begingroup
+  \@makeother\#%
+  \elx@patchcmd}
+
+\newcommand{\elx@patchcmd}[4][########1]{%
+  \elx@ifpatchable{#2}{#3}
+    {\begingroup
+     \edef\elx@resrvda{%
+       \def\noexpand\elx@resrvda####1\detokenize{macro:}####2->####3&{%
+         #1\def\detokenize{#2}####2{\noexpand\elx@resrvdb####3&}}%
+       \def\noexpand\elx@resrvdb####1\detokenize{#3}####2&{%
+         ####1\detokenize{#4}####2}%
+       \edef\noexpand\elx@resrvda{%
+         \noexpand\elx@resrvda\meaning#2&}}%
+     \elx@resrvda
+     \elx@scantoks\endgroup\elx@resrvda
+     \@firstoftwo}
+    {\@secondoftwo}}
+
+\def\elx@scantoks#1#2{%
+  \begingroup
+  \edef\elx@resrvda{\endgroup
+    \unexpanded{#1\makeatletter\scantokens}{#2}%
+    \catcode\number`\@=\the\catcode`\@\relax}%
+  \elx@resrvda}
+
+% {<cstoken>}{<code>}
+
+\@onlypreamble\apptocommand
+\newrobustcmd*{\apptocommand}{%
+  \begingroup
+  \@makeother\#%
+  \elx@hooktocmd\elx@apptocmd}
+
+\@onlypreamble\pretocommand
+\newrobustcmd*{\pretocommand}{%
+  \begingroup
+  \@makeother\#%
+  \elx@hooktocmd\elx@pretocmd}
+
+\long\def\elx@hooktocmd#1#2#3{%
+  \endgroup
+  \ifundef{#2}
+    {\def#2{#3}}
+    {\begingroup
+     \edef\elx@resrvda{%
+       \def\noexpand\elx@resrvda####1\detokenize{macro:}####2->####3&{%
+         ####1\def\detokenize{#2}####2{#1{####3}{\detokenize{#3}}}}%
+       \edef\noexpand\elx@resrvda{%
+         \noexpand\elx@resrvda\meaning#2&}}%
+     \elx@resrvda
+     \elx@scantoks\endgroup\elx@resrvda}}
+
+\long\def\elx@apptocmd#1#2{#1#2}
+\long\def\elx@pretocmd#1#2{#2#1}
+
+% {<cstoken>}
+
+\newcommand*{\expandonce}[1]{%
+  \unexpanded\expandafter{#1}}
+
+% {<csname>}
+
+\newcommand*{\csexpandonce}[1]{%
+  \expandafter\expandonce\csname #1\endcsname}
+
+% {<code>}
+
+\newcommand*{\protecting}{}
+\def\protecting#{%
+  \ifx\protect\@typeset@protect
+    \elx@protecting\@firstofone
+  \fi
+  \ifx\protect\@unexpandable@protect
+    \elx@protecting\elx@unexpandable
+  \fi
+  \ifx\protect\noexpand
+    \elx@protecting\unexpanded
+  \fi
+  \ifx\protect\string
+    \elx@protecting\detokenize
+  \fi
+  \relax\@firstofone}
+
+\def\elx@protecting#1#2\relax\@firstofone{\fi#1}
+\long\def\elx@unexpandable#1{\unexpanded{\protecting{#1}}}
+
+% {<csname>}
+
+\newrobustcmd*{\csdef}[1]{\expandafter\def\csname#1\endcsname}
+\newrobustcmd*{\csedef}[1]{\expandafter\edef\csname#1\endcsname}
+\newrobustcmd*{\csgdef}[1]{\expandafter\gdef\csname#1\endcsname}
+\newrobustcmd*{\csxdef}[1]{\expandafter\xdef\csname#1\endcsname}
+\newrobustcmd*{\protected@csedef}{\elx@protected\csedef}
+\newrobustcmd*{\protected@csxdef}{\elx@protected\csxdef}
+
+\def\elx@protected{%
+  \let\@@protect\protect
+  \let\protect\@unexpandable@protect
+  \afterassignment\restore@protect}
+
+% {<csname>}{<cstoken>}
+
+\newrobustcmd*{\cslet}[2]{\expandafter\let\csname#1\endcsname#2}
+
+% {<cstoken>}{<csname>}
+
+\newrobustcmd*{\letcs}[2]{%
+  \expandafter\let\expandafter#1\csname#2\endcsname}
+
+% {<csname>}{<csname>}
+
+\newrobustcmd*{\csletcs}[1]{\expandafter\letcs\csname#1\endcsname}
+
+% {<csname>}
+
+\newcommand*{\csuse}[1]{%
+  \ifcsname#1\endcsname
+    \csname#1\expandafter\endcsname
+  \fi}
+
+% {<cstoken>}{<code>}
+
+\newrobustcmd{\appto}[2]{%
+  \ifundef#1%
+    {\edef#1{\unexpanded{#2}}}
+    {\edef#1{\expandonce#1\unexpanded{#2}}}}
+\newrobustcmd{\eappto}[2]{%
+  \ifundef#1%
+    {\edef#1{#2}}
+    {\edef#1{\expandonce#1#2}}}
+\newrobustcmd{\gappto}[2]{%
+  \ifundef#1%
+    {\xdef#1{\unexpanded{#2}}}
+    {\xdef#1{\expandonce#1\unexpanded{#2}}}}
+\newrobustcmd{\xappto}[2]{%
+  \ifundef#1%
+    {\xdef#1{#2}}
+    {\xdef#1{\expandonce#1#2}}}
+
+\newrobustcmd*{\protected@eappto}{\elx@protected\eappto}
+\newrobustcmd*{\protected@xappto}{\elx@protected\xappto}
+
+% {<cstoken>}{<code>}
+
+\newrobustcmd{\preto}[2]{%
+  \ifundef#1%
+    {\edef#1{\unexpanded{#2}}}
+    {\edef#1{\unexpanded{#2}\expandonce#1}}}
+\newrobustcmd{\epreto}[2]{%
+  \ifundef#1%
+    {\edef#1{#2}}
+    {\edef#1{#2\expandonce#1}}}
+\newrobustcmd{\gpreto}[2]{%
+  \ifundef#1%
+    {\xdef#1{\unexpanded{#2}}}
+    {\xdef#1{\unexpanded{#2}\expandonce#1}}}
+\newrobustcmd{\xpreto}[2]{%
+  \ifundef#1%
+    {\xdef#1{#2}}
+    {\xdef#1{#2\expandonce#1}}}
+
+\newrobustcmd*{\protected@epreto}{\elx@protected\epreto}
+\newrobustcmd*{\protected@xpreto}{\elx@protected\xpreto}
+
+% {<csname>}{<code>}
+
+\newrobustcmd*{\csappto}[1]{\expandafter\appto\csname#1\endcsname}
+\newrobustcmd*{\cseappto}[1]{\expandafter\eappto\csname#1\endcsname}
+\newrobustcmd*{\csgappto}[1]{\expandafter\gappto\csname#1\endcsname}
+\newrobustcmd*{\csxappto}[1]{\expandafter\xappto\csname#1\endcsname}
+\newrobustcmd*{\protected@cseappto}{\elx@protected\cseappto}
+\newrobustcmd*{\protected@csxappto}{\elx@protected\csxappto}
+
+% {<csname>}{<code>}
+
+\newrobustcmd*{\cspreto}[1]{\expandafter\preto\csname#1\endcsname}
+\newrobustcmd*{\csepreto}[1]{\expandafter\epreto\csname#1\endcsname}
+\newrobustcmd*{\csgpreto}[1]{\expandafter\gpreto\csname#1\endcsname}
+\newrobustcmd*{\csxpreto}[1]{\expandafter\xpreto\csname#1\endcsname}
+\newrobustcmd*{\protected@csepreto}{\elx@protected\csepreto}
+\newrobustcmd*{\protected@csxpreto}{\elx@protected\csxpreto}
+
+% {<cstoken>}{<numexpr>}
+
+\newrobustcmd*{\numdef}[2]{%
+  \ifundef#1{\let#1\z@}{}%
+  \edef#1{\the\numexpr#2}}
+\newrobustcmd*{\numgdef}[2]{%
+  \ifundef#1{\let#1\z@}{}%
+  \xdef#1{\the\numexpr#2}}
+
+% {<csname>}{<numexpr>}
+
+\newrobustcmd*{\csnumdef}[1]{%
+  \expandafter\numdef\csname#1\endcsname}
+\newrobustcmd*{\csnumgdef}[1]{%
+  \expandafter\numgdef\csname#1\endcsname}
+
+% {<cstoken>}{<dimexpr>}
+
+\newrobustcmd*{\dimdef}[2]{%
+  \ifundef#1{\let#1\z@}{}%
+  \edef#1{\the\dimexpr#2}}
+\newrobustcmd*{\dimgdef}[2]{%
+  \ifundef#1{\let#1\z@}{}%
+  \xdef#1{\the\dimexpr#2}}
+
+% {<csname>}{<dimexpr>}
+
+\newrobustcmd*{\csdimdef}[1]{%
+  \expandafter\dimdef\csname#1\endcsname}
+\newrobustcmd*{\csdimgdef}[1]{%
+  \expandafter\dimgdef\csname#1\endcsname}
+
+% {<cstoken>}{<glueexpr>}
+
+\newrobustcmd*{\gluedef}[2]{%
+  \ifundef#1{\let#1\z@skip}{}%
+  \edef#1{\the\glueexpr#2}}
+\newrobustcmd*{\gluegdef}[2]{%
+  \ifundef#1{\let#1\z@skip}{}%
+  \xdef#1{\the\glueexpr#2}}
+
+% {<csname>}{<glueexpr>}
+
+\newrobustcmd*{\csgluedef}[1]{%
+  \expandafter\gluedef\csname#1\endcsname}
+\newrobustcmd*{\csgluegdef}[1]{%
+  \expandafter\gluegdef\csname#1\endcsname}
+
+% {<cstoken>}{<muexpr>}
+
+\newrobustcmd*{\mudef}[2]{%
+  \ifundef#1{\def#1{0mu}}{}%
+  \edef#1{\the\muexpr#2}}
+\newrobustcmd*{\mugdef}[2]{%
+  \ifundef#1{\let#1\z@}{}%
+  \xdef#1{\the\muexpr#2}}
+
+% {<csname>}{<muexpr>}
+
+\newrobustcmd*{\csmudef}[1]{%
+  \expandafter\mudef\csname#1\endcsname}
+\newrobustcmd*{\csmugdef}[1]{%
+  \expandafter\mugdef\csname#1\endcsname}
+
+\endinput

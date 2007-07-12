@@ -7,14 +7,21 @@
 	#1
 	\end{tabbing}
 }
-\newcommand{\mustuse}{\must\ be ignored if no ASS3 Extension declaration was used}
-\newcommand{\mayuse}{\may\ be used in non-ASS3 files, but a warning \should\ be emitted.}
+\gdef\compat{}
+\newcommand{\mustuse}[1]{\must\ be ignored if no ASS3 Extension declaration was used%
+\gappto{\compat}{\hspace{9pt} #1 & \textbf{required}\\[3pt]}}
+\newcommand{\mayuse}[1]{\may\ be used in non-ASS3 files, but a warning \should\ be emitted.%
+\gappto{\compat}{\hspace{9pt} #1 & optional\\[3pt]}}
 \newcommand{\secspec}[1]{Section:\>\texttt{#1}}
 \newcommand{\secspecs}[2]{Sections:\>\texttt{#1}, \texttt{#2}}
+\definecolor{prelim}{rgb}{0,0.3,.6}
 
 \begin{document}
-\title{Advanced Sub Station Alpha, 3rd extension}
-\author{equinox}
+\title{Advanced Sub Station Alpha 3}
+\subtitle{{\color{prelim}preliminary specification, subject to change}}
+\author{David Lamparter \texttt{<equinox@diac24.net>}}
+\contrib{Rodrigo Braz Monteiro \texttt{<amz@>}\\
+Niels Martin Hansen \texttt{<jfs@>}}
 \spectitle
 
 \section{Abstract}
@@ -39,7 +46,7 @@ making it possible to use the extensions defined herein with both ASS and
 ASS2 format files. Theoretically, usage with SSA format files is possible
 as well; this is by specification forbidden.
 
-ASS3 files are recognised by an \texttt{Extension:\~ASS3} declaration in the
+ASS3 files are recognised by an \texttt{Extension:~ASS3} declaration in the
 \texttt{[Script Info]} header (cf. \ref{Extensions}). The \texttt{ScriptType}
 header can be either \texttt{v4.00+} or \texttt{v4.00++}, selecting the
 fields used on style and dialogue lines.
@@ -78,7 +85,7 @@ header. Renderers \should\ process them anyway, in spite of compatibility.
 \end{itemize}
 
 \subsection{HTML colors}
-\syntax{\mayuse}
+\syntax{\mustuse{HTML colors}}
 
 \begin{verbatim}
 \[1234]c#[AA]RRGGBB
@@ -122,7 +129,7 @@ Dialogue: {\3c#4400FF00}
 \subsection{\texttt{StyleEx:}}
 \syntax{
 	\secspecs{[V4+ Styles]}{[V4++ Styles]}\\
-	\mustuse
+	\mustuse{StyleEx}
 }
 
 \begin{verbatim}
@@ -183,7 +190,7 @@ which enables the features outlined in this document. Unknown values
 \subsection{\texttt{Dialogue:} with arbitary precision timestamps}
 \syntax{
 	\secspec{[Events]}\\
-	\mayuse
+	\mayuse{arbitary precision timestamps}
 }
 
 \subsubsection*{Interpretation}
@@ -210,7 +217,7 @@ Dialogue: 0:00:03.12815
 \subsection{\texttt{Dialogue:} \texttt{\{* \}} for inline comments}
 \syntax{
 	\secspec{[Events]}\\
-	\mustuse
+	\mustuse{inline comments}
 }
 \begin{verbatim}
 Format: Text
@@ -251,17 +258,78 @@ Dialogue: And this has {*\fs100}the same font size everywhere.
 \end{verbatim}
 
 \section{New override codes}
-\subsection{\todo \oc{fax}, \oc{fay}}
+\subsection{\oc{fax}, \oc{fay}}
+\syntax{\mayuse{\oc{fax}, \oc{fay}}}
+\begin{verbatim}
+\fax<decimal>
+\fay<decimal>
+\end{verbatim}
+
+\subsubsection*{Interpretation}
+The \oc{fax} and \oc{fay} commands introduce a translation to be applied to
+glyph outlines. They are given by the following formulas:
+
+\oc{fax}:
+$$x' = x + \lambda y$$
+
+\oc{fay}:
+$$y' = y + \lambda x$$
+
+Where $\lambda$ represents the parameter value (which can be any decimal
+value). $x$ and $y$ iterate over glyph outline coordinates, relative to
+\oc{org}. The axes point rightwards and upwards, respectively.
+
+If both \oc{fax} and \oc{fay} are used, the formulas are calculated
+simultaneously, not affecting each other's input. They can be represented
+by the following matrix:
+
+$$P' = \begin{pmatrix}
+1 & \lambda_{\text{fax}} \\
+\lambda_{\text{fay}} & 1
+\end{pmatrix} \cdot P\;, \quad P = \begin{pmatrix}x \\ y\end{pmatrix}$$
+
+The $\lambda$ value for \oc{fax} / \oc{fay} not given is $0$. The translation
+does not affect layouting, collision detection or baseline advancement.
+
+\subsubsection*{Examples}
+\begin{verbatim}
+Format: Text
+Dialogue: {\fax-0.1}This text will appear slightly italic.
+Dialogue: {\fay1}This text runs 45 degrees downwards.
+\end{verbatim}
+
+\subsubsection*{Compatibility}
+These two overrides have roots dating back to TextSub 2.23, and
+recently (Spring 2007) VSFilter builds are commonly seen with
+patches applied. However, portable rendering behaviour cannot
+be guaranteed. These overrides \may\ be used with due care.
+
+\subsubsection*{Reference rendering}
+\begin{minipage}{6.5cm}
+\includegraphics[height=4cm]{ass3_faxfay.png}\\
+\textsf{\scriptsize Rendering output: asa git \texttt{f5a1c889}...}
+\end{minipage}
+\begin{minipage}{6.5cm}
+{\footnotesize
+\begin{verbatim}
+PlayResX: 640
+PlayResY: 480
+Dialogue: {\an1\pos(50,160)\fax-0.5}fax-0.5
+Dialogue: {\an1\pos(50,320)\fay0.5}fay0.5{\fay0}fay0
+\end{verbatim}
+\emph{Script shortened to fit}
+}
+\end{minipage}
 
 \subsection{\todo \oc{fsc}}
 \ann{\oc{fscx}+\oc{fscy}, is this in any spec yet?}
 
 \section{Modifications to existing override codes}
 \subsection{\todo \oc{t} with \oc{pos}, \oc{org}}
-\syntax{\mustuse}
+\syntax{\mustuse{animated \oc{pos}, \oc{org}}}
 
 \subsection{\oc{pos}, \oc{org} with decimal coordinates}
-\syntax{\mayuse}
+\syntax{\mayuse{decimal \oc{pos}}}
 
 \subsubsection*{Interpretation}
 Traditionally, increasing SSA coordinate resolution to subpixel
@@ -309,6 +377,21 @@ argument.
 
 This syntax is explicitly not part of ASS3 and \should\ be avoided.
 
+\appendix
+\section{Appendix}
+\subsection{\texttt{Extension:} requirements}
+
+\begin{tabular}{ll}
+Extension & \texttt{Extension:~ASS3}\\[6pt]
+\compat
+\end{tabular}
+
+\subsection{\todo Sample script}
+
+\texttt{\footnotesize
+Add me! Mommy! Add me!
+}
+
 \addcontentsline{toc}{section}{References}
 \begin{thebibliography}{1}
 \bibitem{SSA} Kotus, Sub Station Alpha. Website, 1997-2003.\\
@@ -333,7 +416,7 @@ This syntax is explicitly not part of ASS3 and \should\ be avoided.
 \bibitem{2119} S. Bradner, Key words for use in RFCs to Indicate Requirement Levels. RFC, 1997.\\
 \url{http://www.ietf.org/rfc/rfc2119.txt}
 
-\bibitem{mkv} The Matroska project.
+\bibitem{mkv} The Matroska project.\\
 \url{http://www.matroska.org/}
 
 \end{thebibliography}

@@ -7,17 +7,19 @@
 \LoadClass{article}
 
 % UTF-8 input
+\RequirePackage{elatex}
 \RequirePackage{ucs}
 \RequirePackage[utf8x]{inputenc}
 \RequirePackage[english]{babel}
 \RequirePackage[margin=3cm]{geometry}
-%\RequirePackage{amsmath}
-%\RequirePackage{amssymb}
-%\RequirePackage{latexsym}
-%\RequirePackage{amsxtra}
-%\RequirePackage{amscd}
+\RequirePackage{amsmath}
+\RequirePackage{amssymb}
+\RequirePackage{latexsym}
+\RequirePackage{amsxtra}
+\RequirePackage{amscd}
 \RequirePackage{charter}
 \RequirePackage{fancyhdr}
+\RequirePackage{graphicx}
 \RequirePackage{color}
 \RequirePackage{hyperref}
 \RequirePackage{url}
@@ -25,7 +27,7 @@
 
 % dont indent paragraphs
 \setlength{\parindent}{0pt}
-\setlength{\parskip}{0pt}
+\setlength{\parskip}{8pt}
 
 % some highlighting
 % \todo (no args)
@@ -46,12 +48,37 @@
 % oc, as in override code - use: \oc{fade} (no \ inside!)
 \newcommand{\oc}[1]{\texttt{\textbackslash #1}}
 
+\makeatletter
+
+\def\subtitle#1{\gdef\@subtitle{#1}}
+\subtitle{\relax}
+\def\contrib#1{\gdef\@contrib{#1}}
+\contrib{\relax}
+
 \newcommand{\spectitle}{
-	\maketitle
-	\setlength{\parskip}{0pt}
-	\tableofcontents
-	\setlength{\parskip}{8pt}
-	\newpage
+\begin{titlepage}
+\setlength{\parskip}{0pt}
+{\Huge \@title}\par
+\vspace{4pt}
+\hrule\par
+%
+\vspace{8pt}
+\if\@subtitle\relax \relax
+\else {\large \@subtitle}
+\fi
+\hfill\today
+%
+\vspace{0.6cm}\par
+\@author
+\if\@contrib\relax \relax
+\else \\\@contrib
+\fi
+%
+\vspace{1cm}\par
+\tableofcontents
+\end{titlepage}
 }
+
+\makeatother
 
 \endinput
