@@ -61,7 +61,7 @@ specify usage of non-standard \texttt{Format:} lines, and scripts \mustnot\ use 
 
 \section{Overall modifications}
 \subsection{ASS Streaming}
-The Matroska project\cite{mkv} specifies a format for packetizing ASS data.
+The Matroska project\cite{mkv} specifies a format for packetising ASS data.
 The format of a data packet is defined as follows:
 
 \begin{verbatim}
@@ -71,7 +71,7 @@ The format of a data packet is defined as follows:
 Start/end timestamps are passed down from the container format. Any non-event
 data (script header, styles) is included in the codec-private header.
 
-The ASS3 specification includes this packetization and clarifies the following
+The ASS3 specification includes this packetisation and clarifies the following
 points:
 \begin{itemize}
 \item \texttt{Format:} lines do not affect the data packet format.
@@ -84,8 +84,8 @@ header. Renderers \should\ process them anyway, in spite of compatibility.
 \verb;!;)
 \end{itemize}
 
-\subsection{HTML colors}
-\syntax{\mustuse{HTML colors}}
+\subsection{HTML colours}
+\syntax{\mustuse{HTML colours}}
 
 \begin{verbatim}
 \[1234]c#[AA]RRGGBB
@@ -106,7 +106,7 @@ for styles. If the colour is specified using eight digits, the alpha
 value is set using the first two digits. Any other number of digits
 is an invalid use.
 
-Note that the ``HTML'' title does not imply availability of color names
+Note that the ``HTML'' title does not imply availability of colour names
 like ``red'' or ``black''.
 
 \subsubsection*{Compatibility}
@@ -187,10 +187,10 @@ which enables the features outlined in this document. Unknown values
 \must\ be ignored.
 
 \section{Modifications to existing commands}
-\subsection{\texttt{Dialogue:} with arbitary precision timestamps}
+\subsection{\texttt{Dialogue:} with arbitrary precision timestamps}
 \syntax{
 	\secspec{[Events]}\\
-	\mayuse{arbitary precision timestamps}
+	\mayuse{arbitrary precision timestamps}
 }
 
 \subsubsection*{Interpretation}
@@ -214,10 +214,10 @@ Dialogue: 0:00:01.100
 Dialogue: 0:00:03.12815
 \end{verbatim}
 
-\subsection{\texttt{Dialogue:} \texttt{\{* \}} for inline comments}
+\subsection{\texttt{Dialogue:} \texttt{\{* \}} for in-line comments}
 \syntax{
 	\secspec{[Events]}\\
-	\mustuse{inline comments}
+	\mustuse{in-line comments}
 }
 \begin{verbatim}
 Format: Text
@@ -267,7 +267,7 @@ Dialogue: And this has {*\fs100}the same font size everywhere.
 
 \subsubsection*{Interpretation}
 The \oc{fax} and \oc{fay} commands introduce a translation to be applied to
-glyph outlines. They are given by the following formulas:
+glyph outlines. They are given by the following formulae:
 
 \oc{fax}:
 $$x' = x + \lambda y$$
@@ -279,7 +279,7 @@ Where $\lambda$ represents the parameter value (which can be any decimal
 value). $x$ and $y$ iterate over glyph outline coordinates, relative to
 \oc{org}. The axes point rightwards and upwards, respectively.
 
-If both \oc{fax} and \oc{fay} are used, the formulas are calculated
+If both \oc{fax} and \oc{fay} are used, the formulae are calculated
 simultaneously, not affecting each other's input. They can be represented
 by the following matrix:
 
@@ -289,7 +289,7 @@ $$P' = \begin{pmatrix}
 \end{pmatrix} \cdot P\;, \quad P = \begin{pmatrix}x \\ y\end{pmatrix}$$
 
 The $\lambda$ value for \oc{fax} / \oc{fay} not given is $0$. The translation
-does not affect layouting, collision detection or baseline advancement.
+does not affect layout, collision detection or baseline advancement.
 
 \subsubsection*{Examples}
 \begin{verbatim}
@@ -340,7 +340,7 @@ do the same (warning only in debug mode or something).}
 \syntax{\mayuse{decimal \oc{pos}}}
 
 \subsubsection*{Interpretation}
-Traditionally, increasing SSA coordinate resolution to subpixel
+Traditionally, increasing SSA coordinate resolution to sub-pixel
 resolution involved increasing \texttt{PlayRes}. This extension
 allows decimal coordinates, removing the need for increasing
 \texttt{PlayRes}.
@@ -359,11 +359,11 @@ Format: Text
 Dialogue: {\pos(271.82818,314.1592)}
 \end{verbatim}
 
-\subsection{\todo \oc{k*} with arbitary precision timings}
+\subsection{\todo \oc{k*} with arbitrary precision timings}
 
 \section{Other notes regarding existing override codes}
 \subsection{\todo Multiple \oc{t} per line}
-\ann{(just clarifications, also compatibility note about ordering with vsfilter)}
+\ann{(just clarifications, also compatibility note about ordering with VSFilter)}
 
 \subsection{\oc{r0} deprecation}
 
