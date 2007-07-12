@@ -324,6 +324,14 @@ Dialogue: {\an1\pos(50,320)\fay0.5}fay0.5{\fay0}fay0
 \subsection{\todo \oc{fsc}}
 \ann{\oc{fscx}+\oc{fscy}, is this in any spec yet?}
 
+\subsection{\todo \oc{fa}}
+\ann{\oc{fa}: font alternatives. use like: \oc{fnFirstFontToTry}\oc{fa(Fallback1,Fallback2)}}
+
+\ann{If \oc{fn} is not found, emit a warning and try \oc{fa} in order. If \oc{fn} is missing a glyph,
+do the same (warning only in debug mode or something).}
+
+\ann{Separate from \oc{fn} for compatibility.}
+
 \section{Modifications to existing override codes}
 \subsection{\todo \oc{t} with \oc{pos}, \oc{org}}
 \syntax{\mustuse{animated \oc{pos}, \oc{org}}}
