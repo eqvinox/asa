@@ -34,6 +34,8 @@
 #include "imports_par.h"
 %}
 
+%option noyywrap
+
 %x comment
 %x regex
 %x regex_r
