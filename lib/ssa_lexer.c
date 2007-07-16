@@ -552,11 +552,11 @@ static void ssa_add_error_ext(struct ssa_state *state,
 
 
 	if (state->ctx == SSACTX_PACKET)
-		subhelp_log(CSRI_LOG_DEBUG, "parser: <stream>: %s: %s",
-			severity, ssaec[ec].sh);
+		subhelp_log(CSRI_LOG_DEBUG, "parser: <stream:%d>: %s: %s",
+			location - state->line + 1, severity, ssaec[ec].sh);
 	else
 		subhelp_log(CSRI_LOG_DEBUG, "parser: %d:%d: %s: %s",
-			state->lineno, location - state->line,
+			state->lineno, location - state->line + 1,
 			severity, ssaec[ec].sh);
 
 	if (state->nerr++ >= state->output->maxerrs) {
