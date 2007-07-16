@@ -150,19 +150,20 @@ forceinline static inline void asa_blit_mix(struct assp_frame *f,
 					naccum += cl.e[lay]
 						* f->blitter[4 * aidx + lay];
 				}
-				anew = 256 - ((255 - dp[aidx])
-					* (65536 - naccum) >> 16);
+				anew = (dp[aidx] * (65536 - naccum)) >> 16;
 
 				for (c = first; c < last; c++) {
-					unsigned short value = dp[c]
-						* (anew - (naccum >> 8));
+					unsigned int v2 = 0, value = dp[c]
+						* (65536 - naccum) >> 16;
 					for (lay = 0; lay < 4; lay++)
-						value += cl.e[lay]
-							* f->blitter[
-								4 * c + lay];
-					dp[c] = value / anew;
+						v2 += cl.e[lay]
+						    * f->blitter[4 * c + lay];
+					v2 *= naccum;
+					v2 >>= 16;
+					if (anew + (naccum >> 8) > 0)
+						dp[c] = (v2 + value) / (anew + (naccum >> 8));
 				}
-				dp[aidx] = anew - 1;
+				dp[aidx] = anew + (naccum >> 8);
 				dp += nbytes;
 				now++;
 			}
