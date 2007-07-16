@@ -30,6 +30,7 @@
 #define CSRIAPI export
 
 #include <csri/csri.h>
+#include <csri/stream.h>
 #include "csrilib_os.h"
 
 struct csri_wrap_rend {
@@ -46,6 +47,13 @@ struct csri_wrap_rend {
 	void (*render)(csri_inst *inst, struct csri_frame *frame,
 		double time);
 	void *(*query_ext)(csri_rend *rend, csri_ext_id extname);
+	struct csri_stream_ext stream_ass, stream_text;
+	csri_inst *(*init_stream_ass)(csri_rend *renderer,
+		const void *header, size_t headerlen,
+		struct csri_openflag *flags);
+	csri_inst *(*init_stream_text)(csri_rend *renderer,
+		const void *header, size_t headerlen,
+		struct csri_openflag *flags);
 
 	struct csri_info *info;
 	struct csrilib_os os;

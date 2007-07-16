@@ -21,6 +21,8 @@
 #include "csrilib.h"
 #include "subhelp.h"
 
+#include <string.h>
+
 csri_inst *csri_open_file(csri_rend *rend,
 	const char *filename, struct csri_openflag *flags)
 {
@@ -31,15 +33,20 @@ csri_inst *csri_open_file(csri_rend *rend,
 		wrend->open_file(rend, filename, flags));
 }
 
-csri_inst *csri_open_mem(csri_rend *rend,
-	const void *data, size_t length, struct csri_openflag *flags)
-{
-	struct csri_wrap_rend *wrend = csrilib_rend_lookup(rend);
-	if (!wrend)
-		return NULL;
-	return csrilib_inst_initadd(wrend,
-		wrend->open_mem(rend, data, length, flags));
+#define instance_wrapper(wrapname, funcname) \
+csri_inst *wrapname(csri_rend *rend, \
+	const void *data, size_t length, struct csri_openflag *flags) \
+{ \
+	struct csri_wrap_rend *wrend = csrilib_rend_lookup(rend); \
+	if (!wrend) \
+		return NULL; \
+	return csrilib_inst_initadd(wrend, \
+		wrend->funcname(rend, data, length, flags)); \
 }
+
+instance_wrapper(csri_open_mem, open_mem)
+static instance_wrapper(wrap_init_stream_ass, init_stream_ass)
+static instance_wrapper(wrap_init_stream_text, init_stream_text)
 
 void *csri_query_ext(csri_rend *rend, csri_ext_id extname)
 {
@@ -52,7 +59,22 @@ void *csri_query_ext(csri_rend *rend, csri_ext_id extname)
 	wrend = csrilib_rend_lookup(rend);
 	if (!wrend)
 		return NULL;
-	return wrend->query_ext(rend, extname);
+	rv = wrend->query_ext(rend, extname);
+	if (rv && !strcmp(extname, CSRI_EXT_STREAM_ASS)) {
+		struct csri_stream_ext *e = (struct csri_stream_ext *)rv;
+		memcpy(&wrend->stream_ass, e, sizeof(*e));
+		wrend->init_stream_ass = e->init_stream;
+		wrend->stream_ass.init_stream = wrap_init_stream_ass;
+		return &wrend->stream_ass;
+	}
+	if (rv && !strcmp(extname, CSRI_EXT_STREAM_TEXT)) {
+		struct csri_stream_ext *e = (struct csri_stream_ext *)rv;
+		memcpy(&wrend->stream_text, e, sizeof(*e));
+		wrend->init_stream_text = e->init_stream;
+		wrend->stream_text.init_stream = wrap_init_stream_text;
+		return &wrend->stream_text;
+	}
+	return rv;
 }
 
 struct csri_info *csri_renderer_info(csri_rend *rend)
