@@ -1,11 +1,28 @@
 #!/bin/bash -x
 
-echo "+++ autotool versions:"
+cat <<EOF
+
+  --- IMPORTANT ---
+  this script creates "configure" from the various files.
+  it is VERY sensitive to the versions of the following tools:
+
+EOF
 libtool --version | head -n 1
 autoconf --version | head -n 1
 automake --version | head -n 1
 gettext --version | head -n 1
-echo "+++"
+cat <<EOF
+
+  note: NEWER IS NOT BETTER!
+
+  if you can, try to avoid running this. really. try getting
+  a tarball. or tell me how to f***ing get it right. but unless
+  your name is Ulrich Drepper, you probably don't know either.
+
+  Anyway, if stuff breaks, look at configure.ac.
+  --- IMPORTANT ---
+
+EOF
 
 touch ChangeLog
 git log --pretty=medium asa_0.3.2.. > ChangeLog

@@ -2,7 +2,20 @@ AC_PREREQ(2.57)
 AC_INIT(asa, 0.3.2)
 AC_CONFIG_AUX_DIR(ac)
 AM_INIT_AUTOMAKE
-AM_MKINSTALLDIRS
+
+# okay, so the GNU guys suck. WOW. WHO WOULD HAVE GUESSED?
+
+# this used to be here:
+dnl AM_MKINSTALLDIRS
+# but it doesn't seem to exist anymore. now, let's run the blame lottery...
+#  ... and the WINNER IIIIIISSSS:
+AC_DEFUN([AM_INTL_SUBDIR],[])
+# yes, this sucks. no, i don't know how to do it right.
+#
+# if it doesn't work, write a flame to:
+# Ulrich "don't build glibc yourself!" Drepper.
+# (google for his mail address. he works at RedHat.)
+
 AM_GNU_GETTEXT([external])
 AM_GNU_GETTEXT_VERSION([0.14.5])
 AC_CONFIG_HEADER([include/acconf.h])
