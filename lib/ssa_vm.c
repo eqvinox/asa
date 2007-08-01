@@ -959,5 +959,6 @@ void ssav_packet(struct ssa_vm *vm, struct ssa *ssa,
 			ssav_prep_dialogue(ssa, vm, l, &hint);
 		l = l->next;
 	}
+	vm->cache = hint;
 }
 
