@@ -943,7 +943,7 @@ void ssav_create(struct ssa_vm *vm, struct ssa *ssa)
 void ssav_packet(struct ssa_vm *vm, struct ssa *ssa,
 	const void *data, size_t datasize, double start, double end)
 {
-	struct ssa_frag **hint = &vm->fragments;
+	struct ssa_frag *hint = vm->cache ? vm->cache : vm->fragments;
 	struct ssa_line *l;
 
 	if (vm->stream & SSAV_STREAM_TEXT)
@@ -956,9 +956,8 @@ void ssav_packet(struct ssa_vm *vm, struct ssa *ssa,
 		l->start = start;
 		l->end = end;
 		if (l->type == SSAL_DIALOGUE)
-			ssav_prep_dialogue(ssa, vm, l, hint);
+			ssav_prep_dialogue(ssa, vm, l, &hint);
 		l = l->next;
 	}
-	vm->cache = *hint;
 }
 
