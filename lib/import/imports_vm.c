@@ -490,9 +490,13 @@ int asa_import(const void *data, size_t dlen, double fps,
 extern int yyparse();
 extern FILE *yyin;
 
+#ifndef IMPORTS
+#error IMPORTS not defined, add to command line
+#endif
+
 void asa_init_import()
 {
-	yyin = fopen("imports", "r");
+	yyin = fopen(IMPORTS, "r");
 	yyparse();
 	asa_imports_crosslink();
 }

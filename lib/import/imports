@@ -1,0 +1,115 @@
+# fixed signatures first
+detect qttext		/^\{QTtext\}/
+detect rtf		/^\{\\rtf/
+detect viplay		/^\{\* VIPLAY/
+detect zerog		/^% Zero G/
+detect sst		/^SST /
+detect philips		/^# PHILIPS SVCD DESIGNER/
+detect ulead		/^#Ulead subtitle/
+# also: spruce dvd maestro
+detect sonicscenarist	/^st_format\s*\d/
+detect dvdjunior	/^Subtitle File Mark/
+detect captionsdat	/^\0\r#/
+detect inscriber	/^@@.*\n@@\d Created by URUSoft/
+
+# important formats
+detect ssa		/(?mi)^(ScriptType:|\[Script Info)/
+detect subrip		/^\d+\s*\n\d\d:\d\d:\d\d,\d\d\d\s+-->\s+\d\d:\d\d:\d\d,\d\d\d\s*\n/
+detect microdvd		/^\{\d+\}\{\d+\}/
+
+# sgml/xml:
+detect sami		/(?i)<SAMI/
+detect smil		/(?i)<SMIL/
+detect smil_rt		/(?i)<WINDOW/
+detect html		/(?i)<HTML/
+
+detect jacosub		/(?m)^#([DT]\d+)/
+detect sasamis2k	/(?m)^;(Env|Set)\./
+detect phoenix		/^[ \d]+,[ \d]+, ".*"/
+detect vkt		/(?m)^\{\d+ .*\}/
+detect e2		/^\[\d+\]\[\d+\]/
+detect powerdivx	/^\{\d+:\d\d:\d\d\}\{\d+:\d\d:\d\d\}/
+detect sbt		/^\d\d:\d\d:\d\d\s*\n\d\d:\d\d:\d\d\s*\n\s*\n/
+detect karaokelrc	/(?m)^\[\d\d:\d\d\.\d\d\]/
+detect dks		/^\[\d\d:\d\d:\d\d\]/
+detect aqtitle		/^-->> \d+\s*\n/
+detect panimator	/^\/(c|d \d+ \d+)\s*\n/
+
+# more or less generic:
+detect tmplayer		/^\d\d:\d\d:\d\d,\d=/
+detect cap32		/^\d\d:\d\d:\d\d:\d\d , \d\d:\d\d:\d\d:\d\d , /
+# most generic... (fab subber, dvd subtitle system, pinnacle impression?)
+detect not_encore	/(?m)^\d\d:\d\d:\d\d:\d\d \d\d:\d\d:\d\d:\d\d /
+detect encore_ntsc	/(?m)^\d+ \d+;\d+;\d+;\d+ \d+;\d+;\d+;\d+ /
+detect encore_pal	/(?m)^\d+ \d+:\d+:\d+:\d+ \d+:\d+:\d+:\d+ /
+detect turbotitler	/^\d+:\d\d:\d\d\.\d\d,\d+:\d\d:\d\d\.\d\d,/
+detect macdvdpro	/^\d\d:\d\d:\d\d:\d\d\t\d\d:\d\d:\d\d:\d\d\t/
+detect powerpixel	/^\d\d:\d\d:\d\d:\d\d\t\d\d:\d\d:\d\d:\d\d\r?\n/
+detect ovr		/^\d\d:\d\d:\d\d:\d\d [^[:digit:][:space:][:punct:]]/
+detect fab		/^\d\d:\d\d:\d\d:\d\d  \d\d:\d\d:\d\d:\d\d\s*\n[^[:digit:][:space:][:punct:]]/
+detect sonicdvd		/^\d{4}  \d\d:\d\d:\d\d:\d\d  \d\d:\d\d:\d\d:\d\d  /
+detect koalaplayer	/(?m)^\d+:\d\d:\d\d:[^[:digit:][:space:][:punct:]]/
+detect subcreator1	/^\d+:\d\d:\d\d\.\d+:/
+
+format subrip ssa {
+	:/^\d+\s*\n(\d\d):(\d\d):(\d\d),(\d\d\d)\s+-->\s+(\d\d):(\d\d):(\d\d),(\d\d\d)\s*\r?\n/
+		show 1h 2m 3s 4u
+		hide 5h 6m 7s 8u
+		:/(?s)^(.*?)\s*\n\s*\n/
+			select 1
+			sg /\\/\\\\/
+			sg /\{/\\{/
+			sg /\}/\\}/
+			sg /\n/\\n/
+			sg /<[Bb]>/{\\b1}/
+			sg /<\/[Bb]>/{\\b0}/
+			sg /<[Ii]>/{\\i1}/
+			sg /<\/[Ii]>/{\\i0}/
+			sg /<\/(.*?)>/{\12\-3}/
+			sg /&lt;/</
+			sg /&gt;/>/
+			sg /&amp;/&/
+			sg /^/,,,0,0,0,,/
+			append
+			commit
+			break 1
+		;
+	;
+}
+
+format encore_pal text {
+	fps 25.0
+	:/^\d+ (\d+):(\d+):(\d+):(\d+) (\d+):(\d+):(\d+):(\d+) (.*(\n[^\d].*)*)\n/
+		show 1h 2m 3s 4f hide 5h 6m 7s 8f
+		select 9 sg /\/\//\n/
+		append commit
+	;
+}
+
+format encore_ntsc text {
+	fps 29.970
+	:/^\d+ (\d+);(\d+);(\d+);(\d+) (\d+);(\d+);(\d+);(\d+) (.*(\n[^\d].*)*)\n/
+		show 1h 2m 3s 4f hide 5h 6m 7s 8f
+		select 9 sg /\/\//\n/
+		append commit
+	;
+}
+
+format microdvd text {
+	:/^\{\s*(\d+)\}\{\s*(\d+)\}(.*?)\s*\n/
+		show 1f hide 2f
+		select 3 sg /\|/\n/
+		append commit
+	;
+}
+
+format vkt text {
+	:/^#.*\n/;
+	:/^{(\d+) (.*)}\s*\n/
+		hide 1f
+		commit
+		show 1f
+		select 2
+		append
+	;
+}
