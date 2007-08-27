@@ -499,6 +499,11 @@ int asa_pcre_compile(asa_pcre *out, const char *str)
 	return 1;
 }
 
+void yyerror(char *s)
+{
+	subhelp_log(CSRI_LOG_WARNING, "failed to load imports file: %s", s);
+}
+
 extern int yyparse();
 extern FILE *yyin;
 

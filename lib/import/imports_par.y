@@ -27,15 +27,11 @@
 #include <unistd.h>
 #include <ctype.h>
 
-#include <subhelp.h>
-
 #include "common.h"
 #include "imports.h"
 
-void yyerror(char *s)
-{
-	subhelp_log(CSRI_LOG_WARNING, "failed to load imports file: %s", s);
-}
+extern int yylex();
+extern void yyerror(char *s);
 
 %}
 
