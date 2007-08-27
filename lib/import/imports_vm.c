@@ -142,7 +142,7 @@ struct asa_import_detect *asa_imports_detect(const void *data, size_t dlen)
 	if (dlen > 2048)
 		dlen = 2048;
 	for (det = asa_det_first; det; det = det->next)
-		if (pcre_exec(det->re, NULL, d, dlen, 0, 0, v, 64) >= 0)
+		if (pcre_exec(det->re.pcre, NULL, d, dlen, 0, 0, v, 64) >= 0)
 			return det;
 	return NULL;
 }
@@ -293,7 +293,7 @@ static int asai_sg(struct asa_import_state *state,
 	if (!state->selstr)
 		return 0;
 	while ((unsigned)s < state->sellen &&
-		(rv = pcre_exec(insn->v.sg.regex, NULL, state->selstr,
+		(rv = pcre_exec(insn->v.sg.regex.pcre, NULL, state->selstr,
 			state->sellen, s, 0, v, MAXGROUP * 2)) >= 0) {
 		oldstr = state->selstr;
 		s = asai_process_replace(state, insn, v, rv);
@@ -346,7 +346,7 @@ static int asai_sgu(struct asa_import_state *state,
 
 	if (!state->selstr)
 		return 0;
-	if ((rv = pcre_exec(insn->v.sg.regex, NULL, state->selstr,
+	if ((rv = pcre_exec(insn->v.sg.regex.pcre, NULL, state->selstr,
 			state->sellen, 0, 0, v, MAXGROUP * 2)) >= 0) {
 		oldstr = state->selstr;
 		asai_process_replace(state, insn, v, rv);
@@ -448,7 +448,7 @@ static int asai_child(struct asa_import_state *state,
 	struct asa_import_insn *insn)
 {
 	int rv, v[MAXGROUP * 2];
-	if ((rv = pcre_exec(insn->v.child.regex, NULL, state->line,
+	if ((rv = pcre_exec(insn->v.child.regex.pcre, NULL, state->line,
 			state->remain, 0, 0, v, MAXGROUP * 2)) >= 0) {
 		asai_set_matches(state, state->line, v, rv);
 		state->line += v[1];
@@ -485,6 +485,18 @@ int asa_import(const void *data, size_t dlen, double fps,
 	if (state.selstr)
 		xfree(state.selstr);
 	return rv;
+}
+
+int asa_pcre_compile(asa_pcre *out, const char *str)
+{
+	const char *err;
+	int ec, eo;
+
+	out->pcre = pcre_compile2(str, 0, &ec, &err, &eo, NULL);
+	if (out->pcre)
+		return 0;
+	fprintf(stderr, "/%s/: %s (%d)\n", str, err, eo);
+	return 1;
 }
 
 extern int yyparse();

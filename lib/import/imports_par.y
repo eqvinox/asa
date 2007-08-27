@@ -51,7 +51,7 @@ void yyerror(char *s)
 	} mult;
 	struct asa_tspec *tspec;
 	struct asa_import_insn *insn;
-	pcre *pcre;
+	asa_pcre pcre;
 }
 
 %token <s> TOKEN
@@ -92,16 +92,11 @@ input:
 detect:	DETECT TOKEN REGEX	{
 					struct asa_import_detect *d =
 						xnew(struct asa_import_detect);
-					const char *err;
-					int ec, eo;
 					d->name = $2;
-					d->re = pcre_compile2($3, 0, &ec, &err, &eo, NULL);
-					if (d->re)
+					if (!asa_pcre_compile(&d->re, $3))
 						asa_det_last = &(*asa_det_last = d)->next;
-					else {
-						fprintf(stderr, "/%s/: %s (%d)\n", $3, err, eo);
+					else
 						xfree(d);
-					}
 				}
 	;
 
@@ -148,15 +143,9 @@ tspecs:				{ $$ = NULL; }
 
 /* helper for loading the regex */
 regex:	REGEX			{
-					const char *err;
-					int ec, eo;
-					$$ = pcre_compile2($1, 0, &ec, &err, &eo, NULL);
-					if (!$$) {
-						fprintf(stderr, "/%s/: %s (%d)\n", $1, err, eo);
-						/* ignore nested errors */
+					if (asa_pcre_compile(&$$, $1))
 						if (!current_fail)
 							current_fail = 1;
-					}
 				}
 	;
 /* actual instructions */

@@ -23,6 +23,20 @@
 
 #include <pcre.h>
 
+/** parser reuse. imports-to-C uses char *, real VM uses pcre * */
+typedef union {
+	pcre *pcre;
+	char *str;
+} asa_pcre;
+
+/** pcre_compile wrapper.
+ * used to allow loading differently for imports-to-C conversion.
+ * @param out output (parsed pcre)
+ * @param str regular expression string
+ * @return 0 on success, any other on error
+ */
+extern int asa_pcre_compile(asa_pcre *out, const char *str);
+
 /** import instruction code */
 enum asa_import_insn_type {
 	ASAI_COMMIT = 0,	/**< put current buffer as line */
@@ -71,7 +85,7 @@ struct asa_import_insn {
 		int select;			/**< matchgroup to select */
 		/** search-replace parameters */
 		struct {
-			pcre *regex;		/**< search for */
+			asa_pcre regex;		/**< search for */
 			struct asa_repl *repl;	/**< replace by */
 		} sg;
 		/** time specification */
@@ -81,7 +95,7 @@ struct asa_import_insn {
 		} tspec;
 		/** child instructions */
 		struct {
-			pcre *regex;		/** <if this matches... */
+			asa_pcre regex;		/** <if this matches... */
 			struct asa_import_insn *insns;	/**< do this. */
 		} child;
 		double fps_value;		/**< fixed fps value */
@@ -110,7 +124,7 @@ struct asa_import_format {
 struct asa_import_detect {
 	struct asa_import_detect *next;		/**< next rule */
 
-	pcre *re;				/**< if this matches... */
+	asa_pcre re;				/**< if this matches... */
 
 	char *name;				/**< use this format */
 	struct asa_import_format *fmt;		/**< through this pointer */
