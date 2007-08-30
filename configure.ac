@@ -14,6 +14,9 @@ fi
 
 # this used to be here:
 dnl AM_MKINSTALLDIRS
+# but it doesn't work anymore. let's do it worse...
+AC_SUBST(MKINSTALLDIRS, "\$(top_srcdir)/ac/mkinstalldirs")
+
 # but it doesn't seem to exist anymore. now, let's run the blame lottery...
 #  ... and the WINNER IIIIIISSSS:
 AC_DEFUN([AM_INTL_SUBDIR],[])
