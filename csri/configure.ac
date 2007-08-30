@@ -103,10 +103,10 @@ AC_SUBST([LIBASS_LIBS])
 csrilibdir="${libdir}/csri"
 AC_SUBST([csrilibdir])
 
-csri_path="\${csri_libdir}:~/.csri/lib"
+csri_path="${csrilibdir}:/usr/lib/csri:/usr/local/lib/csri:~/.csri/lib"
 AC_ARG_WITH(csri-libpath,
 	AC_HELP_STRING([--with-csri-libpath=PATH1:PATH2],
-		[Look for CSRI renderers in the specified directories. Separate directory names with colons. Tildes are expanded at run-time. [[$libdir/csri:~/.csri/lib]]]),
+		[Look for CSRI renderers in the specified directories. Separate directory names with colons. Tildes are expanded at run-time. [[$csri_path]]]),
 [
     if test "$withval" != "yes" -a "$withval" != "" -a "$withval" != "no"
     then csri_path="$withval"
