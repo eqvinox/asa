@@ -129,6 +129,8 @@ static void csrilib_load(const char *filename)
 	}
 	if (!S_ISREG(st.st_mode))
 		return;
+	if (access(filename, X_OK))
+		return;
 
 	for (rend = wraprends; rend; rend = rend->next)
 		if (rend->os.device == st.st_dev
