@@ -499,6 +499,7 @@ int asa_pcre_compile(asa_pcre *out, const char *str)
 	return 1;
 }
 
+#ifdef IMPORTS
 void yyerror(char *s)
 {
 	subhelp_log(CSRI_LOG_WARNING, "failed to load imports file: %s", s);
@@ -506,14 +507,19 @@ void yyerror(char *s)
 
 extern int yyparse();
 extern FILE *yyin;
-
-#ifndef IMPORTS
-#error IMPORTS not defined, add to command line
+#endif
+#ifdef IMPORTS_PREP
+#include "imports_prep.h"
 #endif
 
 void asa_init_import()
 {
+#ifdef IMPORTS
 	yyin = fopen(IMPORTS, "r");
 	yyparse();
+#endif
+#ifdef IMPORTS_PREP
+	preparse_add();
+#endif
 	asa_imports_crosslink();
 }

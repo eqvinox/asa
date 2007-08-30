@@ -3,6 +3,13 @@ AC_INIT(asa, 0.3.2)
 AC_CONFIG_AUX_DIR(ac)
 AM_INIT_AUTOMAKE
 
+AC_CANONICAL_HOST
+AC_CANONICAL_BUILD
+
+if test "$build" != "$host"
+then	AC_MSG_WARN([cross-compiling will need manual fiddling with lib/imports/import_prep.h])
+fi
+
 # okay, so the GNU guys suck. WOW. WHO WOULD HAVE GUESSED?
 
 # this used to be here:
@@ -31,6 +38,19 @@ simpfmt_disp="yes"
 AC_PROG_CC
 AC_PROG_YACC
 AM_PROG_LEX
+
+asa_imports_file="yes"
+asa_imports_prep="yes"
+AC_ARG_ENABLE([],
+	AC_HELP_STRING([--disable-imports-file], [do not support loading import directives from .../share/asa/imports]),
+	[	if test "$enableval" == "no"
+		then	asa_imports_file="no"
+		fi])
+AC_ARG_ENABLE([],
+	AC_HELP_STRING([--disable-imports-prep], [do not compile import directives into library]),
+	[	if test "$enableval" == "no"
+		then	asa_imports_prep="no"
+		fi])
 
 # stuff that may fail => do it early
 AC_MSG_NOTICE([--- checking basic system dependencies ---])
@@ -127,6 +147,8 @@ AC_C_FLAG([-Winvalid-pch])
 AC_C_FLAG([-Wc++-compat])
 AC_C_FLAG([-Wdeclaration-after-statement])
 AC_C_FLAG([-Wshadow])
+AC_C_FLAG([-Wno-missing-field-initializers],,[wnomissinginit="-Wno-missing-field-initializers"])
+AC_SUBST([wnomissinginit])
 AC_C_FLAG([-pedantic])
 if test -n "$try_optimize"
 then	AC_C_FLAG([-funroll-loops])
@@ -193,6 +215,8 @@ then	AC_DEFINE([ASA_OPT_NONE], 1, [no optimization for asa])
 fi
 AM_CONDITIONAL([BUILD_AMD64], [test "$asa_optimize" == "AMD64"])
 AM_CONDITIONAL([BUILD_I686], [test "$asa_optimize" == "i686"])
+AM_CONDITIONAL([IMPORTS_FILE], [test "$asa_imports_file" == "yes"])
+AM_CONDITIONAL([IMPORTS_PREP], [test "$asa_imports_prep" == "yes"])
 
 csrilibdir="${libdir}/csri"
 AC_SUBST([csrilibdir], [$csrilibdir])
