@@ -80,6 +80,7 @@ static void ssav_fontname(ifp);
 static void ssav_fontsize(ifp);
 static void ssav_reset(ifp);
 
+static void ssav_bool(ifp);
 static void ssav_double(ifp);
 static void ssava_double(afp);
 static void ssav_colour(ifp);
@@ -124,11 +125,11 @@ static struct ssa_ipnode iplist[SSAN_MAX] = {
 	{ssav_nl,	NULL,		0},		/* Sl SSAN_NEWLINEH */
 	{ssav_fontint,	NULL,		e(f.weight)},	/* !l SSAN_BOLD */
 	{ssav_fontint,	NULL,		e(f.italic)},	/* ?l SSAN_ITALICS */
-	{NULL,		NULL,		0},		/* ?l SSAN_UNDERLINE */
-	{NULL,		NULL,		0},		/* ?l SSAN_STRIKEOUT */
+	{ssav_bool,	NULL,		e(underline)},	/* Sl SSAN_UNDERLINE */
+	{ssav_bool,	NULL,		e(strikeout)},	/* Sl SSAN_STRIKEOUT */
 	{ssav_double,	ssava_double,	e(border)},	/* al SSAN_BORDER */
 	{ssav_double,	ssava_double,	e(shadow)},	/* al SSAN_SHADOW */
-	{NULL,		NULL,		0},		/* ?? SSAN_BLUREDGES */
+	{ssav_bool,	NULL,		e(blur)},	/* Sl SSAN_BLUREDGES */
 	{ssav_fontname,	NULL,		0},		/* ?l SSAN_FONT */
 	{ssav_fontsize,	NULL,		0},		/* ?l SSAN_FONTSIZE */
 
@@ -429,6 +430,13 @@ static void ssav_ignore(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
 }
 
 /****************************************************************************/
+
+static void ssav_bool(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
+	ptrdiff_t param)
+{
+	ctx->pset = ssav_alloc_clone_clear(ctx->pset, param, sizeof(unsigned));
+	*(unsigned *)apply_offset(ctx->pset, param) = !!n->v.lval;
+}
 
 static void ssav_double(struct ssav_prepare_ctx *ctx, struct ssa_node *n,
 	ptrdiff_t param)

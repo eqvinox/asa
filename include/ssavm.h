@@ -85,6 +85,7 @@ struct ssav_params {
 
 	double border;
 	double shadow;
+	unsigned blur, underline, strikeout;
 
 	struct {
 		colour_t colours[4];
