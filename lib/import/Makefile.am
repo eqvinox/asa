@@ -24,7 +24,7 @@ AM_YFLAGS = -d
 AM_CPPFLAGS = -D_GNU_SOURCE \
 	-I$(top_srcdir)/include \
 	-I$(top_srcdir)/csri/include
-AM_CFLAGS = $(PCRE_CFLAGS) $(IMPORTS_PREP) $(wnomissinginit)
+AM_CFLAGS = $(PCRE_CFLAGS) $(IMPORTS_PREP) $(IMPORTS_FILE) $(wnomissinginit)
 
 noinst_HEADERS = imports.h
 noinst_LTLIBRARIES = libimport.la libimportparser.la
