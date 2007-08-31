@@ -110,10 +110,12 @@ static inline void ssar_3dmatrix_transform_glyph(FT_Glyph glyph,float *matrix) {
 }
 
 extern void assp_spanfunc(int y, int count, const FT_Span *spans, void *user);
+extern void assp_spanblur(int y, int count, const FT_Span *spans, void *user);
 
 static inline void ssar_one(struct ssa_vm *vm, FT_OutlineGlyph *g,
 	struct ssav_unit *u, struct assp_param *p, FT_Stroker stroker,
-	FT_Vector org, double shad, FT_Pos bord, float *matrix3d, int tgt)
+	FT_Vector org, unsigned blur, double shad, FT_Pos bord,
+	float *matrix3d, int tgt)
 {
 	FT_Glyph transformed;
 	FT_Outline *o;
@@ -166,6 +168,9 @@ static inline void ssar_one(struct ssa_vm *vm, FT_OutlineGlyph *g,
 	p->elem = tgt;
 	o = &((FT_OutlineGlyph)transformed)->outline;
 	FT_Outline_Render(asaf_ftlib, o, &params);
+
+	params.black_spans	= blur ? assp_spanblur : assp_spanfunc;
+	params.gray_spans	= blur ? assp_spanblur : assp_spanfunc;
 
 	if (bord) {
 		FT_Vector borderbugfix;
@@ -271,7 +276,7 @@ void ssar_line(struct ssa_vm *vm, struct ssav_line *l, struct assp_fgroup *fg,
 				u = u->next;
 				ustop = u->next ? u->next->idxstart : l->nchars;
 			}
-			ssar_one(vm, g, u, &p, stroker, l->active.org,
+			ssar_one(vm, g, u, &p, stroker, l->active.org, np->blur,
 				np->shadow, bordersize, n->matrix3d, tgt);
 			g++, idx++;
 		}

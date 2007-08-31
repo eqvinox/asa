@@ -106,6 +106,73 @@ f_fptr void assp_spanfunc(int y, int count, const FT_Span *spans, void *user)
 	}
 }
 
+static void assp_blur(cellline *row, const FT_Span *spans, const FT_Span *end,
+	struct assp_param *p, int heavy)
+{
+	while (spans < end) {
+		const FT_Span *now = spans++;
+		unsigned uv;
+		int rx = now->x + p->xo;
+		int x0, x1;
+		cell *cnow, *cend;
+
+		x0 = rx - 1 < p->cx0 ? p->cx0 : rx - 1;
+		cnow = &row->data[x0];
+		if (x0 < (int)row->first)
+			row->first = x0;
+
+		x1 = rx + now->len > p->cx1 ? p->cx1 :
+			rx + now->len;
+		cend = &row->data[x1];
+		if (x1 > (int)row->last)
+			row->last = x1;
+
+		if (cnow < cend && rx - 1 >= p->cx0) {
+			uv = cnow->e[p->elem] + (((now->coverage << heavy) + 7) >> 4);
+			cnow->e[p->elem] = uv > 255 ? 255 : uv;
+			cnow++;
+		}
+		if (cnow < cend && rx >= p->cx0) {
+			uv = cnow->e[p->elem] + (((now->coverage << heavy) + 3) >> 3);
+			cnow->e[p->elem] = uv > 255 ? 255 : uv;
+			cnow++;
+		}
+		while (cnow < cend) {
+			uv = cnow->e[p->elem] + (((now->coverage << heavy) + 1) >> 2);
+			cnow->e[p->elem] = uv > 255 ? 255 : uv;
+			cnow++;
+		}
+		if (rx + now->len + 1 < p->cx1) {
+			uv = cnow->e[p->elem] + (((now->coverage << heavy) + 3) >> 3);
+			cnow->e[p->elem] = uv > 255 ? 255 : uv;
+			cnow++;
+		}
+		if (rx + now->len + 2 < p->cx1) {
+			uv = cnow->e[p->elem] + (((now->coverage << heavy) + 7) >> 4);
+			cnow->e[p->elem] = uv > 255 ? 255 : uv;
+			cnow++;
+		}
+	}
+}
+
+f_fptr void assp_spanblur(int y, int count, const FT_Span *spans, void *user)
+{
+	struct assp_param *p = (struct assp_param *)user;
+	int ry = y + p->yo;
+	const FT_Span *end = spans + count;
+
+	if (!count || ry < (int)p->cy0 - 1 || ry >= (int)p->cy1 + 1
+		|| p->cx0 >= p->cx1)
+		return;
+
+	if (ry - 1 >= (int)p->cy0 && ry - 1 < (int)p->cy1)
+		assp_blur(assp_cellgrab(p->f, ry - 1), spans, end, p, 1);
+	if (ry     >= (int)p->cy0 && ry     < (int)p->cy1)
+		assp_blur(assp_cellgrab(p->f, ry),     spans, end, p, 0);
+	if (ry + 1 >= (int)p->cy0 && ry + 1 < (int)p->cy1)
+		assp_blur(assp_cellgrab(p->f, ry + 1), spans, end, p, 1);
+}
+
 /** allocate a new frame, defaulting lines to unused.
  * \param g group to associate with
  */
