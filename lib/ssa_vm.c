@@ -234,6 +234,8 @@ static struct ssav_params *ssav_addref(struct ssav_params *p)
 static void ssav_release(struct ssav_params *p)
 {
 	if (!--p->nref) {
+		if (p->finalized)
+			xfree(p->finalized);
 		asaf_srelease(p->fsiz);
 		asaf_frelease(p->font);
 		xfree(p);
@@ -909,6 +911,37 @@ static void ssav_prep_dialogue(struct ssa *ssa, struct ssa_vm *vm,
 			*hint = rv;
 	} else
 		xfree(vl);
+}
+
+void ssav_free(struct ssav_line *l)
+{
+	struct ssav_node *n, *nn;
+	struct ssav_unit *u, *uu;
+
+	struct assp_frameref *group = NULL;
+	struct ssav_karaoke_unit *kara = NULL;
+
+	ssgl_dispose(l);
+
+	for (u = l->unit_first; u; u = uu) {
+		uu = u->next;
+		xfree(u);
+	}
+	for (n = l->node_first; n; n = nn) {
+		ssav_release(n->params);
+
+		if (n->group != group)
+			xfree(n->group);
+		group = n->group;
+		if (n->kara != kara)
+			xfree(n->kara);
+		kara = n->kara;
+
+		nn = n->next;
+		xfree(n->indici);
+		xfree(n);
+	}
+	xfree(l);
 }
 
 void ssav_create(struct ssa_vm *vm, struct ssa *ssa)

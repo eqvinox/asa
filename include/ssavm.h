@@ -237,6 +237,10 @@ struct ssa_vm {
 extern struct ssa_frag *ssap_frag_init(struct ssa_vm *vm);
 extern struct ssa_frag *ssap_frag_add(struct ssa_vm *v,
 	struct ssa_frag *prev, struct ssav_line *l);
+extern void ssap_frag_expire(struct ssa_vm *vm, double ts);
+extern void ssap_frag_free(struct ssa_vm *vm);
+
+extern void ssav_free(struct ssav_line *l);
 
 extern void ssav_create(struct ssa_vm *vm, struct ssa *ssa);
 extern void ssav_packet(struct ssa_vm *vm, struct ssa *ssa,

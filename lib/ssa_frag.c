@@ -26,6 +26,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <math.h>
 
 static inline struct ssa_frag *ssap_frag_alloc(struct ssa_frag *frag,
 	unsigned newtotalelems)
@@ -116,6 +117,56 @@ struct ssa_frag *ssap_frag_add(struct ssa_vm *v,
 		seek = *(seekp = &seek->next);
 	} while (seek != last);
 	return first;
+}
+
+void ssap_frag_expire(struct ssa_vm *vm, double ts)
+{
+	struct ssa_frag *prev = NULL, **pcur = &vm->fragments;
+	struct ssav_line **r, **w;
+	vm->cache = NULL;
+
+	while (*pcur) {
+		struct ssa_frag *cur = *pcur;
+
+		/* fragments with visible lines always have a ->next */
+		if (cur->nrend && cur->next->start <= ts) {
+			double next = cur->next->start;
+
+			for (r = w = &cur->lines[0];
+				r < &cur->lines[cur->nrend];
+				r++)
+			{
+				/* line not expired, keep it */
+				if ((*r)->end > ts)
+					*w++ = *r;
+				/* last reference, free it */
+				else if ((*r)->end == next)
+					ssav_free(*r);
+				/* else: not last reference, free'd later */
+			}
+			if (r != w) {
+				cur->nrend = w - &cur->lines[0];
+				cur = ssap_frag_alloc(cur, cur->nrend);
+				*pcur = cur;
+			}
+			/* remove unneeded fragments */
+			if (prev && prev->nrend == cur->nrend
+				&& !memcmp(prev->lines, cur->lines, cur->nrend
+					* sizeof(struct ssav_line *)))
+			{
+				prev->next = cur->next;
+				xfree(cur);
+				cur = prev;
+			}
+		}
+		prev = cur;
+		pcur = &cur->next;
+	}
+}
+
+void ssap_frag_free(struct ssa_vm *vm)
+{
+	ssap_frag_expire(vm, HUGE_VAL);
 }
 
 struct ssa_frag *ssap_frag_init(struct ssa_vm *vm)
