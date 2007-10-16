@@ -28,6 +28,13 @@
 #define xrealloc realloc
 #define xfree free
 
+#define oom_return(x) do { if (x) { \
+	subhelp_log(CSRI_LOG_ERROR, "Out of memory in %s:%d", \
+		__FILE__, __LINE__); return NULL; } } while (0)
+#define oom_msg() \
+	subhelp_log(CSRI_LOG_ERROR, "Out of memory in %s:%d", \
+		__FILE__, __LINE__)
+
 #ifndef HAVE_CONFIG_H
 #include "acconf_win32.h"
 #else
