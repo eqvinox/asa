@@ -38,6 +38,9 @@
 static FcConfig *fontconf;
 static FcPattern *aux;
 #else
+
+#error this code is unmaintained and needs to be updated.
+
 #ifndef _WIN32
 #error fontconfig can be disabled only on win32
 #endif
@@ -143,7 +146,6 @@ struct asa_font *asaf_request(const char *name, int slant, int weight)
 		FC_FAMILY, FcTypeString, name,
 		FC_SLANT, FcTypeInteger, slant,
 		FC_WEIGHT, FcTypeInteger, asaf_lv2weight(weight),
-//		FC_SIZE, FcTypeDouble, size,
 		NULL);
 	if (!tmp1) {
 		subhelp_log(CSRI_LOG_WARNING,
@@ -151,7 +153,6 @@ struct asa_font *asaf_request(const char *name, int slant, int weight)
 			"(weight %d, slant %d)", name, weight, slant);
 		return NULL;
 	}
-//	FcPatternPrint(rv->pattern);
 
 	tmp2 = FcFontRenderPrepare(fontconf, tmp1, aux);
 	FcPatternDestroy(tmp1);
@@ -176,7 +177,7 @@ struct asa_font *asaf_request(const char *name, int slant, int weight)
 		FcPatternDestroy(final);
 		return NULL;
 	}
-	
+
 	if (FT_New_Face(asaf_ftlib, (char *)filename, fontindex, &face)) {
 		subhelp_log(CSRI_LOG_WARNING,
 			"error loading font %s (\"%s\")", name, filename);
@@ -186,8 +187,6 @@ struct asa_font *asaf_request(const char *name, int slant, int weight)
 		subhelp_log(CSRI_LOG_INFO,
 			"loaded font %s from \"%s\":%d", name, filename,
 			fontindex);
-/*	FcPatternGetDouble(af->pattern, FC_SIZE, 0, &size);
-	FT_Set_Char_Size(af->face, size * 64, size * 64, 0, 0); */
 	FcPatternDestroy(final);
 #else
 	HFONT font;
@@ -225,6 +224,13 @@ struct asa_font *asaf_request(const char *name, int slant, int weight)
 #endif
 
 	rv = xnew(struct asa_font);
+	if (!rv) {
+		FT_Done_Face(face);
+		if (buffer)
+			xfree(buffer);
+		oom_msg();
+		return NULL;
+	}
 	rv->hash = hash;
 	rv->ref = 1;
 	rv->face = face;
@@ -240,10 +246,10 @@ void asaf_frelease(struct asa_font *af)
 	if (--af->ref)
 		return;
 	hash_remove(af);
+	FT_Done_Face(af->face);
 	if (af->data)
 		xfree(af->data);
-	FT_Done_Face(af->face);
-	free(af);
+	xfree(af);
 }
 
 struct asa_fontinst *asaf_reqsize(struct asa_font *af, double size)
@@ -253,6 +259,9 @@ struct asa_fontinst *asaf_reqsize(struct asa_font *af, double size)
 	TT_HoriHeader *hori;
 	TT_OS2 *os2;
 	float scale = 1.0;
+
+	oom_return(!rv);
+
 #ifdef FONTSIZE_DEBUG
 	FT_Size_Metrics *m = &af->face->size->metrics;
 
@@ -324,6 +333,6 @@ void asaf_srelease(struct asa_fontinst *as)
 		return;
 	FT_Done_Size(as->size);
 	asaf_frelease(as->font);
-	free(as);
+	xfree(as);
 }
 
