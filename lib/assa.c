@@ -24,6 +24,8 @@
 #include "ssavm.h"
 #include "ssarun.h"
 
+#include <subhelp.h>
+
 /** initialize incremental allocation.
  * @param vm the VM
  * @return scrap'n'redo flags
@@ -42,7 +44,7 @@ enum ssar_redoflags assa_start(struct ssa_vm *vm)
 /** get or allocate layer.
  * @param vm the VM
  * @param layer layer number
- * @return the layer
+ * @return the layer or NULL on OOM
  */
 static struct assa_layer *assa_getlayer(struct ssa_vm *vm, long int layer)
 {
@@ -54,6 +56,7 @@ static struct assa_layer *assa_getlayer(struct ssa_vm *vm, long int layer)
 		return *prev;
 
 	newl = xnew(struct assa_layer);
+	oom_return(!newl);
 	newl->layer = layer;
 	newl->next = *prev;
 	newl->allocs = NULL;
@@ -104,10 +107,11 @@ struct fitlines {
 };
 
 /** fitting pass #1: split into lines and sum up their size.
+ * @param fls (out) arranged lines
  * @param u first unit
- * @param width wrapping width
+ * @param width wrap width
  * @param h_total (out) total height of everything
- * @return newly allocated (temp) list of lines
+ *  fls->fl == NULL on OOM
  */
 static void assa_fit_q12(struct fitlines *fls, struct ssav_unit *u,
 	FT_Pos width, FT_Pos *h_total, long wrap)
@@ -116,9 +120,12 @@ static void assa_fit_q12(struct fitlines *fls, struct ssav_unit *u,
 	struct fitline *fl = fls->fl;
 
 	while (u) {
-		if (fls->used == fls->alloc)
-			fls->fl = (struct fitline *)xrealloc(fls->fl,
+		if (fls->used == fls->alloc) {
+			fls->fl = (struct fitline *)xrealloc_free(fls->fl,
 				(fls->alloc += 5) * sizeof(struct fitline));
+			if (!fls->fl)
+				return;
+		}
 		fl = fls->fl + fls->used;
 		fl->startat = u;
 		fl->size.x = fl->size.y = 0;
@@ -197,10 +204,13 @@ static struct ssav_unit *assa_fit_q0_i(struct fitlines *fls,
 	if (nlines == 0)
 		return u;
 
-	if (fls->alloc < nlines + fls->used)
-		fls->fl = (struct fitline *)xrealloc(fls->fl,
+	if (fls->alloc < nlines + fls->used) {
+		fls->fl = (struct fitline *)xrealloc_free(fls->fl,
 			(fls->alloc = nlines + fls->used)
 			* sizeof(struct fitline));
+		if (!fls->fl)
+			return NULL;
+	}
 	first = fls->fl + fls->used;
 	fls->used = nlines + fls->used;
 	end = first + nlines;
@@ -259,6 +269,7 @@ static struct ssav_unit *assa_fit_q0_i(struct fitlines *fls,
  * @param width wrapping width
  * @param h_total (out) total height of everything
  * @param wrap wrapping mode (0 or 3)
+ *  fls->fl == NULL on OOM
  */
 static void assa_fit_q0(struct fitlines *fls,
 	struct ssav_unit *u, FT_Pos width, FT_Pos *h_total, long wrap)
@@ -266,16 +277,20 @@ static void assa_fit_q0(struct fitlines *fls,
 	struct fitline *fl;
 	while (u) {
 		while (u->type == SSAVU_NEWLINE) {
-			if (fls->used == fls->alloc)
-				fls->fl = (struct fitline *)xrealloc(fls->fl,
-					(fls->alloc += 5)
+			if (fls->used == fls->alloc) {
+				fls->fl = (struct fitline *)xrealloc_free(
+					fls->fl, (fls->alloc += 5)
 					* sizeof(struct fitline));
+				if (!fls->fl)
+					return;
+			}
 			fl = fls->fl + fls->used++;
 			fl->size.x = 0;
 			*h_total += (fl->size.y = u->height << 10);
 			u = fl->endat = (fl->startat = u)->next;
 		}
 		u = assa_fit_q0_i(fls, u, width, h_total);
+		/* on OOM: u == fls->fl == NULL - returns safely here. */
 		if (u && fls->used) {
 			fl = fls->fl + fls->used - 1;
 			if (fl->size.y < (u->height << 10)) {
@@ -323,8 +338,9 @@ static void assa_fit_arrange(struct ssav_line *l, struct fitlines *fls,
 /** fitting parent: try to place line into a rectangle.
  * @param l the line to fit
  * @param r the rectangle to use (including alignment info)
+ * @return 0 on success, -1 on OOM
  */
-static void assa_fit(struct ssav_line *l, struct assa_rect *r)
+static int assa_fit(struct ssav_line *l, struct assa_rect *r)
 {
 	FT_Pos h_total = 0;
 	struct fitlines fls;
@@ -332,14 +348,23 @@ static void assa_fit(struct ssav_line *l, struct assa_rect *r)
 	fls.used = 0;
 	fls.fl = (struct fitline *)xmalloc(fls.alloc
 		* sizeof(struct fitline));
+	if (!fls.fl) {
+		oom_msg();
+		return -1;
+	}
 
 	if (l->wrap == 0 || l->wrap == 3)
 		assa_fit_q0(&fls, l->unit_first, r->size.x, &h_total, l->wrap);
 	else
 		assa_fit_q12(&fls, l->unit_first, r->size.x, &h_total, l->wrap);
+	if (!fls.fl) {
+		oom_msg();
+		return -1;
+	}
 	assa_fit_arrange(l, &fls, r, h_total);
 
 	xfree(fls.fl);
+	return 0;
 }
 
 /** move line until it doesn't collide with any other on-layer one.
@@ -378,14 +403,17 @@ static void assa_collide(struct ssav_line *l, struct assa_layer *lay)
  * @param vm the SSA vm to use (for frame size)
  * @param lay ASS layer (only same-layer lines get collision detection)
  * @param l the line to process
+ * @return 0 on success, -1 on OOM
  */
-static void assa_wrap(struct ssa_vm *vm, struct assa_layer *lay,
+static int assa_wrap(struct ssa_vm *vm, struct assa_layer *lay,
 	struct ssav_line *l)
 {
 	struct assa_alloc *newa;
 	struct assa_rect r;
 
 	newa = xnew(struct assa_alloc);
+	if (!newa)
+		return -1;
 
 	ssgl_prepare(vm, l);
 
@@ -400,7 +428,8 @@ static void assa_wrap(struct ssa_vm *vm, struct assa_layer *lay,
 		r.pos.x -= (FT_Pos)(l->xalign * vm->outsize.x);
 		r.pos.y -= (FT_Pos)(l->yalign * vm->outsize.y);
 		r.size = vm->outsize;
-		assa_fit(l, &r);
+		if (assa_fit(l, &r))
+			goto out_oom;
 	} else {
 		FT_Vector tmp;
 		r.pos.x = l->marginl;
@@ -412,7 +441,8 @@ static void assa_wrap(struct ssa_vm *vm, struct assa_layer *lay,
 		r.size = vm->outsize;
 		r.size.x -= r.pos.x + tmp.x;
 		r.size.y -= r.pos.y + tmp.y;
-		assa_fit(l, &r);
+		if (assa_fit(l, &r))
+			goto out_oom;
 		assa_collide(l, lay);
 	}
 	if ((l->flags & SSAV_ORG) == 0) {
@@ -421,14 +451,23 @@ static void assa_wrap(struct ssa_vm *vm, struct assa_layer *lay,
 	}
 	*lay->curpos = newa;
 	lay->curpos = &newa->next;
+	return 0;
+
+out_oom:
+	xfree(newa);
+	return -1;
 }
 
 enum ssar_redoflags assa_realloc(struct ssa_vm *vm,
 	struct ssav_line *l, enum ssar_redoflags prev)
 {
 	struct assa_layer *lay = assa_getlayer(vm, l->ass_layer);
-	struct assa_alloc **curpos = lay->curpos;
+	struct assa_alloc **curpos;
 
+	if (!lay)
+		return prev;
+
+	curpos = lay->curpos;
 	if (!(prev & SSAR_WRAP)) {
 		for (; *curpos; curpos = &(*curpos)->next)
 			if ((*curpos)->line == l) {
