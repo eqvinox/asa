@@ -21,12 +21,22 @@
 #ifndef _COMMON_H
 #define _COMMON_H
 
+#include <stdlib.h>
+
 #define xmalloc malloc
 #define xcalloc calloc
 #define xnew(type) (type *)xmalloc(sizeof(type))
 #define xnewz(type) (type *)xcalloc(sizeof(type), 1)
 #define xrealloc realloc
 #define xfree free
+
+static inline void *xrealloc_free(void *old, size_t newsize)
+{
+	void *rv = realloc(old, newsize);
+	if (!rv)
+		free(old);
+	return rv;
+}
 
 #define oom_return(x) do { if (x) { \
 	subhelp_log(CSRI_LOG_ERROR, "Out of memory in %s:%d", \
@@ -62,7 +72,6 @@ extern char *_strdup(const char*);
 #define xstrdup strdup
 
 #else
-#include <stdlib.h>
 #include <string.h>
 static inline char *xstrdup(const char *s)
 {
