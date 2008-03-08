@@ -1,6 +1,6 @@
 if IMPORTS_PREP
 noinst_PROGRAMS = preparse
-preparse_LDFLAGS = -limportparser
+preparse_LDFLAGS = -limportparser $(PCRE_LIBS)
 
 BUILT_SOURCES = imports_prep.h
 imports_prep.h: $(srcdir)/imports libimportparser.la preparse
