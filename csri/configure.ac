@@ -6,6 +6,7 @@ AC_CONFIG_HEADER([include/acconf.h])
 
 # Checks for programs.
 AC_PROG_CC
+AC_PROG_CXX
 
 AC_PROG_LIBTOOL
 AC_C_CONST
