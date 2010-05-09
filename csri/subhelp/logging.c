@@ -93,9 +93,7 @@ void subhelp_slog(enum csri_logging_severity severity, const char *msg)
 {
 	if (logfunc)
 		logfunc(appdata, severity, msg);
-	else {
-		fprintf(stderr, msg);
-		fprintf(stderr, "\n");
-	}
+	else
+		fprintf(stderr, "%s\n", msg);
 }
 
