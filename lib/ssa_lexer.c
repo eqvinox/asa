@@ -238,7 +238,7 @@ static unsigned ssa_fe    (struct ssa_state *state, par_t param, void *elem);
 #define styl	(SSACTX_RAW | SSACTX_STYLE)
 #define info	(SSACTX_RAW | SSACTX_INFO)
 #define init	(SSACTX_INIT)
-#define any	(~0UL)
+#define any	(~0U)
 
 /** index of ptkeys entry to use for SSACTX_PACKET */
 #define PTKEYS_PACKET	0
@@ -551,10 +551,10 @@ static void ssa_add_error_ext(struct ssa_state *state,
 
 
 	if (state->ctx == SSACTX_PACKET)
-		subhelp_log(CSRI_LOG_DEBUG, "parser: <stream:%d>: %s: %s",
+		subhelp_log(CSRI_LOG_DEBUG, "parser: <stream:%ld>: %s: %s",
 			location - state->line + 1, severity, ssaec[ec].sh);
 	else
-		subhelp_log(CSRI_LOG_DEBUG, "parser: %d:%d: %s: %s",
+		subhelp_log(CSRI_LOG_DEBUG, "parser: %d:%ld: %s: %s",
 			state->lineno, location - state->line + 1,
 			severity, ssaec[ec].sh);
 
