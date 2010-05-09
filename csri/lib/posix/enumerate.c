@@ -77,30 +77,32 @@ static void csrilib_do_load(const char *filename, dev_t device, ino_t inode)
 	tmp.os.device = device;
 	tmp.os.inode = inode;
 
-/* okay, this is uber-ugly. either I end up casting from void *
- * to a fptr (which yields a cast warning), or I do a *(void **)&tmp.x
- * (which yields a strict-aliasing warning).
- * casting via char* works because char* can alias anything.
- */
-#define _dl_map_function(x, dst) do { \
-	char *t1 = (char *)&dst; \
-	union x { void *ptr; } *ptr = (union x *)t1; \
+/* strict-aliasing. yay. */
+#define _dl_map_function(x, dst, type, args) do { \
+	union x { void *ptr; type (*fptr) args ; } ptr; \
 	sym = "csri_" # x; \
-	ptr->ptr = dlsym(dlhandle, sym);\
-	if (!ptr->ptr) goto out_dlfail; } while (0)
-#define dl_map_function(x) _dl_map_function(x, tmp.x)
-	dl_map_function(query_ext);
+	ptr.ptr = dlsym(dlhandle, sym);\
+	if (!ptr.ptr) goto out_dlfail; \
+	dst = ptr.fptr; } while (0)
+#define dl_map_function(x, type, args) _dl_map_function(x, tmp.x, type, args)
+	dl_map_function(query_ext, void *,
+		(csri_rend *, csri_ext_id));
 	subhelp_logging_pass((struct csri_logging_ext *)
 		tmp.query_ext(NULL, CSRI_EXT_LOGGING));
-	dl_map_function(open_file);
-	dl_map_function(open_mem);
-	dl_map_function(close);
-	dl_map_function(request_fmt);
-	dl_map_function(render);
-#define dl_map_local(x) _dl_map_function(x, x)
-	dl_map_local(renderer_info);
-	dl_map_local(renderer_default);
-	dl_map_local(renderer_next);
+	dl_map_function(open_file, csri_inst *,
+		(csri_rend *, const char *, struct csri_openflag *));
+	dl_map_function(open_mem, csri_inst *,
+		(csri_rend *, const void *, size_t, struct csri_openflag *));
+	dl_map_function(close, void,
+		(csri_inst *));
+	dl_map_function(request_fmt, int,
+		(csri_inst *, const struct csri_fmt *));
+	dl_map_function(render, void,
+		(csri_inst *, struct csri_frame *, double));
+#define dl_map_local(x, type, args) _dl_map_function(x, x, type, args)
+	dl_map_local(renderer_info, struct csri_info *, (csri_rend *));
+	dl_map_local(renderer_default, csri_rend *, ());
+	dl_map_local(renderer_next, csri_rend *, (csri_rend *));
 
 	rend = renderer_default();
 	while (rend) {
