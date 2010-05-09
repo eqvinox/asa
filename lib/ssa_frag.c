@@ -36,12 +36,12 @@ static inline struct ssa_frag *ssap_frag_alloc(struct ssa_frag *frag,
 
 static inline struct ssa_frag *ssap_frag_clone(const struct ssa_frag *frag)
 {
-	struct ssa_frag *new;
+	struct ssa_frag *fnew;
 	size_t size = sizeof(struct ssa_frag)
 		+ frag->nrend * sizeof(struct ssav_line *);
-	new = (struct ssa_frag *)xmalloc(size);
-	memcpy(new, frag, size);
-	return new;
+	fnew = (struct ssa_frag *)xmalloc(size);
+	memcpy(fnew, frag, size);
+	return fnew;
 }
 
 /* prev and prevp only are hints passed for optimization.
