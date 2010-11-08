@@ -24,7 +24,7 @@
 
 /** parser reuse. imports-to-C uses char *, real VM uses pcre * */
 typedef union {
-	pcre *pcre;
+	pcre *pcregex;
 	char *str;
 } asa_pcre;
 
