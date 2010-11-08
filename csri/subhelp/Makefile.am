@@ -5,6 +5,6 @@ PLATF = posix
 endif
 noinst_LTLIBRARIES = libsubhelp.la
 libsubhelp_la_SOURCES = $(PLATF)/openfile.c logging.c
-libsubhelp_la_CFLAGS = -I$(top_srcdir)/include
+libsubhelp_la_CFLAGS = -I$(top_srcdir)/include -fPIC
 
 EXTRA_DIST = win32/openfile.c posix/openfile.c
