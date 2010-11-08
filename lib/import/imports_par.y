@@ -86,7 +86,7 @@ input:
 /* format detection rule */
 detect:	DETECT TOKEN REGEX	{
 					struct asa_import_detect *d =
-						xnew(struct asa_import_detect);
+						xnewz(struct asa_import_detect);
 					d->name = $2;
 					if (!asa_pcre_compile(&d->re, $3))
 						asa_det_last = &(*asa_det_last = d)->next;
